@@ -9,26 +9,29 @@ clearvars
 % if ROI has NaNs it skips them?
 
 %% Information about your images
-Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s';
+Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
+%Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s';
 Settings.AnimalNames = {
-    'RG14',...
+    'RG16',...
+    %'RG14',...
     };
 Settings.ScoreSheetNames = {
-    'RG14_Scoresheet_test.xls',...
+    'RG16_Scoresheet_test.xls',...
+    %'RG14_Scoresheet_test.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim','shortstim'};
 Settings.AutoOverlay = 1;  %0,1,2 channels for automated ROI selection
 Settings.ManualOverlay = 2;
 
-channel = struct('Ca_Cyto_Astro',1,'Ca_Neuron',2);
+channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
         
 Classify = 0; %Classify peaks
 plotMotion = 0; %Plot motion correction movie
 doplots = 1; %Plots for each trial
 
 % final data file name
-Files{1,1} = fullfile(Settings.MainDir, 'Results', 'Ch1_tests.csv');
-Files{1,2} = fullfile(Settings.MainDir, 'Results', 'Ch2_tests.csv');
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'Ch1_tests.csv');
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'Ch2_tests.csv');
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration.mat';
@@ -47,16 +50,16 @@ for iAnimal = 1:numAnimals
     %% Give image paths
     for iPath= 1:length(Settings.LowresPath)
         testRoot =Settings.LowresPath{iPath};
-        files = dir(fullfile(testRoot,'lowres*'));
-        fnTempList = {files(:).name};
+        expfiles = dir(fullfile(testRoot,'lowres*'));
+        fnTempList = {expfiles(:).name};
         fnList = fullfile(testRoot, fnTempList);
         
         %% Create an array of ScanImage Tiffs
         ImgArray =  SCIM_Tif(fnList, channel, CalFile);
         
         %% Run motion correction
-        files2 = dir(fullfile(testRoot,'highres*'));
-        fnTempList2 = {files2(:).name};
+        expfiles2 = dir(fullfile(testRoot,'highres*'));
+        fnTempList2 = {expfiles2(:).name};
         RefImgName = cell2mat(fullfile(testRoot, fnTempList2));
         
         HighRes = SCIM_Tif(RefImgName,channel, CalFile);
@@ -73,19 +76,20 @@ for iAnimal = 1:numAnimals
         %% Create configuration
         % for finding ROIs
         if ~isempty(find(Settings.AutoOverlay==1))
-            if find(channel.Ca_Cyto_Astro==1)
+            if isfield(channel,'Ca_Cyto_Astro')
                 % automated membrane astrocyte
                 configFind_Ch1 = ConfigFindROIsFLIKA.from_preset('ca_cyto_astro',...
                     'baselineFrames', Settings.BL_frames,'sigmaXY', 2.9,...
-                    'sigmaT', 0.5, 'threshold_constant', 6,...
+                    'sigmaT', 0.5, 'threshold_constant', 7,...
                     'min_rise_time',0.1689, 'erosionRadius', 1.4457,...
                     'discardBorderROIs',true);
-            elseif find(channel.Ca_Memb_Astro==1)
+            elseif isfield(channel,'Ca_Memb_Astro')
                 % automated membrane astrocyte
                 configFind_Ch1 = ConfigFindROIsFLIKA.from_preset('ca_memb_astro',...
                     'baselineFrames', Settings.BL_frames,'sigmaXY', 1,...
                     'max_rise_time',7,'minPuffArea',2, 'minPuffTime', 0.4,...
-                    'dilateXY',2,'threshold_constant', 9);
+                    'dilateXY',2,'threshold_constant', 6,...
+                    'dilationRadius', 1.0573,'discardBorderROIs',true);
             end
         elseif ~isempty(find(Settings.ManualOverlay==1))
             % ImageJ ROIs
@@ -95,9 +99,9 @@ for iAnimal = 1:numAnimals
         if ~isempty(find(Settings.AutoOverlay==2))
             % automated neuronal signals
             configFind_Ch2 = ConfigFindROIsFLIKA.from_preset('ca_neuron',...
-                'baselineFrames', Settings.BL_frames,'sigmaXY', 2,...
-                'minPuffArea',10,'max_rise_time',0.5,'threshold', 0.2,...
-                'dilateXY',2,'threshold_constant', 10,'erosionRadius',2);
+                'baselineFrames', Settings.BL_frames,'sigmaXY', 2.9,...
+                'sigmaT', 0.5, 'max_rise_time',0.5,...
+                'dilateXY',2,'threshold_constant', 7,'erosionRadius',2);
         elseif ~isempty(find(Settings.ManualOverlay==2))
             % ImageJ ROIs
             x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
@@ -121,11 +125,11 @@ for iAnimal = 1:numAnimals
         %CSArray_Ch2 = CellScan(fnList, ImgArray, configCellScan_Ch2, 2);
         
         %% Process the images
-        CSArray_Ch1.process();%('find');
+        CSArray_Ch1.process('find');
         %CSArray_Ch2.process();
         
         % Use this function to combine the masks
-        CSArray_Ch1 = utils.combine_masks(CSArray_Ch1);
+        CSArray_Ch1.combine_masks(CSArray_Ch1);
         %CSArray_Ch2 = utils.combine_masks(CSArray_Ch2);
         
         CSArray_Ch1.process('measure');
