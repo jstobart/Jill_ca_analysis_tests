@@ -5,8 +5,11 @@ clearvars
 % looping through multiple conditions?
 % loop through spots
 
-% how to combine masks from multiple trials
-% if ROI has NaNs it skips them?
+
+% if ROI has NaNs it skips them during classfication?
+% improve classification parameters?
+
+% output- add in channel to the data table
 
 %% Information about your images
 Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
@@ -25,8 +28,8 @@ Settings.ManualOverlay = 2;
 
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
         
-Classify = 0; %Classify peaks
-plotMotion = 0; %Plot motion correction movie
+Classify = 1; %Classify peaks
+plotMotion = 1; %Plot motion correction movie
 doplots = 1; %Plots for each trial
 
 % final data file name
@@ -67,8 +70,8 @@ for iAnimal = 1:numAnimals
         refImg = mean(HighRes.rawdata(:,:,2,:),4);
         %figure, imagesc(refImg), axis image, axis off, colormap(gray)
         
-        ImgArray = ImgArray.motion_correct('refImg',refImg, 'ch',2,'minCorr', 0.4); 
-        %ImgArray = ImgArray.motion_correct('ch',2,'minCorr', 0.4);
+        ImgArray = ImgArray.motion_correct('refImg',refImg, 'ch',2,'minCorr', 0.4);%,'doPlot',true); 
+      
         if plotMotion==1
             ImgArray(:).plot()
         end
@@ -110,9 +113,9 @@ for iAnimal = 1:numAnimals
         
         % Measurment configuration (with or without peak classification)
         if Classify ==1
-            configMeasure = ConfigMeasureROIsClsfy('baselineFrames', Settings.BL_frames); %measure ROIs with peak classification
+            configMeasure = ConfigMeasureROIsClsfy('baselineFrames', Settings.BL_frames, 'excludeNaNs', false); %measure ROIs with peak classification
         else
-            configMeasure = ConfigMeasureROIsDummy();
+            configMeasure = ConfigMeasureROIsDummy('propagateNaNs',true);
         end
         
         %% Combine the two configs
@@ -125,14 +128,23 @@ for iAnimal = 1:numAnimals
         %CSArray_Ch2 = CellScan(fnList, ImgArray, configCellScan_Ch2, 2);
         
         %% Process the images
-        CSArray_Ch1.process('find');
+        
         %CSArray_Ch2.process();
+        Ch1_test =CSArray_Ch1.process();
         
-        % Use this function to combine the masks
-        CSArray_Ch1.combine_masks(CSArray_Ch1);
-        %CSArray_Ch2 = utils.combine_masks(CSArray_Ch2);
-        
-        CSArray_Ch1.process('measure');
+        if isfield(channel,'Ca_Cyto_Astro')
+            % Use this function to combine the masks
+            CSArray_Ch1_combined= combine_masks(Ch1_test);
+            %CSArray_Ch2 = utils.combine_masks(CSArray_Ch2);
+            
+            configFindDummy = ConfigFindROIsDummy('roiMask', CSArray_Ch1_combined);
+            calcFindDummy = configFindDummy.create_calc();
+            
+            
+            [CSArray_Ch1(:).calcFindROIs] = deal(calcFindDummy);
+            
+            CSArray_Ch1.process();
+        end
         
         %% Make the debugging plots
         if doplots ==1
@@ -141,7 +153,7 @@ for iAnimal = 1:numAnimals
         end
         
         %% Output data
-        %CSArray_Ch1.output_data([],Files{1,1});
+        CSArray_Ch1.output_data();%([],SaveFiles{1,1});
         %CSArray_Ch2.output_data([],Files{1,2});
     end
 end
