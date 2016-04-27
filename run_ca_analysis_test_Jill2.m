@@ -39,7 +39,7 @@ SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'Ch1_tests.csv');
 SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'Ch2_tests.csv');
 
 %% Load calibration file
-calibration ='E:\matlab\2p-img-analysis\tests\res\calibration.mat';
+calibration ='D:\matlab\2p-img-analysis\tests\res\calibration.mat';
 CalFile = Calibration_PixelSize.load(calibration);
 
 %% load scoresheet
@@ -139,11 +139,11 @@ for iAnimal = 1:numAnimals
             CSArray_Ch1_combined= combine_masks(Ch1_test);
             %CSArray_Ch2 = utils.combine_masks(CSArray_Ch2);
             
-            configFindDummy = ConfigFindROIsDummy('roiMask', CSArray_Ch1_combined);
-            calcFindDummy = configFindDummy.create_calc();
-            
-            
-            [CSArray_Ch1(:).calcFindROIs] = deal(calcFindDummy);
+%             configFindDummy = ConfigFindROIsDummy('roiMask', CSArray_Ch1_combined);
+%             calcFindDummy = configFindDummy.create_calc();
+%             
+%             
+%             [CSArray_Ch1(:).calcFindROIs] = deal(calcFindDummy);
             
             CSArray_Ch1.process();
         end
