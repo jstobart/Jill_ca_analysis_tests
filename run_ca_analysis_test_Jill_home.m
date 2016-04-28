@@ -32,7 +32,6 @@ Settings.ManualOverlay = 2;
 %channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 channel = struct('Ca_Cyto_Astro',1,'Ca_Neuron',2);
 
-Classify = 1; %Classify peaks
 plotMotion = 0; %Plot motion correction movie
 doplots = 1; %Plots for each trial
 
@@ -88,14 +87,14 @@ for iAnimal = 1:numAnimals
             if ~isempty(find(Settings.AutoOverlay==1)) && iCh==1
                 if strcmp(Ch_names{iCh},'Ca_Cyto_Astro')
                     % automated cytosolic astrocyte
-                    configFind= ConfigFindROIsFLIKA.from_preset('ca_cyto_astro',...
+                    configFind{iCh}= ConfigFindROIsFLIKA.from_preset('ca_cyto_astro',...
                         'baselineFrames', Settings.BL_frames,'sigmaXY', 2.9,...
                         'sigmaT', 0.5, 'threshold_constant', 7,...
                         'min_rise_time',0.1689, 'erosionRadius', 1.4457,...
                         'discardBorderROIs',true);
                 elseif strcmp(Ch_names{iCh},'Ca_Memb_Astro')
                     % automated membrane astrocyte
-                    configFind = ConfigFindROIsFLIKA.from_preset('ca_memb_astro',...
+                    configFind{iCh} = ConfigFindROIsFLIKA.from_preset('ca_memb_astro',...
                         'baselineFrames', Settings.BL_frames,'sigmaXY', 1,...
                         'max_rise_time',7,'minPuffArea',2, 'minPuffTime', 0.4,...
                         'dilateXY',2,'threshold_constant', 6,...
@@ -103,7 +102,7 @@ for iAnimal = 1:numAnimals
                 end
             elseif ~isempty(find(Settings.AutoOverlay==2)) && iCh==2
                 % automated neuronal signals
-                configFind = ConfigFindROIsFLIKA.from_preset('ca_neuron',...
+                configFind{iCh} = ConfigFindROIsFLIKA.from_preset('ca_neuron',...
                     'baselineFrames', Settings.BL_frames,'sigmaXY', 2.9,...
                     'sigmaT', 0.5, 'max_rise_time',0.5,...
                     'dilateXY',2,'threshold_constant', 7,'erosionRadius',2);
@@ -113,28 +112,24 @@ for iAnimal = 1:numAnimals
             if ~isempty(find(Settings.ManualOverlay==1))&& iCh==1
                 % ImageJ ROIs
                 x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
-                configFind = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'RoiSet.zip'), x_pix, y_pix, 1);
+                configFind{iCh} = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'RoiSet.zip'), x_pix, y_pix, 1);
             elseif ~isempty(find(Settings.ManualOverlay==2))&& iCh==2
                 % ImageJ ROIs
                 x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
-                configFind= ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'RoiSet.zip'), x_pix, y_pix, 1);
+                configFind{iCh}= ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'RoiSet.zip'), x_pix, y_pix, 1);
             end
             
-            % Measurment configuration (with or without peak classification)
-            %if Classify ==1 && strcmp(Ch_names{iCh},'Ca_Cyto_Astro')
-                configMeasure = ConfigMeasureROIsClsfy('baselineFrames', Settings.BL_frames, 'excludeNaNs', false,...
+            % Measurment configuration for peak classification
+            configMeasure = ConfigMeasureROIsClsfy('baselineFrames', Settings.BL_frames, 'excludeNaNs', false,...
                     'thresholdSD_low', 3, 'thresholdSD_band', 3); %measure ROIs with peak classification
-                %configMeasure = ConfigMeasureROIsClsfy();
-            %else
-             %   configMeasure = ConfigMeasureROIsDummy('propagateNaNs',true);
-            %end
-            
+               
             
             % Combine the two configs
-            configCellScan = ConfigCellScan(configFind, configMeasure);
-            
+            configCellScan{iCh} = ConfigCellScan(configFind{iCh}, configMeasure);
+        %end
             % Create CellScan objects
-            CSArray = CellScan(fnList, ImgArray, configCellScan, iCh);
+            CSArray{iCh} = CellScan(fnList, ImgArray, configCellScan{iCh}, iCh);
+        end
             
             %% Process the images
             
@@ -182,7 +177,7 @@ for iAnimal = 1:numAnimals
             end
         end
     end
-end
+%end
 
 names = {'amplitude';'area';'fullWidth';'halfWidth';'numPeaks';'peakTime';'peakType';'prominence';...
     'ROIname';'peakAUC';'Trial';'Condition';'Spot';'Animal';'Channel'};
