@@ -42,7 +42,7 @@ traces = [];
 All_data=[];
 
 % Load calibration file
-calibration ='E:\matlab\2p-img-analysis\tests\res\calibration.mat';
+calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
 CalFile = Calibration_PixelSize.load(calibration);
 
 %% load scoresheet
@@ -88,6 +88,11 @@ for iAnimal = 1:numAnimals
             if ~isempty(find(Settings.AutoOverlay==1)) && iCh==1
                 if strcmp(Ch_names{iCh},'Ca_Cyto_Astro')
                     % automated cytosolic astrocyte
+                    configFind= ConfigFindROIsFLIKA.from_preset('ca_cyto_astro');%,...
+%                         'baselineFrames', Settings.BL_frames,'sigmaXY', 2.9,...
+%                         'sigmaT', 0.5, 'threshold_constant', 7,...
+%                         'min_rise_time',0.1689, 'erosionRadius', 1.4457,...
+%                         'discardBorderROIs',true);
                 elseif strcmp(Ch_names{iCh},'Ca_Memb_Astro')
                     % automated membrane astrocyte
                     configFind = ConfigFindROIsFLIKA.from_preset('ca_memb_astro',...
@@ -117,6 +122,7 @@ for iAnimal = 1:numAnimals
             
             % Measurment configuration (with or without peak classification)
             %if Classify ==1 && strcmp(Ch_names{iCh},'Ca_Cyto_Astro')
+                configMeasure = ConfigMeasureROIsClsfy('baselineFrames', Settings.BL_frames, 'excludeNaNs', true,...
                     'thresholdSD_low', 3, 'thresholdSD_band', 3); %measure ROIs with peak classification
                 %configMeasure = ConfigMeasureROIsClsfy();
             %else
