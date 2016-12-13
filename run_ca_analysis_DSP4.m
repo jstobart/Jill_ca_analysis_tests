@@ -18,17 +18,13 @@ Settings.AnimalNames = {
     'RG10',...
     'RG12',...
     'RG14',...
-    'RG16',...
-    'RG17',...
     'RG18',...
     };
 Settings.ScoreSheetNames = {
-    'RG10_Scoresheet_LongTrialsShortStim.xls',...
-    'RG12_Scoresheet_LongTrialsShortStim.xls',...
-    'RG14_Scoresheet_LongTrialsShortStim.xls',...
-    'RG16_Scoresheet_LongTrialsShortStim.xls',...
-    'RG17_Scoresheet_LongTrialsShortStim.xls',...
-    'RG18_Scoresheet_LongTrialsShortStim.xls',...
+    'RG10_Scoresheet_LongTrialsShortStim_DSP4.xls',...
+    'RG12_Scoresheet_LongTrialsShortStim_DSP4.xls',...
+    'RG14_Scoresheet_LongTrialsShortStim_DSP4.xls',...
+    'RG18_Scoresheet_LongTrialsShortStim_DSP4.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim','shortstim'};
 
@@ -38,11 +34,11 @@ plotMotion = 0; %Plot motion correction movie
 doplots = 0; %Plots for each trial
 
 % final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'DSP4_Peaks_3Conds.csv'); % all data
 SaveFiles{1,2}= 'CellScan_AC_FLIKA.mat'; % astrocyte FLIKA cell scan
 SaveFiles{1,3}= 'CellScan_AC_Hand.mat'; % astrocyte hand click cell scan
 SaveFiles{1,4}= 'CellScan_Ne_Hand.mat'; % neuronal hand click cell scan
-SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results', 'Control_TraceAUC_10sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results', 'DSP4_TraceAUC_10sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
@@ -242,6 +238,7 @@ for iAnimal = 1:numAnimals
                     temp2.area{iPeak,1} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.area(ROIindex);
                     
                     ROIpuffIdx = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs(ROIindex);
+                    x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
                     [jy,jx,~] = ind2sub([y_pix,x_pix],cell2mat(ROIpuffIdx));
                     jx = round(mean(jx));
                     jy = round(mean(jy));
@@ -295,21 +292,25 @@ for iAnimal = 1:numAnimals
                 data.overlap= [data.overlap; temp2.overlap];
                 
                 % trace AUC output
-                traces= CSArray_Ch1_FLIKA(1,itrial).calcMeasureROIs.data.tracesNorm;
-                %preallocate
-                AUCdata=cell(size(traces,2),8);
-                for iROI = 1:size(traces,2)
-                    AUCdata{iROI,1}= trapz(traces(60:60+round(10*11.84),iROI));
-                    AUCdata{iROI,2}=CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    AUCdata{iROI,3}=strcat('trial', num2str(itrial));
-                    AUCdata{iROI,4}= 'GCaMP';
-                    AUCdata{iROI,5}= spotId;
-                    AUCdata{iROI,6}= CurrentAnimal;
-                    AUCdata{iROI,7} = CurrentCondition;
-                    AUCdata{iROI,8} = CurrentDepth(1,1);
+                if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
+                    continue
+                else
+                    traces= CSArray_Ch1_FLIKA(1,itrial).calcMeasureROIs.data.tracesNorm;
+                    %preallocate
+                    AUCdata=cell(size(traces,2),8);
+                    for iROI = 1:size(traces,2)
+                        AUCdata{iROI,1}= trapz(traces(60:60+round(10*11.84),iROI));
+                        AUCdata{iROI,2}=CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
+                        AUCdata{iROI,3}=strcat('trial', num2str(itrial));
+                        AUCdata{iROI,4}= 'GCaMP';
+                        AUCdata{iROI,5}= spotId;
+                        AUCdata{iROI,6}= CurrentAnimal;
+                        AUCdata{iROI,7} = CurrentCondition;
+                        AUCdata{iROI,8} = CurrentDepth(1,1);
+                    end
+                    All_AUC=vertcat(All_AUC, AUCdata);
+                    clearvars AUCdata
                 end
-                All_AUC=vertcat(All_AUC, AUCdata);
-                clearvars AUCdata
             end
             clearvars temp temp2
             

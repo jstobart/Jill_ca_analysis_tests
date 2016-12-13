@@ -38,11 +38,11 @@ plotMotion = 0; %Plot motion correction movie
 doplots = 0; %Plots for each trial
 
 % final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'Peaks_3Conds.csv'); % all data
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'Control_Peaks_3Conds.csv'); % all data
 SaveFiles{1,2}= 'CellScan_AC_FLIKA.mat'; % astrocyte FLIKA cell scan
 SaveFiles{1,3}= 'CellScan_AC_Hand.mat'; % astrocyte hand click cell scan
 SaveFiles{1,4}= 'CellScan_Ne_Hand.mat'; % neuronal hand click cell scan
-SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results', 'TraceAUC_10sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results', 'Control_TraceAUC_10sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
@@ -237,7 +237,7 @@ for iAnimal = 1:numAnimals
                     temp2.depth{iPeak,1} = CurrentDepth(1,1);
                     
                     % get the indices  and area for a particular ROI
-                    jROIname = data.ROIname{iPeak};
+                    jROIname = temp.ROIname{iPeak};
                     ROIindex= strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames,jROIname);
                     temp2.area{iPeak,1} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.area(ROIindex);
                     
@@ -295,6 +295,9 @@ for iAnimal = 1:numAnimals
                 data.overlap= [data.overlap; temp2.overlap];
                 
                 % trace AUC output
+                if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames, 'none')
+                    continue
+                else
                 traces= CSArray_Ch1_FLIKA(1,itrial).calcMeasureROIs.data.tracesNorm;
                 %preallocate
                 AUCdata=cell(size(traces,2),8);
