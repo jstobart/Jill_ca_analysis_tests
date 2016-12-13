@@ -31,8 +31,8 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/Control_Peaks_3Conds.csv", header=TRUE, sep = ",")
-auc.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/Control_TraceAUC_10sWindow_3Conds.csv", header=TRUE, sep = ",")
+stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/test_Control_Peaks_3Conds.csv", header=TRUE, sep = ",")
+auc.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/test_Control_TraceAUC_10sWindow_3Conds.csv", header=TRUE, sep = ",")
 
 # stim onset at 5 sec
 stim.all$peakTime<-stim.all$peakTime-5
@@ -57,58 +57,52 @@ auc.all$ROIType<- as.factor(auc.all$ROIType)
 
 
 #unique ROI names
-
 stim.all$ROIs_trial<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial,stim.all$ROIname, sep= "_")
-auc.all$ROIs_trial<-paste(auc.all$Animal, auc.all$Spot, auc.all$Trial, auc.all$ROIname, sep= "_")
+auc.all$ROIs_trial<-paste(auc.all$Animal, auc.all$Spot, auc.all$Trial, auc.all$ROI, sep= "_")
 
 stim.all$ROIs<-paste(stim.all$Animal, stim.all$Spot, stim.all$ROIname, sep= "_")
-auc.all$ROIs<-paste(auc.all$Animal, auc.all$Spot, auc.all$ROIname, sep= "_")
+auc.all$ROIs<-paste(auc.all$Animal, auc.all$Spot, auc.all$ROI, sep= "_")
 
-# histogram of peak times for stim
 
-ggplot(stim.all, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
-  ggtitle("Distribution of peak times GCaMP and RCaMP")
+# exclude RG10 cause it moves too much
+stim.all<- subset(stim.all, Animal!="RG10")
 
-#####
-# adjust peak start time for stim onset
-stim.all$peakStart2<-stim.all$peakStart-5
 
-ggplot(stim.all, aes(x=peakStart2, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
-  ggtitle("Distribution of peak start times GCaMP and RCaMP")
+
+# remove matching astrocyte process and soma ROIs
+Overlap= is.na(stim.all$overlap)
+
+OverlapROIs<-unique(stim.all$ROIs_trial[Overlap])
+
+stim.all2<-stim.all[!Overlap,]
+
+# remove ROIs from AUC data frame
+#AUC_overlap<- subset(auc.all, ROIs_trial !%in% OverlapROIs)
 
 #######
-# remove matching process and soma ROIs
-Animals = as.character(unique(stim.all$Animal))
-stim.all2 <- data.frame()
-for (iAnimal in 1:length(Animals))
-{
-  CurrentAnimal = Animals[iAnimal]
-  AnimalSubset = subset(stim.all,Animal ==CurrentAnimal)
-  Spots2 = as.character(unique(AnimalSubset$Spot))
-  for (ii in 1:length(Spots2))
-  {
-    name = Spots2[ii]
-    spotsubset = subset(AnimalSubset, Spot == name)
-    # find ROIs with matches
-    matchROIs = grepl("ROI*",spotsubset$Comparison)
-    # find ROI number from matching ROIs
-    comparisons <-as.character(spotsubset$Comparison[matchROIs])
-    allROImatch<- unique(str_sub(comparisons,start=-2))
-    if (length(allROImatch) ==0)
-    { stim.all2<- rbind(stim.all2,spotsubset)
-    } else {      
-      for (iii in 1:length(allROImatch))
-      {ROInum =as.numeric(allROImatch[iii])  
-       ROInum =sprintf("%02d", ROInum) 
-       ROItag = paste("ROI",ROInum,sep= "")
-       # find the process ROIs
-       ROIind= grepl(ROItag,spotsubset$ROI)
-       spotsubset <- spotsubset[!ROIind,]     
-      }
-      stim.all2<- rbind(stim.all2,spotsubset)
-    }
-  }
-}
+# histogram of peak times for stim
+longstim<-subset(stim.all, Condition=="Stim")
+ggplot(longstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("long stim")
+
+shortstim<-subset(stim.all, Condition=="shortstim")
+ggplot(shortstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("short stim")
+
+nostim<-subset(stim.all, Condition=="Nostim")
+ggplot(nostim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("No stim")
+
+
+###########
+
+# things to work on
+
+# 2) exlcuding or subsetting trials with startle response
+    # based on ROI size?
+
+
+
 
 #########
 # trace AUC for first 10 s
@@ -134,59 +128,36 @@ ggplot(data=df1B, aes(x=ROIType, y=AUC10s, fill=Condition)) +
 ####################
 # aggregate peaks from soma, endfoot, neuron ROIs
 struct.peaks<- subset(stim.all, ROIType!="Process")
-struc.trials<- ddply(struct.peaks, c("Animal", "Spot", "Condition","Channel","ROI","Trial","ROIType"), summarise, 
-                   PA_mean = mean(peak_auc), freq_mean = sum(numPeaks)/95*60,
-                   Dur_mean = mean(Duration), Prom_mean = mean(prominence),
-                   amp_mean = mean(amplitude), nEvents = sum(numPeaks), 
+
+# fraction response (active trials)
+struct.peaks$ActivePeak <- 0
+farpeaks1 <- struct.peaks$peakTime>=0 & struct.peaks$peakTime<=20
+struct.peaks$ActivePeak[farpeaks1] <- 1 
+
+struct.trials<- ddply(struct.peaks, c("Animal", "Spot", "Condition","Channel","ROIs","Trial","ROIType"), summarise, 
+                   PA_mean = mean(peakAUC,na.rm=TRUE), nEvents = sum(numPeaks,na.rm=TRUE),
+                   Dur_mean = mean(fullWidth,na.rm=TRUE), Prom_mean = mean(prominence,na.rm=TRUE),
+                   amp_mean = mean(amplitude,na.rm=TRUE), HalfDur = mean(halfWidth,na.rm=TRUE),
                    numActive = sum(ActivePeak))
 
-autoRCaMP.trials$ActiveTrial<-0
-peaks = autoRCaMP.trials$numActive>0
-autoRCaMP.trials$ActiveTrial[peaks] <- 1
+struct.trials$ActiveTrial<-0
+peaks = struct.trials$numActive>0
+struct.trials$ActiveTrial[peaks] <- 1
+struct.trials$freq<- (struct.trials$nEvents/85)*60
 
 # aggregate ROI (no timepoints)
-autoRCaMP.ROI<- ddply(autoRCaMP.trials, c("Animal", "Spot", "Condition","Channel","ROI","Layer","xLoc","yLoc","ROIArea"), summarise, 
-                 PA_mean2 = mean(PA_mean), PA_SD = sd(PA_mean),
-                 freq_mean2 = mean(freq_mean), freq_SD = sd(freq_mean),
-                 Dur_mean2 = mean(Dur_mean), Dur_SD = sd(Dur_mean),
-                 Prom_mean2 = mean(Prom_mean), Prom_SD = sd(Prom_mean),
-                 amp_mean2 = mean(amp_mean), amp_SD = sd(amp_mean),TotEvents = sum(nEvents),
-                 TotActive = sum(ActiveTrial), Ntrials= length(amp_mean))
+struct.ROI<- ddply(struct.trials, c("Animal", "Spot", "Condition","Channel","ROIs","ROIType"), summarise, 
+                 PA_mean2 = mean(PA_mean,na.rm=TRUE), PA_SD = sd(PA_mean,na.rm=TRUE),
+                 freq_mean2 = mean(freq,na.rm=TRUE), freq_SD = sd(freq,na.rm=TRUE),
+                 Dur_mean2 = mean(Dur_mean,na.rm=TRUE), Dur_SD = sd(Dur_mean,na.rm=TRUE),
+                 Prom_mean2 = mean(Prom_mean,na.rm=TRUE), Prom_SD = sd(Prom_mean,na.rm=TRUE),
+                 amp_mean2 = mean(amp_mean,na.rm=TRUE), amp_SD = sd(amp_mean,na.rm=TRUE),
+                 HalfDur_mean2 = mean(HalfDur,na.rm=TRUE), HalfDur_SD = sd(HalfDur,na.rm=TRUE),
+                 TotEvents = sum(nEvents),TotActive = sum(ActiveTrial), Ntrials= length(amp_mean))
 
-autoRCaMP.ROI$frac.resp <- autoRCaMP.ROI$TotActive/autoRCaMP.ROI$Ntrials
+struct.ROI$frac.resp <- struct.ROI$TotActive/struct.ROI$Ntrials
 
 
-# aggregate trials of all ROI (with timepoints)
-wholeframe.trials<- ddply(wholeframe, c("Animal", "Spot", "Condition","Channel","ROI","Trial","Layer","xLoc","yLoc","ROIArea"), summarise, 
-                         PA_mean = mean(peak_auc), freq_mean = sum(numPeaks)/95*60,
-                         Dur_mean = mean(Duration), Prom_mean = mean(prominence),
-                         amp_mean = mean(amplitude), nEvents = sum(numPeaks), 
-                         numActive = sum(ActivePeak))
-
-wholeframe.trials$ActiveTrial<-0
-peaks = wholeframe.trials$numActive>0
-wholeframe.trials$ActiveTrial[peaks] <- 1
-
-# aggregate ROI (no timepoints)
-wholeframe.ROI<- ddply(wholeframe.trials, c("Animal", "Spot", "Condition","Channel","ROI","Layer","xLoc","yLoc","ROIArea"), summarise, 
-                      PA_mean2 = mean(PA_mean), PA_SD = sd(PA_mean),
-                      freq_mean2 = mean(freq_mean), freq_SD = sd(freq_mean),
-                      Dur_mean2 = mean(Dur_mean), Dur_SD = sd(Dur_mean),
-                      Prom_mean2 = mean(Prom_mean), Prom_SD = sd(Prom_mean),
-                      amp_mean2 = mean(amp_mean), amp_SD = sd(amp_mean),TotEvents = sum(nEvents),
-                      TotActive = sum(ActiveTrial), Ntrials= length(amp_mean))
-
-wholeframe.ROI$frac.resp <- wholeframe.ROI$TotActive/wholeframe.ROI$Ntrials
-
-wholeframe.ROI$ROIType= 'wholeframe'
-autoRCaMP.ROI$ROIType= 'autoRCaMP'
-
-############
-library(xlsx)
-write.xlsx(wholeframe.ROI, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/wholeframeData.xlsx")
-write.xlsx(autoRCaMP.ROI, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/autoRCaMPData.xlsx")
-
-#################
 
 
 #################
@@ -209,49 +180,25 @@ HCRCaMP.ROI2<- rbind(activeNeurons2, astrocytes)
 #all.ROI2 <- rbind(wholeframe.ROI, autoRCaMP.ROI, HCRCaMP.ROI2)
 
 # mean percent response- i.e. the fraction of trials where a peak is detected in the first 30 sec
-df1A <- summarySE(wholeframe.ROI, measurevar="frac.resp", groupvars=c("Condition","Channel"))
-df1B <- summarySE(autoRCaMP.ROI, measurevar="frac.resp", groupvars=c("Condition","Channel"))
-df1C <- summarySE(HCRCaMP.ROI2, measurevar="frac.resp", groupvars=c("Condition","Channel","ROIType"))
+df2A <- summarySE(struct.ROI, measurevar="frac.resp", groupvars=c("Condition","Channel"))
+df2B <- summarySE(struct.ROI, measurevar="frac.resp", groupvars=c("Condition","Channel","ROIType"))
 
 #####
-ggplot(data=df1A, aes(x=ROIType, y=freq_mean2, fill=ROIType)) +
-  geom_errorbar(aes(ymin=freq_mean2-se, ymax=freq_mean2+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
+ggplot(data=df2A, aes(x=Channel, y=frac.resp, fill=Condition)) +
+  geom_errorbar(aes(ymin=frac.resp-se, ymax=frac.resp+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("Signals/min/ROI") +
+  ylab("frac.resp") +
   scale_fill_manual(
-    values=c("black", "red"), 
-    guide=FALSE) + 
+    values=c("black", "red", "blue")) + 
   max.theme
 
-ggplot(data=df1A, aes(x=Channel, y=frac.resp, fill=Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=frac.resp-se, ymax=frac.resp+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Condition") +
+ggplot(data=df2B, aes(x=ROIType, y=frac.resp, fill=Condition)) +
+  geom_errorbar(aes(ymin=frac.resp-se, ymax=frac.resp+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("frac.resp") +
-  ggtitle("frac.resp for WF ROIs") +
-  scale_color_brewer(palette="Set1") +
-  scale_fill_brewer(palette="Set1") +
-  science_theme
-
-ggplot(data=df1B, aes(x=Channel, y=frac.resp, fill=Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=frac.resp-se, ymax=frac.resp+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Condition") +
-  ylab("frac.resp") +
-  ggtitle("frac.resp for autoRCaMP ROIs") +
-  scale_color_brewer(palette="Set1") +
-  scale_fill_brewer(palette="Set1") +
-  science_theme
-
-ggplot(data=df1C, aes(x=interaction(Channel,ROIType), y=frac.resp, fill=Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=frac.resp-se, ymax=frac.resp+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Condition") +
-  ylab("frac.resp") +
-  ggtitle("frac.resp for HandClick ROIs") +
-  scale_color_brewer(palette="Set1") +
-  scale_fill_brewer(palette="Set1") +
-  science_theme
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
 
 #############
 #fraction of response
