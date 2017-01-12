@@ -31,11 +31,14 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/test_Control_Peaks_3Conds.csv", header=TRUE, sep = ",")
-auc.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/test_Control_TraceAUC_10sWindow_3Conds.csv", header=TRUE, sep = ",")
+stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+auc.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
 
 # stim onset at 5 sec
 stim.all$peakTime<-stim.all$peakTime-5
+
+#duration
+stim.all$Duration<-stim.all$halfWidth*2
 
 # ROITypes
 stim.all$ROIType= 0
@@ -65,7 +68,7 @@ auc.all$ROIs<-paste(auc.all$Animal, auc.all$Spot, auc.all$ROI, sep= "_")
 
 
 # exclude RG10 cause it moves too much
-stim.all<- subset(stim.all, Animal!="RG10")
+#stim.all<- subset(stim.all, Animal!="RG10")
 
 
 
@@ -76,23 +79,42 @@ OverlapROIs<-unique(stim.all$ROIs_trial[Overlap])
 
 stim.all2<-stim.all[!Overlap,]
 
+# make rows with no peak zero instead of NaN
+test3 = is.na(stim.all2$amplitude)
+stim.all2$peakAUC[test3] = 0
+stim.all2$prominence[test3] = 0
+stim.all2$amplitude[test3] = 0
+stim.all2$peakTime[test3] = 0
+stim.all2$halfWidth[test3] = 0
+stim.all2$fullWidth[test3] = 0
+stim.all2$Duration[test3] = 0
+stim.all2$numPeaks[test3] = 0
+#stim.all = stim.all[complete.cases(stim.all$prominence),]
+
 # remove ROIs from AUC data frame
 #AUC_overlap<- subset(auc.all, ROIs_trial !%in% OverlapROIs)
 
 #######
 # histogram of peak times for stim
-longstim<-subset(stim.all, Condition=="Stim")
+longstim<-subset(stim.all2, Condition=="Stim")
 ggplot(longstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("long stim")
 
-shortstim<-subset(stim.all, Condition=="shortstim")
+shortstim<-subset(stim.all2, Condition=="shortstim")
 ggplot(shortstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("short stim")
 
-nostim<-subset(stim.all, Condition=="Nostim")
+nostim<-subset(stim.all2, Condition=="Nostim")
 ggplot(nostim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("No stim")
 
+RCaMP<- subset(stim.all2, Channel=="RCaMP")
+ggplot(RCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("RCaMP")
+
+GCaMP<- subset(stim.all2, Channel=="GCaMP")
+ggplot(GCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("GCaMP")
 
 ###########
 
@@ -101,10 +123,10 @@ ggplot(nostim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, posit
 # 2) exlcuding or subsetting trials with startle response
     # based on ROI size?
 
-
-
-
 #########
+
+## Signal characteristics for all peaks together
+
 # trace AUC for first 10 s
 df1A <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","Channel"))
 df1B <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","ROIType"))
@@ -124,6 +146,95 @@ ggplot(data=df1B, aes(x=ROIType, y=AUC10s, fill=Condition)) +
   scale_fill_manual(
     values=c("black", "red", "blue")) + 
   max.theme
+
+
+
+# pull out only the peaks that occur around the stimulation
+
+stim.peaks<- subset(stim.all2, peakTime>0 & peakTime<15)
+
+# amplitude
+df2A <- summarySE(stim.peaks, measurevar="amplitude", groupvars=c("Condition","Channel"))
+df2B <- summarySE(stim.peaks, measurevar="amplitude", groupvars=c("Condition","ROIType"))
+
+ggplot(data=df2A, aes(x=Channel, y=amplitude, fill=Condition)) +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df2B, aes(x=ROIType, y=amplitude, fill=Condition)) +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+
+# prominence
+
+df3A <- summarySE(stim.peaks, measurevar="prominence", groupvars=c("Condition","Channel"))
+df3B <- summarySE(stim.peaks, measurevar="prominence", groupvars=c("Condition","ROIType"))
+
+ggplot(data=df3A, aes(x=Channel, y=prominence, fill=Condition)) +
+  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("prominence") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df3B, aes(x=ROIType, y=prominence, fill=Condition)) +
+  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("prominence") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+
+# duration
+df4A <- summarySE(stim.peaks, measurevar="Duration", groupvars=c("Condition","Channel"))
+df4B <- summarySE(stim.peaks, measurevar="Duration", groupvars=c("Condition","ROIType"))
+
+ggplot(data=df4A, aes(x=Channel, y=Duration, fill=Condition)) +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("Duration") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df4B, aes(x=ROIType, y=Duration, fill=Condition)) +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("Duration") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+#frequency (within the same trial)
+
+
+#############
+#fraction of response
+# Likelihood-ratio test 
+
+#amplitude
+amp.null = lmer(amplitude ~ (1|Animal) + (1|Spot), stim.peaks,REML=FALSE)
+amp.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot), stim.peaks,REML=FALSE)
+amp.model2 = lmer(amplitude~ Condition+ROIType + (1|Animal) + (1|Spot), stim.peaks,REML=FALSE)
+amp.model3 = lmer(amplitude~ Condition*ROIType + (1|Animal) + (1|Spot), stim.peaks,REML=FALSE)
+amp.anova1 <- anova(amp.null, amp.model1,amp.model2,amp.model3)
+print(amp.anova1)
+# p values
+amp.pv.stim_type <- lsmeans(amp.model3, pairwise ~ Condition*ROIType, glhargs=list())
+summary(amp.pv.stim_type)
+
+
 
 ####################
 # aggregate peaks from soma, endfoot, neuron ROIs
@@ -162,7 +273,7 @@ struct.ROI$frac.resp <- struct.ROI$TotActive/struct.ROI$Ntrials
 
 #################
 # remove unactive neurons
-activeNeurons<- subset(HCRCaMP.ROI, Channel=="RCaMP" & Condition=="Stim" & PA_mean2>0)
+activeNeurons<- subset(struct.peaks, Channel=="RCaMP" & Condition=="Stim" & amplitude>0 & ROIType=="Neuron")
 
 activeNeurons2 <-subset(HCRCaMP.ROI, ROI %in% activeNeurons$ROI)
 
