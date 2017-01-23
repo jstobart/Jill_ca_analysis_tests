@@ -6,7 +6,7 @@ library("plyr")
 library("ggplot2")
 library("gplots")
 library("lsmeans")
-library("bear")
+library("Rmisc")
 library("MASS")
 library("multcomp")
 library("reshape2")
@@ -28,14 +28,46 @@ max.theme <- theme_classic() +
     legend.title=element_text(size=14, face="bold"))
 
 
+###########
+# NOTES
+
+# Did DSP4 injection work?  Have a look at the raw data
+# Can we see differences in the response to stim or spontaneous activity?
+# Check immediately following stim but also in the period after
+
+# sort out the trials where there is a neuronal response and only consider those
+# number of trials with a response with DSP4 and not
+
+#is it a problem that I have mutliple measurements for soma, EF, and neurons from different trials, but only one number for processes?
+
+# Trials with arousal? Before and after changes?
+
+# Can I find astrocyte signals that correlate with spontaneous or stimulus evoked neuronal signals?
+
+
+
+# time correlation of neuronal and astrocyte signals?
+# consider each trial individually
+
+
+# exclude mouse RG10 because it twitched too much?
+
+
 ########################
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-auc.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
-peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+#peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+#auc.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+#peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+#auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+
+peaks.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+auc.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+auc.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+
+lsm.options(pbkrtest.limit = 100000)
 
 # treatment
 peaks.control$treatment<-"Control"
@@ -136,7 +168,33 @@ GCaMP<- subset(stim.all2, Channel=="GCaMP")
 ggplot(GCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, position="dodge") +
   ggtitle("GCaMP")
 
+#considering treatment
+RCaMP.longstim<- subset(RCaMP, Condition=="Stim")
+ggplot(RCaMP.longstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("RCaMP long stim")
+
+RCaMP.shortstim<- subset(RCaMP, Condition=="shortstim")
+ggplot(RCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("RCaMP short stim")
+
+#considering treatment
+GCaMP.longstim<- subset(GCaMP, Condition=="Stim")
+ggplot(GCaMP.longstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("GCaMP long stim")
+
+GCaMP.shortstim<- subset(GCaMP, Condition=="shortstim")
+ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("GCaMP short stim")
+
+
+
 ###########
+
+# remove data with really large prominences
+stim.all3<- subset(stim.all2, prominence<15)
+
+ggplot(stim.all3, aes(x=prominence, fill=treatment)) + geom_histogram(binwidth=1, position="dodge")
+
 # outliers in each GCaMP or RCaMP group
 
 outlierKD <- function(dt, var) {
@@ -181,12 +239,12 @@ yes
 stim.all3<-rbind(GCaMP, RCaMP)
 
 #remove ROIs with NaNs
-stim.all3 = stim.all3[complete.cases(stim.all3$prominence),]
+#stim.all3 = stim.all3[complete.cases(stim.all3$prominence),]
 
 #remove ROIs with no name
-stim.all3$ROIname <- as.character(stim.all3$ROIname)
-stim.all3 = stim.all3[(stim.all3$ROIname!=""),]
-stim.all3$ROIname <- as.factor(stim.all3$ROIname)
+#stim.all3$ROIname <- as.character(stim.all3$ROIname)
+#stim.all3 = stim.all3[(stim.all3$ROIname!=""),]
+#stim.all3$ROIname <- as.factor(stim.all3$ROIname)
 
 
 #########
@@ -194,8 +252,9 @@ stim.all3$ROIname <- as.factor(stim.all3$ROIname)
 ## Signal characteristics for all peaks together
 
 # trace AUC for first 10 s
-df1A <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","Channel"))
-df1B <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","ROIType"))
+df1A <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","Channel"),na.rm=TRUE)
+df1B <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","ROIType"),na.rm=TRUE)
+df1C <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("treatment","Condition","ROIType"),na.rm=TRUE)
 
 ggplot(data=df1A, aes(x=Channel, y=AUC10s, fill=Condition)) +
   geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
@@ -213,17 +272,43 @@ ggplot(data=df1B, aes(x=ROIType, y=AUC10s, fill=Condition)) +
     values=c("black", "red", "blue")) + 
   max.theme
 
+ggplot(data=df1C, aes(x=interaction(treatment,ROIType), y=AUC10s, fill=Condition)) +
+  geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("AUC for 10s of trace") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+# hand circled neurons and FLIK
+Cond_ROI_treat=interaction(auc.all$Condition, auc.all$treatment, auc.all$ROIType)
+auc.null = lmer(AUC10s ~ (1|Animal) + (1|Spot) , auc.all,REML=FALSE)
+auc.model1 = lmer(AUC10s ~ Condition + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
+auc.model2A = lmer(AUC10s ~ Condition+ROIType + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
+auc.model2B = lmer(AUC10s ~ Condition*ROIType + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
+auc.model3A = lmer(AUC10s ~ Condition+ROIType+treatment + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
+auc.model3B = lmer(AUC10s ~ Cond_ROI_treat + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
+auc.anova <- anova(auc.null, auc.model1,auc.model2A,auc.model2B,auc.model3A,auc.model3B)
+print(auc.anova)
+# p values
+auc.pv.stim2 <- glht(auc.model3B, mcp(Cond_ROI_treat= "Tukey"))
+summary(auc.pv.stim2)
 
 #########
 # LONG STIM (90Hz, 8sec)
 # pull out only the peaks that occur around the stimulation
 longstim.all<-subset(stim.all3, Condition!="shortstim")
 longstim.peaks<- subset(longstim.all, peakTime>=0 & peakTime<=20)
-#longstim.peaks<- subset(longstim.all, peakTime>20 & peakTime<80)
+longstim.peaks_after<- subset(longstim.all, peakTime>20 & peakTime<80)
 
 # amplitude
-df2A <- summarySE(longstim.peaks, measurevar="amplitude", groupvars=c("Condition","treatment"))
+df2A <- summarySE(longstim.peaks, measurevar="amplitude", groupvars=c("Condition","treatment"),na.rm=TRUE)
+df2A <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","treatment"),na.rm=TRUE)
+
 df2B <- summarySE(longstim.peaks, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
+df2B <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
+
+df2C <- summarySE(longstim.peaks_after, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
 
 ggplot(data=df2A, aes(x=treatment, y=amplitude, fill=Condition)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
@@ -234,6 +319,14 @@ ggplot(data=df2A, aes(x=treatment, y=amplitude, fill=Condition)) +
   max.theme
 
 ggplot(data=df2B, aes(x=interaction(Condition,ROIType), y=amplitude, fill=treatment)) +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green")) + 
+  max.theme
+
+ggplot(data=df2C, aes(x=interaction(Condition,ROIType), y=amplitude, fill=treatment)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("amplitude") +
