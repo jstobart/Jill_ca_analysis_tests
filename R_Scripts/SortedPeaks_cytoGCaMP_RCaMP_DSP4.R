@@ -187,6 +187,16 @@ ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwid
   ggtitle("GCaMP short stim")
 
 
+# consider only the trials where the neurons responded to stimulation
+
+# find responding neurons
+
+responding.neurons<- subset(longstim, peakTime>0& peakTime<10 & ROIType=="Neuron")
+
+responding.trials<-unique(responding.neurons$trials)
+
+stim.all3<-subset(longstim, trials %in% responding.trials)
+
 
 ###########
 
