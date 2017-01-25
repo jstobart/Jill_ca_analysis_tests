@@ -35,8 +35,14 @@ max.theme <- theme_classic() +
 # Can we see differences in the response to stim or spontaneous activity?
 # Check immediately following stim but also in the period after
 
+# remember- DSP4 images were from the same spots on different days
+
+
 # sort out the trials where there is a neuronal response and only consider those
 # number of trials with a response with DSP4 and not
+
+# some process ROIs are very large
+
 
 #is it a problem that I have mutliple measurements for soma, EF, and neurons from different trials, but only one number for processes?
 
@@ -57,15 +63,15 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-#peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-#auc.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
-#peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-#auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+auc.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
 
-peaks.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-auc.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
-peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-auc.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+#peaks.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+#auc.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+#peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+#auc.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
@@ -116,6 +122,7 @@ stim.all$ROIs<-paste(stim.all$Animal, stim.all$Spot, stim.all$ROIname, sep= "_")
 auc.all$ROIs<-paste(auc.all$Animal, auc.all$Spot, auc.all$ROI, sep= "_")
 
 stim.all$trials<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial, sep= "_")
+auc.all$trials<-paste(auc.all$Animal, auc.all$Spot, auc.all$Trial, sep= "_")
 
 
 # exclude RG10 cause it moves too much
@@ -130,6 +137,7 @@ OverlapROIs<-unique(stim.all$ROIs_trial[Overlap])
 
 stim.all2<-stim.all[!Overlap,]
 
+##########
 # remove ROIs from AUC data frame
 #AUC_overlap<- subset(auc.all, ROIs_trial !%in% OverlapROIs)
 
@@ -186,16 +194,31 @@ GCaMP.shortstim<- subset(GCaMP, Condition=="shortstim")
 ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
   ggtitle("GCaMP short stim")
 
-
+########
 # consider only the trials where the neurons responded to stimulation
 
+# what is a neuronal response to stimulation??
+# I defined it as a peak within stimulus onset to 1 sec after stimulus stop
+# PLUS- peak duration must be close to this window
+# long stim= peak between 0 and 9 sec, duration < 11 s
+# short stim= peak between 0 and 2 sec, duration < 3 s
+
 # find responding neurons
+responding.neurons_long<- subset(longstim, peakTime>0 & peakTime<8 & Duration<11 & ROIType=="Neuron")
+responding.neurons_short<- subset(shortstim, peakTime>0 & peakTime<2 & Duration<3 & ROIType=="Neuron")
 
-responding.neurons<- subset(longstim, peakTime>0& peakTime<10 & ROIType=="Neuron")
+responding.trials_long<-unique(responding.neurons_long$trials)  # 225 trials of 265- 85% of trials
+responding.trials_short<-unique(responding.neurons_short$trials) # 102 trials of 272- 38% of trials
 
-responding.trials<-unique(responding.neurons$trials)
+longstim.responding<-subset(longstim, trials %in% responding.trials_long)
+shortstim.responding<-subset(shortstim, trials %in% responding.trials_short)
 
-stim.all3<-subset(longstim, trials %in% responding.trials)
+# distribution of peaktimes
+ggplot(longstim.responding, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("long stim responding")
+
+ggplot(shortstim.responding, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("short stim responding")
 
 
 ###########
@@ -257,14 +280,18 @@ stim.all3<-rbind(GCaMP, RCaMP)
 #stim.all3$ROIname <- as.factor(stim.all3$ROIname)
 
 
-#########
 
+
+########
 ## Signal characteristics for all peaks together
+respondingAUC.long<- subset(auc.all, trials %in% responding.trials_long & Condition=="Stim")
+respondingAUC.short<- subset(auc.all, trials %in% responding.trials_short & Condition=="shortstim")
 
 # trace AUC for first 10 s
-df1A <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","Channel"),na.rm=TRUE)
-df1B <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","ROIType"),na.rm=TRUE)
-df1C <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("treatment","Condition","ROIType"),na.rm=TRUE)
+df1A <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","ROIType"),na.rm=TRUE)
+df1B <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("treatment","Condition","ROIType"),na.rm=TRUE)
+df1C <- summarySE(respondingAUC.long, measurevar="AUC10s", groupvars=c("treatment","ROIType"),na.rm=TRUE)
+df1D <- summarySE(respondingAUC.short, measurevar="AUC10s", groupvars=c("treatment","ROIType"),na.rm=TRUE)
 
 ggplot(data=df1A, aes(x=Channel, y=AUC10s, fill=Condition)) +
   geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
@@ -307,20 +334,210 @@ summary(auc.pv.stim2)
 #########
 # LONG STIM (90Hz, 8sec)
 # pull out only the peaks that occur around the stimulation
-longstim.all<-subset(stim.all3, Condition!="shortstim")
-longstim.peaks<- subset(longstim.all, peakTime>=0 & peakTime<=20)
-longstim.peaks_after<- subset(longstim.all, peakTime>20 & peakTime<80)
+longstim.stimwindow<- subset(longstim.responding, peakTime>=0 & peakTime<=20)
+
+ggplot(longstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("long stim responding")
+
+ggplot(longstim.stimwindow, aes(x=peakTime, y=prominence, color=interaction(Channel,treatment))) + geom_point() +
+  ggtitle("long stim responding")
+
+longstim.after<- subset(longstim.responding, peakTime>20 & peakTime<80)
+
+ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("long stim after")
+
+
+# SHORT STIM (90Hz, 1sec)
+# pull out only the peaks that occur around the stimulation
+shortstim.stimwindow<- subset(shortstim.responding, peakTime>=0 & peakTime<=20)
+
+ggplot(shortstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("short stim responding")
+
+ggplot(shortstim.stimwindow, aes(x=peakTime, y=prominence, color=interaction(Channel,treatment))) + geom_point() +
+  ggtitle("short stim responding")
+
+shortstim.after<- subset(shortstim.responding, peakTime>10 & peakTime<80)
+
+ggplot(shortstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("short stim after")
+
+
+
+
+#########
+
+# aggregate data by trial
+# mean of all peaks for each ROIs of the same type
+
+longstim.window.trials<- ddply(longstim.stimwindow, c("Animal", "Spot", "trials","ROIType","treatment"), summarise, 
+                      PA_mean = mean(peakAUC), nEvents = length(peakAUC), nROIs= length(unique(ROIname)),
+                      Dur_mean = mean(Duration), Prom_mean = mean(prominence),
+                      amp_mean = mean(amplitude), HalfDur = mean(halfWidth),
+                      freq_mean = sum(numPeaks)/length(unique(ROIname)), peakT_mean = mean(peakTime),
+                      peakHalf_mean= mean(peakStartHalf), area_mean= mean(area))
+
+
+
+##########
+# considering peaks in stim window
+# when do AC peaks come after neuronal peak?
+# bin the number of AC peaks per time point after stim?
+
+df9A <- summarySE(longstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment"))
+df9B <- summarySE(shortstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment"))
+
+df10A <- summarySE(longstim.stimwindow, measurevar="peakStart", groupvars=c("ROIType","treatment"))
+df10B <- summarySE(shortstim.stimwindow, measurevar="peakStart", groupvars=c("ROIType","treatment"))
+
+df11A <- summarySE(longstim.stimwindow, measurevar="peakStartHalf", groupvars=c("ROIType","treatment"))
+df11B <- summarySE(shortstim.stimwindow, measurevar="peakStartHalf", groupvars=c("ROIType","treatment"))
+
+ggplot(data=df9A, aes(x=ROIType, y=peakTime, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  coord_flip() +
+  xlab("ROIType") +
+  ylab("Mean Peak Time (s)") +
+  ggtitle("max peak time for long stim") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df9B, aes(x=ROIType, y=peakTime, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  coord_flip() +
+  xlab("ROIType") +
+  ylab("Mean Peak Time (s)") +
+  ggtitle("max peak time for short stim") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df10A, aes(x=ROIType, y=peakStart, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStart-se, ymax=peakStart+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  coord_flip() +
+  xlab("ROIType") +
+  ylab("peakStart Time") +
+  ggtitle("peakStart times for long stim") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df10B, aes(x=ROIType, y=peakStart, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStart-se, ymax=peakStart+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  coord_flip() +
+  xlab("ROIType") +
+  ylab("peakStart Time") +
+  ggtitle("peakStart times for short stim") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+
+ggplot(data=df11A, aes(x=ROIType, y=peakStartHalf, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStartHalf-se, ymax=peakStartHalf+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  coord_flip() +
+  xlab("ROIType") +
+  ylab("peakStartHalf Time (t1/2)") +
+  ggtitle("peakStartHalf times for long stim") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=df11B, aes(x=ROIType, y=peakStartHalf, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStartHalf-se, ymax=peakStartHalf+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  coord_flip() +
+  xlab("ROIType") +
+  ylab("peakStartHalf Time (t1/2)") +
+  ggtitle("peakStartHalf times for short stim") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+#############
+# Likelihood-ratio test 
+
+# long stim, only stim window
+ROIType_treatment=interaction(longstim.stimwindow$ROIType,longstim.stimwindow$treatment)
+pT.long.null = lmer(peakTime ~ (1|Animal) + (1|Spot), longstim.stimwindow,REML=FALSE)
+pT.long.model1 = lmer(peakTime ~ ROIType + (1|Animal) + (1|Spot), longstim.stimwindow,REML=FALSE)
+pT.long.model2 = lmer(peakTime ~ treatment + (1|Animal) + (1|Spot), longstim.stimwindow,REML=FALSE)
+pT.long.model3 = lmer(peakTime ~ ROIType+treatment + (1|Animal) + (1|Spot), longstim.stimwindow,REML=FALSE)
+pT.long.model4 = lmer(peakTime ~ ROIType_treatment + (1|Animal) + (1|Spot), longstim.stimwindow,REML=FALSE)
+
+pT.long.anova <- anova(pT.long.null, pT.long.model1,pT.long.model2,pT.long.model3,pT.long.model4)
+print(pT.long.anova)
+
+# p values
+pT.pv.longstim <- glht(pT.long.model4, mcp(ROIType_treatment= "Tukey"))
+summary(pT.pv.longstim)
+
+
+# short stim, only stim window
+ROIType_treatment=interaction(shortstim.stimwindow$ROIType,shortstim.stimwindow$treatment)
+pT.short.null = lmer(peakTime ~ (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+pT.short.model1 = lmer(peakTime ~ ROIType + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+pT.short.model2 = lmer(peakTime ~ treatment + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+pT.short.model3 = lmer(peakTime ~ ROIType+treatment + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+pT.short.model4 = lmer(peakTime ~ ROIType_treatment + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+
+pT.short.anova <- anova(pT.short.null, pT.short.model1,pT.short.model2,pT.short.model3,pT.short.model4)
+print(pT.short.anova)
+
+# p values
+pT.pv.shortstim <- glht(pT.short.model4, mcp(ROIType_treatment= "Tukey"))
+summary(pT.pv.shortstim)
+
+
+
+# half maximum time
+HM.null = lmer(onset ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+HM.model1 = lmer(onset ~ Condition + (1|Animal) + (1|Spot)+ (1|ROIs_trial), longstim.peaks,REML=FALSE)
+HM.model2A = lmer(onset ~ Condition+ROIType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), longstim.peaks,REML=FALSE)
+HM.model2B = lmer(onset ~ Condition*ROIType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), longstim.peaks,REML=FALSE)
+HM.model3A = lmer(onset ~ Condition+ROIType+treatment + (1|Animal) + (1|Spot)+ (1|ROIs_trial), longstim.peaks,REML=FALSE)
+HM.model3B = lmer(onset ~ Condition*ROIType*treatment + (1|Animal) + (1|Spot)+ (1|ROIs_trial), longstim.peaks,REML=FALSE)
+HM.anova <- anova(HM.null, HM.model1,HM.model2A,HM.model2B,HM.model3A,HM.model3B)
+print(HM.anova)
+# p values
+HM.pv.stim2 <- lsmeans(HM.model3B, pairwise ~ Condition*ROIType*treatment, glhargs=list())
+summary(HM.pv.stim2)
+
+
+#amplitude
+amp.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+amp.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+amp.model2A = lmer(amplitude~ Condition+ROIType + (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+amp.model2B = lmer(amplitude~ Condition*ROIType + (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+amp.model3A = lmer(amplitude~ Condition+ROIType+treatment + (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+amp.model3B = lmer(amplitude~ Condition*ROIType*treatment + (1|Animal) + (1|Spot) + (1|ROIs_trial), longstim.peaks,REML=FALSE)
+amp.anova1 <- anova(amp.null, amp.model1,amp.model2A,amp.model2B,amp.model3A,amp.model3B)
+print(amp.anova1)
+# p values
+amp.pv.stim_type <- lsmeans(amp.model3B, pairwise ~ Condition*ROIType*treatment, glhargs=list())
+summary(amp.pv.stim_type)
+
+
+#######
+# peak features
 
 # amplitude
-df2A <- summarySE(longstim.peaks, measurevar="amplitude", groupvars=c("Condition","treatment"),na.rm=TRUE)
-df2A <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","treatment"),na.rm=TRUE)
+df2A <- summarySE(longstim.stimwindow, measurevar="amplitude", groupvars=c("ROIType","treatment"),na.rm=TRUE)
+df2B <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","treatment"),na.rm=TRUE)
 
 df2B <- summarySE(longstim.peaks, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
 df2B <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
 
 df2C <- summarySE(longstim.peaks_after, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
 
-ggplot(data=df2A, aes(x=treatment, y=amplitude, fill=Condition)) +
+ggplot(data=df2A, aes(x=ROIType, y=amplitude, fill=treatment)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("amplitude") +
