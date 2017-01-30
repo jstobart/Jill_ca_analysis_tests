@@ -141,8 +141,6 @@ for iAnimal = 1:numAnimals
                     'dilateXY', 4,...
                     'dilateT', 0.5,'erodeXY', 2);
                 
-                %   freqPassBand=0.15, minPuffArea = 3.7832,
-                %   minPuffTime = 1.3514, erodeT = 2.1146, threshold_2D = 0.2
                 
                 % Astrocyte Calcium
                 % hand selected- cellular structures
@@ -164,17 +162,6 @@ for iAnimal = 1:numAnimals
                 measureConf{2} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,... 'normMethod','z-score',... 'zIters', 10000,...
                     'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 2, 'spFilterOrder', 2,...
                     'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdSD_low', 3,'thresholdSD_band', 5);
-                
-                % OLD PARAMS
-                %                 % AWAKE astrocyte cyto calcium
-                %                 measureConf{1} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...'normMethod', 'z-score',...
-                %                     'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 4,...
-                %                     'spPassBand', [0.025, 0.2], 'thresholdSD_low', 3,'thresholdSD_band', 3);
-                %
-                %                 % AWAKE neuron calcium
-                %                 measureConf{2} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...  'normMethod','z-score','zIters', 10000,...
-                %                     'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 3, 'spFilterOrder', 2,...
-                %                     'spPassBand', [0.1, 1], 'thresholdSD_low', 7,'thresholdSD_band', 5);
                 
                 % for calculating AUC for each trace
                 detectConf = ConfigMeasureROIsDummy('baselineFrames', BL_frames);
@@ -324,27 +311,6 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 
-                %                 % trace AUC output
-                %                 if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
-                %                     continue
-                %                 else
-                %                     traces= CSArray_Ch1_FLIKA(1,itrial).calcMeasureROIs.data.tracesNorm;
-                %                     %preallocate
-                %                     AUCdata=cell(size(traces,2),8);
-                %                     for iROI = 1:size(traces,2)
-                %                         AUCdata{iROI,1}= trapz(traces(60:60+round(20*11.84),iROI));
-                %                         AUCdata{iROI,2}=CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                %                         AUCdata{iROI,3}=strcat('trial', num2str(itrial));
-                %                         AUCdata{iROI,4}= 'GCaMP';
-                %                         AUCdata{iROI,5}= spotId;
-                %                         AUCdata{iROI,6}= CurrentAnimal;
-                %                         AUCdata{iROI,7} = CurrentCondition;
-                %                         AUCdata{iROI,8} = CurrentDepth(1,1);
-                %                     end
-                %                     All_AUC=vertcat(All_AUC, AUCdata);
-                %                     clearvars AUCdata
-                %                 end
-                
                 %traces output
                 if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
                     continue
@@ -410,24 +376,6 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 
-                %                 % trace AUC output
-                %                 traces= CSArray_Ch1_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
-                %                 %preallocate
-                %                 AUCdata=cell(size(traces,2),8);
-                %                 for iROI = 1:size(traces,2)
-                %                     AUCdata{iROI,1}= trapz(traces(60:60+round(20*11.84),iROI));
-                %                     AUCdata{iROI,2}=CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                %                     AUCdata{iROI,3}=strcat('trial', num2str(itrial));
-                %                     AUCdata{iROI,4}= 'GCaMP';
-                %                     AUCdata{iROI,5}= spotId;
-                %                     AUCdata{iROI,6}= CurrentAnimal;
-                %                     AUCdata{iROI,7} = CurrentCondition;
-                %                     AUCdata{iROI,8} = CurrentDepth(1,1);
-                %                 end
-                %                 All_AUC=vertcat(All_AUC, AUCdata);
-                %                 clearvars AUCdata
-                %             end
-                
                 %traces output
                     traces= CSArray_Ch1_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
                     %preallocate
@@ -441,8 +389,8 @@ for iAnimal = 1:numAnimals
                         Trace_data{iROI,6}= CurrentCondition;
                         Trace_data{iROI,7} = CurrentDepth(1,1);
                         Trace_data{iROI,8} = traces(:,iROI);
-                        Trace_data{iROI,9} = CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.centroid{iROI,1};
-                        Trace_data{iROI,10} = CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
+                        Trace_data{iROI,9} = 0;
+                        Trace_data{iROI,10} = CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
                     end
                     All_traces=vertcat(All_traces, Trace_data);
                     clearvars Trace_data
@@ -489,31 +437,12 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 
-                %                 % trace AUC output
-                %                 traces= CSArray_Ch2_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
-                %                 %preallocate
-                %                 AUCdata=cell(size(traces,2),8);
-                %                 for iROI = 1:size(traces,2)
-                %                     AUCdata{iROI,1}= trapz(traces(60:60+round(20*11.84),iROI));
-                %                     AUCdata{iROI,2}=CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                %                     AUCdata{iROI,3}=strcat('trial', num2str(itrial));
-                %                     AUCdata{iROI,4}= 'RCaMP';
-                %                     AUCdata{iROI,5}= spotId;
-                %                     AUCdata{iROI,6}= CurrentAnimal;
-                %                     AUCdata{iROI,7} = CurrentCondition;
-                %                     AUCdata{iROI,8} = CurrentDepth(1,1);
-                %                 end
-                %                 All_AUC=vertcat(All_AUC, AUCdata);
-                %                 clearvars AUCdata
-                %             end
-                
-                
                 %traces output
                     traces= CSArray_Ch2_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
                     %preallocate
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
-                        Trace_data{iROI,1}= CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
+                        Trace_data{iROI,1}= CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
                         Trace_data{iROI,2}= strcat('trial', num2str(itrial));
                         Trace_data{iROI,3}= 'RCaMP';
                         Trace_data{iROI,4}= spotId;
@@ -521,8 +450,8 @@ for iAnimal = 1:numAnimals
                         Trace_data{iROI,6}= CurrentCondition;
                         Trace_data{iROI,7} = CurrentDepth(1,1);
                         Trace_data{iROI,8} = traces(:,iROI);
-                        Trace_data{iROI,9} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.centroid{iROI,1};
-                        Trace_data{iROI,10} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
+                        Trace_data{iROI,9} = 0;
+                        Trace_data{iROI,10} = CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
                     end
                     All_traces=vertcat(All_traces, Trace_data);
                     clearvars Trace_data
@@ -555,7 +484,7 @@ AllData2= [dataNames';AllData];
 cd(fullfile(Settings.MainDir, 'Results'));
 % write date to created file
 cell2csv(SaveFiles{1,1}, AllData2);
-%cell2csv(SaveFiles{1,5}, All_traces2);
+save(SaveFiles{1,5}, 'CSArray_Ch2_Hand','-v7.3');
 
 
 % %% DSP4
