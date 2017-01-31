@@ -34,7 +34,7 @@ SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'S&LStim_cGC&RC_01_30_201
 SaveFiles{1,2}= 'CellScan_AC_FLIKA.mat'; % astrocyte FLIKA cell scan
 SaveFiles{1,3}= 'CellScan_AC_Hand.mat'; % astrocyte hand click cell scan
 SaveFiles{1,4}= 'CellScan_Ne_Hand.mat'; % neuronal hand click cell scan
-SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results','S&LStim_cGC&RC_traces_01_30_2017.csv'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results','S&LStim_cGC&RC_traces_01_30_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';

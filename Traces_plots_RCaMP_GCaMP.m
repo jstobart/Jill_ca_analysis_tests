@@ -78,11 +78,11 @@ hold on
 axis off
 plot([5 13],[-2 -2], 'k','LineWidth', 2)
 shadedErrorBar(TimeX,RCmeanTrace',RCSDTrace,'r');    
-shadedErrorBar(TimeX,(GCmeanTrace' + 2.5),GCSDTrace,'g');
-plot([5 5],[-2 5], 'k--','LineWidth', 0.5)
+shadedErrorBar(TimeX,(GCmeanTrace' + 6),GCSDTrace,'g');
+plot([5 5],[-2 8], 'k--','LineWidth', 0.5)
 x1 = -2;
 y1 = 0;
-y2 = 2.5;
+y2 = 6;
 
 txt1 = 'Neurons';
 txt2 = 'Astrocytes';
@@ -148,17 +148,17 @@ hold on
 axis off
 plot([5 13],[-2 -2], 'k','LineWidth', 2)
 shadedErrorBar(TimeX,NmeanTrace',NSDTrace,'r');    
-shadedErrorBar(TimeX,(NPmeanTrace' + 3),NPSDTrace,'b');
-shadedErrorBar(TimeX,(SmeanTrace' + 6),SSDTrace,'g');
-shadedErrorBar(TimeX,(EmeanTrace' + 9),ESDTrace,'c');
-shadedErrorBar(TimeX,(PmeanTrace' + 12),PSDTrace,'m');
-plot([5 5],[-2 15], 'k--','LineWidth', 0.5)
+shadedErrorBar(TimeX,(NPmeanTrace' + 5),NPSDTrace,'b');
+shadedErrorBar(TimeX,(SmeanTrace' + 10),SSDTrace,'g');
+shadedErrorBar(TimeX,(EmeanTrace' + 15),ESDTrace,'c');
+shadedErrorBar(TimeX,(PmeanTrace' + 20),PSDTrace,'m');
+plot([5 5],[-2 25], 'k--','LineWidth', 0.5)
 x1 = -2;
 y1 = 0;
-y2 = 3;
-y3 = 6;
-y4 = 9;
-y5 = 12;
+y2 = 5;
+y3 = 10;
+y4 = 15;
+y5 = 20;
 
 txt1 = 'Neuron';
 txt2 = 'Neuropil';
@@ -226,6 +226,14 @@ text(x1,y5,txt5,'HorizontalAlignment','right')
 
 %% Plot only the responding neurons and astrocytes from the same field of view
 
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\NeuronalResponders_longstim.xlsx')
+
+%make new name with animal, spot, ROI
+for iROI=1:length(All_traces)
+    All_traces{iROI,11}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,1});
+end
+
+% identify trials that had responding neurons
 
 %% Plot only responding neurons and responding astrocytes from the same field of view
 

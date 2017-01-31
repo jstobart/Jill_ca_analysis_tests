@@ -63,7 +63,7 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
+peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_01_30_2017.csv", header=TRUE, sep = ",")
 auc.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
 peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
 auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
@@ -292,7 +292,7 @@ ggplot(shortstim.responding, aes(x=peakTime, fill=interaction(Channel,treatment)
 
 # consider all peaks with a time near 10 s
 
-neurons_longstim<- subset(longstim, peakTime>0 & peakTime<10 & ROIType=="Neuron")
+neurons_longstim<- subset(RCaMP.longstim, peakTime>0 & peakTime<10)
 
 neurons_longstim.mean<- ddply(neurons_longstim, c("Animal", "Spot", "treatment", "ROIs"), summarise, 
                               PA_mean = mean(peakAUC), nEvents = length(peakAUC),
@@ -309,6 +309,20 @@ Prominence_percentiles<-quantile(neurons_longstim.mean$Prom_mean, prob = seq(0, 
 highresponding<-subset(neurons_longstim.mean, Prom_mean>Prominence_percentiles[20])
 midresponding<-subset(neurons_longstim.mean, Prom_mean<=Prominence_percentiles[20]&Prom_mean>=Prominence_percentiles[11])
 lowresponding<-subset(neurons_longstim.mean, Prom_mean<Prominence_percentiles[11])
+
+highresponding$Group="high"
+midresponding$Group="mid"
+lowresponding$Group="low"
+
+responders=rbind(highresponding,midresponding,lowresponding)
+
+#
+library(xlsx)
+write.xlsx(responding.neurons_long, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingTrials_longstim.xlsx")
+write.xlsx(responding.neurons_short, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingTrials_shortstim.xlsx")
+
+write.xlsx(highresponding, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingTrials_longstim.xlsx")
+write.xlsx(midresponding, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingTrials_shortstim.xlsx")
 
 
 #########
@@ -749,7 +763,26 @@ ggplot(data=df4B, aes(x=interaction(Condition,ROIType), y=Duration, fill=treatme
 
 #frequency (within the same trial)
 
+# nostim frequency
+#aggregate data by trial
+nostim.trials<- ddply(nostim, c("Animal", "Spot", "trials","Channel","ROIType","treatment","ROIs_trial"), summarise, 
+                               PA_mean = mean(peakAUC), nEvents = length(peakAUC),
+                               Dur_mean = mean(Duration), Prom_mean = mean(prominence),
+                               amp_mean = mean(amplitude), HalfDur = mean(halfWidth),
+                              freq = sum(numPeaks), area_mean= mean(area))
+nostim.trials$peaks_min=nostim.trials$freq/1.5
+nostim.trials$signals_min=nostim.trials$nEvents/1.5
 
+df5A <- summarySE(nostim.trials, measurevar="peaks_min", groupvars=c("Channel"), na.rm = T)
+df5B <- summarySE(nostim.trials, measurevar="signals_min", groupvars=c("Channel"),na.rm = T)
+
+ggplot(data=df4A, aes(x=treatment, y=Duration, fill=Condition)) +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("Duration") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
 ######################
 
 # considering peaks
