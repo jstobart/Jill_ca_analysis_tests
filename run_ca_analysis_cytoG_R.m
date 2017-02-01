@@ -8,18 +8,18 @@ All_traces= [];
 Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s';
 
 Settings.AnimalNames = {
-        'RG12',...
-        'RG14',...
-        'RG16',...
-        'RG17',...
-        'RG18',...
+    'RG12',...
+    'RG14',...
+    'RG16',...
+    'RG17',...
+    'RG18',...
     };
 Settings.ScoreSheetNames = {
-        'RG12_Scoresheet_LongTrialsShortStim.xls',...
-        'RG14_Scoresheet_LongTrialsShortStim.xls',...
-        'RG16_Scoresheet_LongTrialsShortStim.xls',...
-        'RG17_Scoresheet_LongTrialsShortStim.xls',...
-        'RG18_Scoresheet_LongTrialsShortStim.xls',...
+    'RG12_Scoresheet_LongTrialsShortStim.xls',...
+    'RG14_Scoresheet_LongTrialsShortStim.xls',...
+    'RG16_Scoresheet_LongTrialsShortStim.xls',...
+    'RG17_Scoresheet_LongTrialsShortStim.xls',...
+    'RG18_Scoresheet_LongTrialsShortStim.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim','shortstim'};
 %Settings.NameConditions = {'Stim'};
@@ -31,10 +31,8 @@ doplots = 0; %Plots for each trial
 
 % final data file name
 SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'S&LStim_cGC&RC_01_30_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,2}= 'CellScan_AC_FLIKA.mat'; % astrocyte FLIKA cell scan
-SaveFiles{1,3}= 'CellScan_AC_Hand.mat'; % astrocyte hand click cell scan
-SaveFiles{1,4}= 'CellScan_Ne_Hand.mat'; % neuronal hand click cell scan
-SaveFiles{1,5}= fullfile(Settings.MainDir, 'Results','S&LStim_cGC&RC_traces_01_30_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'S&LStim_cGC&RC_01_30_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','S&LStim_cGC&RC_traces_01_30_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
@@ -307,7 +305,7 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 
-                %traces output
+                %traces output processes
                 if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
                     continue
                 else
@@ -325,6 +323,42 @@ for iAnimal = 1:numAnimals
                         Trace_data{iROI,8} = traces(:,iROI);
                         Trace_data{iROI,9} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.centroid{iROI,1};
                         Trace_data{iROI,10} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
+                        
+                        % get the indices  and area for a particular ROI
+                        ROIpuffIdx = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
+                        x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
+                        [jy,jx,~] = ind2sub([y_pix,x_pix],cell2mat(ROIpuffIdx));
+                        jx = round(mean(jx));
+                        jy = round(mean(jy));
+                        xclose = round(x_pix*0.03); % 3 percent of pixels
+                        yclose = round(y_pix*0.03); % 3 percent of pixels
+                        
+                        % find astrocyte process and soma ROIs that have
+                        % similar centroids
+                        for kROI= 1:length(CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames)
+                            % get the indices of the handclicked ROIs
+                            ROIMask{kROI}= CSArray_Ch1_Hand(1, 1).calcFindROIs.data.roiMask(:,:,kROI);
+                            ROI_Idx{kROI} = find(ROIMask{kROI});
+                            % mean pixels for soma ROI
+                            [ky,kx,~] = ind2sub([y_pix,x_pix],ROI_Idx{kROI});
+                            kx = round(mean(kx));
+                            ky = round(mean(ky));
+                            
+                            % check if they are too close (actually same region)
+                            if jx<=(kx+xclose) && jx>=(kx-xclose) && jy<=(ky+yclose) && jy>=(ky-yclose) % only %3 of pixels apart
+                                spatialcorr(kROI)  = 1;
+                            end
+                        end
+                        
+                        if exist('spatialcorr','var')
+                            indx = find(spatialcorr>0);
+                            Trace_data{iROI,11}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{indx};
+                        else
+                            Trace_data{iROI,11} = 0;
+                        end
+                        clear spatialcorr
+                        
+                        
                     end
                     All_traces=vertcat(All_traces, Trace_data);
                     clearvars Trace_data
@@ -373,23 +407,24 @@ for iAnimal = 1:numAnimals
                 data.overlap= [data.overlap; temp2.overlap];
                 
                 %traces output
-                    traces= CSArray_Ch1_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
-                    %preallocate
-                    Trace_data=cell(size(traces,2),10);
-                    for iROI = 1:size(traces,2)
-                        Trace_data{iROI,1}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
-                        Trace_data{iROI,3}= 'GCaMP';
-                        Trace_data{iROI,4}= spotId;
-                        Trace_data{iROI,5}= CurrentAnimal;
-                        Trace_data{iROI,6}= CurrentCondition;
-                        Trace_data{iROI,7} = CurrentDepth(1,1);
-                        Trace_data{iROI,8} = traces(:,iROI);
-                        Trace_data{iROI,9} = 0;
-                        Trace_data{iROI,10} = CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
-                    end
-                    All_traces=vertcat(All_traces, Trace_data);
-                    clearvars Trace_data
+                traces= CSArray_Ch1_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
+                %preallocate
+                Trace_data=cell(size(traces,2),10);
+                for iROI = 1:size(traces,2)
+                    Trace_data{iROI,1}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,3}= 'GCaMP';
+                    Trace_data{iROI,4}= spotId;
+                    Trace_data{iROI,5}= CurrentAnimal;
+                    Trace_data{iROI,6}= CurrentCondition;
+                    Trace_data{iROI,7} = CurrentDepth(1,1);
+                    Trace_data{iROI,8} = traces(:,iROI);
+                    Trace_data{iROI,9} = 0;
+                    Trace_data{iROI,10} = CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
+                    Trace_data{iROI,11} = 0;
+                end
+                All_traces=vertcat(All_traces, Trace_data);
+                clearvars Trace_data
             end
             clearvars temp temp2
             
@@ -434,24 +469,25 @@ for iAnimal = 1:numAnimals
                 data.overlap= [data.overlap; temp2.overlap];
                 
                 %traces output
-                    traces= CSArray_Ch2_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
-                    %preallocate
-                    Trace_data=cell(size(traces,2),10);
-                    for iROI = 1:size(traces,2)
-                        Trace_data{iROI,1}= CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
-                        Trace_data{iROI,3}= 'RCaMP';
-                        Trace_data{iROI,4}= spotId;
-                        Trace_data{iROI,5}= CurrentAnimal;
-                        Trace_data{iROI,6}= CurrentCondition;
-                        Trace_data{iROI,7} = CurrentDepth(1,1);
-                        Trace_data{iROI,8} = traces(:,iROI);
-                        Trace_data{iROI,9} = 0;
-                        Trace_data{iROI,10} = CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
-                    end
-                    All_traces=vertcat(All_traces, Trace_data);
-                    clearvars Trace_data
-
+                traces= CSArray_Ch2_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
+                %preallocate
+                Trace_data=cell(size(traces,2),10);
+                for iROI = 1:size(traces,2)
+                    Trace_data{iROI,1}= CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,3}= 'RCaMP';
+                    Trace_data{iROI,4}= spotId;
+                    Trace_data{iROI,5}= CurrentAnimal;
+                    Trace_data{iROI,6}= CurrentCondition;
+                    Trace_data{iROI,7} = CurrentDepth(1,1);
+                    Trace_data{iROI,8} = traces(:,iROI);
+                    Trace_data{iROI,9} = 0;
+                    Trace_data{iROI,10} = CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
+                    Trace_data{iROI,11} = 0;
+                end
+                All_traces=vertcat(All_traces, Trace_data);
+                clearvars Trace_data
+                
             end
             dataNames=fieldnames(data);
             data2= struct2cell(data);
@@ -480,7 +516,8 @@ AllData2= [dataNames';AllData];
 cd(fullfile(Settings.MainDir, 'Results'));
 % write date to created file
 cell2csv(SaveFiles{1,1}, AllData2);
-save(SaveFiles{1,5}, 'All_traces','-v7.3');
+save(SaveFiles{1,3}, 'All_traces','-v7.3');
+save(SaveFiles{1,2}, 'AllData2','-v7.3');
 
 
 % %% DSP4
