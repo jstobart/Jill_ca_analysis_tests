@@ -35,7 +35,8 @@ for iROI=1:length(All_traces)
     All_traces{iROI,14}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,1});
     All_traces{iROI,15}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,1},'_',All_traces{iROI,6});
     All_traces{iROI,16}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,6});
-    
+    All_traces{iROI,17}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2});
+   
     %if a process ROI is overlapping with a soma or process, exclude it
     %from data
     %All_traces{iROI,11}=0;
@@ -390,9 +391,9 @@ legend('Neuron','Neuropil','Somata','Endfeet','Processes')
 % each peak time is a line
 % lines are coloured and sorted based on ROI type
 
-    figure('name', 'all ROIs')% ROIType{iType})
-    hold on
-    axis off
+figure('name', 'all ROIs')% ROIType{iType})
+hold on
+axis off
 for iType=1:5
     ROIType={'Neuron','Neuropil','Endfoot','Soma','Process'};
     
@@ -406,7 +407,7 @@ for iType=1:5
     
     colours={[0.6,0,0],[0,0,0.6],[0.2,0.4,0],[0.8,0.2,0],[0.8,0,0.8]};
     % plot raster plot of each ROI and trial
-
+    
     %set(gca,'TickDir','out') % draw the tick marks on the outside
     %set(gca,'YTick', []) % don't draw y-axis ticks
     %set(gca,'PlotBoxAspectRatio',[1 0.05 1]) % short and wide
@@ -429,6 +430,76 @@ end
 
 %% Histogram of peak time differences between neurons and astrocytes
 
+timeDiffs=[];
+
+uniqueTrials=unique(data{:,26});
+
+for iTrial=1:size(uniqueTrials,1)
+    
+    %find matching trials
+    for xTrial= 1:size(data,1)
+        Trial_str(xTrial)= strcmp(data{xTrial, 26},uniqueTrials{iTrial});
+    end
+    trialData=data(Trial_str,:);
+    
+    for xxTrial= 1:size(data_traces,1)
+        Trial_str2(xxTrial)= strcmp(data{xxTrial, 17},uniqueTrials{iTrial});
+    end
+    trialTraces=data_traces(Trial_str2,:);
+    
+    %find neuron and neuropil ROIs
+    for iROI=1:size(trialData,1)
+        Nstr= strcmp(trialData{iROI,23},'N');
+    end
+    
+    NeuronData=trialData(Nstr,:);
+    AstrocyteData=trialData(~Nstr,:);
+    
+    %compare neuronal and astrocyte peaks times
+    for iN= 1:size(NeuronData, 1)   
+        for iA= 1:size(AstrocyteData,1)
+            timeComparisons{iA,1}=NeuronData{iN,26};
+            timeComparisons{iA,2}=NeuronData{iN,23};
+            timeComparisons{iA,3}=NeuronData{iN,11};
+            timeComparisons{iA,4}=NeuronData{iN,6};
+            timeComparisons{iA,5}=NeuronData{iN,8};
+            timeComparisons{iA,6}=AstrocyteData{iA,23};
+            timeComparisons{iA,7}=AstrocyteData{iA,11};
+            timeComparisons{iA,8}=AstrocyteData{iA,6};
+            timeComparisons{iA,9}=AstrocyteData{iA,8};
+            timeComparisons{iA,10}=AstrocyteData{iA,6}-NeuronData{iN,6};
+            timeComparisons{iA,11}=AstrocyteData{iA,6}-NeuronData{iN,8};
+            timeComparisons{iA,12}=AstrocyteData{iA,8}-NeuronData{iN,8};
+        end
+        timeDiffs=vercat(timeDiffs,timeComparisons);
+        
+        for iTrace=1:size(trialTraces,1)
+            ShiftTrace{iTrace,1}=NeuronData{iN,26};
+            ShiftTrace{iTrace,2}=NeuronData{iN,23};
+            ShiftTrace{iTrace,3}=NeuronData{iN,11};
+            ShiftTrace{iA,4}=NeuronData{iN,6};
+            ShiftTrace{iA,5}=NeuronData{iN,8};
+            ShiftTrace{iA,6}=AstrocyteData{iA,23};
+            ShiftTrace{iA,7}=AstrocyteData{iA,11};
+            ShiftTrace{iA,8}=AstrocyteData{iA,6};
+            ShiftTrace{iA,9}=AstrocyteData{iA,8};
+            ShiftTrace{iA,10}=AstrocyteData{iA,6}-NeuronData{iN,6};
+            timeComparisons{iA,11}=AstrocyteData{iA,6}-NeuronData{iN,8};
+            timeComparisons{iA,12}=AstrocyteData{iA,8}-NeuronData{iN,8};
+            
+    end
+end
+
+
+% histograms
+figure('name', 'peakTime-peakTime')
+histogram(timeDiffs{:,10})
+
+figure('name', 'peakTime(A)-peakOnset(N)')
+histogram(timeDiffs{:,11})
+
+figure('name', 'peakOnset(A)-peakOnset(N)')
+histogram(timeDiffs{:,12})
 %% example traces aligning astrocyte and neuronal peaks
 
 
