@@ -44,17 +44,15 @@ for iROI=1:length(All_traces)
 end
 
 
-data_traces = All_traces(str_idx',:);
-
 % remove overlapping processes
 All_traces = All_traces(nonOverlapIdx',:);
+
+% only trials for this condition
+data_traces = All_traces(str_idx',:);
 
 %% Plot all traces for the entire trial
 
 % individual traces in grey, mean in red
-
-% plot each ROItype separately (neurons, neuropil, AC processes, somata,
-% endfeet)
 
 nROIs=length(data_traces);
 
@@ -68,8 +66,8 @@ hold on
 axis off
 for xROI= 1:nROIs
     tempY = data_traces{xROI,8};
-    grey = [0.7,0.7,0.7];
-    plot(TimeX,tempY,'Color',grey,'LineWidth',0.5);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX,tempY,'Color',grey,'LineWidth',0.1);
     traces= horzcat(traces, tempY);
 end
 
@@ -83,17 +81,17 @@ plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 %% Plot only the responding neurons and astrocytes from the same field of view
 
 
-XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\NeuronalResponders_longstim.xlsx';
+XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROIs_longstim.xlsx';
 
 [~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
 data=data(2:end,:);
 
-% plot only responding trials from responding neurons and astrocytes
+%separate out responding trials from responding neurons and astrocytes
 RespondingROIs=[];
-for xROI=1:length(respondingROIslongstim)
-    currentROI=respondingROIslongstim{xROI, 24};
+for xROI=1:length(data)
+    currentROI=data{xROI, 24};
     for iROI = 1:length(data_traces)
-        ROIIndex=strcmp(data_traces{iROI,13},currentROI);
+        ROIIndex=strcmp(data_traces{iROI,14},currentROI);
         if ROIIndex
             RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
         end
@@ -108,9 +106,6 @@ Resp_EF_traces=[];
 Resp_processes_traces=[];
 Resp_neuron_traces=[];
 Resp_neuropil_traces=[];
-Resp_somata_traces=[];
-Resp_EF_traces=[];
-Resp_processes_traces=[];
 
 %find GCaMP, RCaMP
 for xROI= 1:length(RespondingROIs)
@@ -128,11 +123,11 @@ end
 
 %find ROITypes
 for xROI= 1:length(RespondingROIs)
-    N_str= strfind(RespondingROIs{xROI, 11},'Neuron');
-    S_str= strfind(RespondingROIs{xROI, 11},'Soma');
-    EF_str= strfind(RespondingROIs{xROI, 11},'Endfeet');
-    P_str= strfind(RespondingROIs{xROI, 11},'Process');
-    NP_str= strfind(RespondingROIs{xROI, 11},'Neuropil');
+    N_str= strfind(RespondingROIs{xROI, 12},'Neuron');
+    S_str= strfind(RespondingROIs{xROI, 12},'Soma');
+    EF_str= strfind(RespondingROIs{xROI, 12},'Endfeet');
+    P_str= strfind(RespondingROIs{xROI, 12},'Process');
+    NP_str= strfind(RespondingROIs{xROI, 12},'Neuropil');
     
     tempY= RespondingROIs{xROI,8};
     if ~isempty(N_str)
@@ -178,6 +173,57 @@ RespPmeanTrace = mean(Resp_processes_traces,2);
 RespPSDTrace = std(Resp_processes_traces');
 
 %% Plots
+% RCaMP vs GCaMP
+figure ('name', 'All RCaMP responding ROIs')
+hold on
+axis off
+for xROI= 1:size(Resp_RCaMP_traces,2)
+    tempY = Resp_RCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX, RespRCmeanTrace, 'k', 'LineWidth',1)
+
+figure ('name', 'All GCaMP responding ROIs')
+hold on
+axis off
+for xROI= 1:size(Resp_GCaMP_traces,2)
+    tempY = Resp_GCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX, RespGCmeanTrace, 'k', 'LineWidth',1)
+
+stimwindow=round(FrameRate*30);
+figure ('name', 'All RCaMP responding ROIs- stim window')
+hold on
+axis off
+for xROI= 1:size(Resp_RCaMP_traces,2)
+    tempY = Resp_RCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+figure ('name', 'All GCaMP responding ROIs- stim window')
+hold on
+axis off
+for xROI= 1:size(Resp_GCaMP_traces,2)
+    tempY = Resp_GCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespGCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+%% Mean RCaMP vs GCaMP
 % GCaMP vs RCaMP
 figure ('name', 'GCaMP vs RCaMP responding ROIs- stim window')
 hold on
@@ -196,6 +242,7 @@ txt2 = 'Astrocytes';
 text(x1,y1,txt1,'HorizontalAlignment','right')
 text(x1,y2,txt2,'HorizontalAlignment','right')
 
+
 figure ('name', 'GCaMP vs RCaMP responding ROIs- mean trace only')
 hold on
 axis off
@@ -207,8 +254,94 @@ legend('RCaMP','GCaMP')
 
 
 
-%ROITypes
-figure ('name', 'ROITypes responding- stim window')
+%% ROITypes
+figure ('name', 'All responding ROItype')
+subplot(1,5,1)
+hold on
+axis off
+for xROI= 1:size(Resp_neuron_traces,2)
+    tempY = Resp_neuron_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespNmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+x1 = 0;
+y1 = 5;
+txt1 = 'Neurons';
+text(x1,y1,txt1,'HorizontalAlignment','right')
+
+subplot(1,5,2)
+hold on
+axis off
+for xROI= 1:size(Resp_neuropil_traces,2)
+    tempY = Resp_neuropil_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespNPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+x1 = 0;
+y1 = 5;
+txt1 = 'Neuropil';
+text(x1,y1,txt1,'HorizontalAlignment','right')
+
+
+subplot(1,5,3)
+hold on
+axis off
+for xROI= 1:size(Resp_EF_traces,2)
+    tempY = Resp_EF_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespEFmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+x1 = 0;
+y1 = 5;
+txt1 = 'Endfeet';
+text(x1,y1,txt1,'HorizontalAlignment','right')
+
+
+subplot(1,5,4)
+hold on
+axis off
+for xROI= 1:size(Resp_somata_traces,2)
+    tempY = Resp_somata_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespSmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+x1 = 0;
+y1 = 5;
+txt1 = 'Somata';
+text(x1,y1,txt1,'HorizontalAlignment','right')
+
+
+subplot(1,5,5)
+hold on
+axis off
+for xROI= 1:size(Resp_processes_traces,2)
+    tempY = Resp_processes_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+x1 = 0;
+y1 = 5;
+txt1 = 'Processes';
+text(x1,y1,txt1,'HorizontalAlignment','right')
+
+%% mean ROItype traces
+
+figure ('name', 'ROITypes responding-means- stim window')
 hold on
 axis off
 plot([5 13],[-1 -1], 'k','LineWidth', 2)
@@ -252,21 +385,50 @@ legend('Neuron','Neuropil','Somata','Endfeet','Processes')
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 %% Raster Plot with event frequency histogram
+
+% each peak time is a line
+% lines are coloured and sorted based on ROI type
+
+    figure('name', 'all ROIs')% ROIType{iType})
+    hold on
+    axis off
+for iType=1:5
+    ROIType={'Neuron','Neuropil','Endfoot','Soma','Process'};
+    
+    %find ROITypes
+    for xROI= 1:size(data,1)
+        ROI_str(xROI)= strcmp(data{xROI, 23},ROIType{iType});
+    end
+    
+    % only unique ROIs of a given type
+    uniqueROIs=unique(data(ROI_str,24));
+    
+    colours={[0.6,0,0],[0,0,0.6],[0.2,0.4,0],[0.8,0.2,0],[0.8,0,0.8]};
+    % plot raster plot of each ROI and trial
+
+    %set(gca,'TickDir','out') % draw the tick marks on the outside
+    %set(gca,'YTick', []) % don't draw y-axis ticks
+    %set(gca,'PlotBoxAspectRatio',[1 0.05 1]) % short and wide
+    %set(gca,'Color',get(gcf,'Color')) % match figure background
+    %set(gca,'YColor',get(gcf,'Color')) % hide the y axis
+    for iROI= 1:length(uniqueROIs)
+        CurrentROI=uniqueROIs(iROI);
+        for xROI=1:size(data,1)
+            ROI_idx(xROI)=strcmp(data{xROI,24},CurrentROI);
+        end
+        peakTimes=cell2mat(data(ROI_idx,6));
+        if size(peakTimes,1) > size(peakTimes,2)
+            peakTimes=peakTimes';
+        end
+        plot([peakTimes;peakTimes],[ones(size(peakTimes))+(iROI-1);zeros(size(peakTimes))+(iROI-1)],'Color',colours{1,iType},'LineWidth', 2)
+    end
+    %plot([0 20],[-1 -1], 'k--','LineWidth', 1)
+    %axis([0 20 -1 2])
+end
 
 %% Histogram of peak time differences between neurons and astrocytes
 
-%% graphs
+%% example traces aligning astrocyte and neuronal peaks
 
 
