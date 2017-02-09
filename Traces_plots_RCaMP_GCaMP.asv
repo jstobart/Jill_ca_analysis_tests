@@ -652,14 +652,14 @@ stimwindow2=round(FrameRate*50);
 figure ('name', 'Shifted traces- All trials by Neuron peak time')
 hold on
 axis off
-for xROI= 1:size(ShiftedTraces,1)
+for xROI= 1:size(ShiftedTraces,2)
     tempY = ShiftedTraces{xROI,8};
     tempX = ShiftedTraces{xROI,9}; % shifted by peak time
     grey = [0.8,0.8,0.8];
     plot(tempX(1:stimwindow2),tempY(1:stimwindow2)','Color',grey,'LineWidth',0.01);
     plot([ShiftedTraces{xROI,4} ShiftedTraces{xROI,4}],[-1 10], 'k--','LineWidth', 0.5)
 end
-%plot([0 8],[-2 -2], 'k','LineWidth', 2)
+plot([0 8],[-2 -2], 'k','LineWidth', 2)
 
 
 figure ('name', 'Shifted traces- RCaMP vs GCaMP by Neuron peak time')
@@ -780,7 +780,7 @@ stimwindow2=round(FrameRate*50);
 figure ('name', 'Shifted traces- All trials by Neuron onset')
 hold on
 axis off
-for xROI= 1:size(ShiftedTraces,1)
+for xROI= 1:size(ShiftedTraces,2)
     tempY = ShiftedTraces{xROI,8};
     tempX = ShiftedTraces{xROI,10}; % shifted by peak time
     grey = [0.8,0.8,0.8];
@@ -815,7 +815,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 text(x1,y2,txt2,'HorizontalAlignment','right')
 
 %% example traces algining astrocytes and neurons ROITypes
-figure ('name', 'Shifted traces- ROITypes by Neuron onset')
+figure ('name', 'Shifted traces- ROITypes by Neuron peak time')
 
 subplot(1,5,1)
 hold on
@@ -823,7 +823,7 @@ axis off
 
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,10}; % shifted by peak time
+    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
     grey = [0.8,0.8,0.8];
     if strcmp(ShiftedTraces{xROI,6},'Neuron')
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
@@ -841,7 +841,7 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,10};
+    tempX = ShiftedTraces{xROI,9};
     if strcmp(ShiftedTraces{xROI,6},'Neuropil')
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
         plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
@@ -857,7 +857,7 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,10};
+    tempX = ShiftedTraces{xROI,9};
     if strcmp(ShiftedTraces{xROI,6},'Endfoot')
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
         plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
@@ -873,7 +873,7 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,10};
+    tempX = ShiftedTraces{xROI,9};
     if strcmp(ShiftedTraces{xROI,6},'Soma')
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
         plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
@@ -889,7 +889,7 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,10};
+    tempX = ShiftedTraces{xROI,9};
     if strcmp(ShiftedTraces{xROI,6},'Process')
         
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
