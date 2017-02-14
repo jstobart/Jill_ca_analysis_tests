@@ -3,20 +3,10 @@ clearvars
 
 doplot=0;
 
-FileSave{1,1}='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.mat';
-FileSave{1,2}='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.csv';
+FileSave='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.csv';
 
 % load data traces
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\S&LStim_cGC&RC_traces_01_30_2017.mat');
-
-Long_Short=All_traces;
-
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LStim_cGC&RC_traces_11_02_2017.mat');
-
-Long=All_traces;
-Long(:,11)=[];
-
-All_traces=vertcat(Long_Short,Long);
 
 FrameRate=11.84;
 
@@ -134,7 +124,7 @@ for itrial= 1:length(trial_condition)
             
             %create a binary image with each pair of ROIs
             % for the first ROI
-            if isnumeric(CorrData{1,11})
+            if isdouble(CorrData{1,11})
                 Image1=zeros(128,128);
                 Image1(CorrData{1,11})=1;
                 %Image1=im2bw(Image1);
@@ -145,7 +135,7 @@ for itrial= 1:length(trial_condition)
             end
             
             % for the second ROI
-            if isnumeric(CorrData{1,16})
+            if isdouble(CorrData{1,16})
                 Image2=zeros(128,128);
                 Image2(CorrData{1,16})=1;
                 Image2=im2bw(Image2);
@@ -163,56 +153,30 @@ for itrial= 1:length(trial_condition)
             % Define object boundaries
             boundaries = bwboundaries(Mask);
             numberOfBoundaries = size(boundaries, 1);
-            if numberOfBoundaries==1
-                CorrData{1,23} = 0;
-            elseif numberOfBoundaries>1
-                boundary1 = boundaries{1};
-                boundary2 = boundaries{2};
-                boundary1x = boundary1(:, 2);
-                boundary1y = boundary1(:, 1);
-                for k = 1 : length(boundary2)
-                    boundary2x = boundary2(k, 2);
-                    boundary2y = boundary2(k, 1);
-                    % For this blob, compute distances from boundaries to edge.
-                    allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
-                    % Find closest point, min distance.
-                    [minDistance(k), indexOfMin] = min(allDistances);
-                end
-                % Find the overall min distance
-                CorrData{1,23} = min(minDistance);
-            else
-                CorrData{1,23} = [];
+            boundary1 = boundaries{1};
+            boundary2 = boundaries{2};
+            boundary1x = boundary1(:, 2);
+            boundary1y = boundary1(:, 1);
+            for k = 1 : length(boundary2)
+                boundary2x = boundary2(k, 2);
+                boundary2y = boundary2(k, 1);
+                % For this blob, compute distances from boundaries to edge.
+                allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
+                % Find closest point, min distance.
+                [minDistance(k), indexOfMin] = min(allDistances);
             end
+            % Find the overall min distance
+            CorrData{1,23} = min(minDistance);   
             CorrData{1,24} = numberOfBoundaries; % number of ROIs in the mask
             
             All_Corrs=vertcat(All_Corrs,CorrData); % concatenate all data into a big matrix
             
-            clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin
-        end
-        
+            clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y
+        end    
+
     end
-    
+
 end
-
-
-
-
-%% save as a CSV
-names = {'Trial','ChannelX','Spot','Animal','Condition','Depth','TrialName','ROI_X',...
-    'ROI_X_type','ChannelY','ROI_Y','ROI_Y_type','Long_Corr','LongPvalue',...
-    'Short_Corr','ShortPvalue','xCorr','Lag','MinDistance','numROIs'};
-
-CorrelationData=All_Corrs;
-CorrelationData(:,10) = [];
-CorrelationData(:,10) = [];
-CorrelationData(:,13) = [];
-CorrelationData(:,13) = [];
-
-AllData=[names;CorrelationData];
-
-% write date to created file
-cell2csv(FileSave{1,2}, AllData);
-save(FileSave{1,1}, 'All_Corrs','-v7.3');
 
 %%
 
@@ -254,3 +218,69 @@ if doplot
     % end
 end
 
+clear tempSig1 tempSig2 tempAll Labelnames Spot_info ROI_info x_info y_info xpos ypos ROI_indx
+clear Mean_Rcor temp1 ROI_stuff ROInum SpotROIs numROIs numROIs2
+
+
+clear Spots
+
+
+
+%% save as a CSV
+names = {'Animal','Spot', 'Layer','Condition','Trial','Corr','Distance','ROI_X','ROI_Y','Pvalue'};
+
+% write date to created file
+cell2csv(FileSave, Endfeet_NS);
+cell2csv('Nostim_Somas_Corr.csv', Somas_NS);
+cell2csv('Nostim_Processes_Corr.csv', Processes_NS);
+cell2csv('Stim_Endfeet_Corr.csv', Endfeet_S);
+cell2csv('Stim_Somas_Corr.csv', Somas_S);
+cell2csv('Stim_Processes_Corr.csv', Processes_S);
+%%  Plots (scatter and histograms)
+%         figure
+%         subplot(1,2,1)
+%         hold on
+%         title('Endfeet vs Processes')
+%         scatter(cell2mat(EfvsP_NS(:,8)),cell2mat(EfvsP_NS(:,7)),'b')
+%         scatter(cell2mat(EfvsP(:,8)),cell2mat(EfvsP(:,7)),'r')
+%         hold off
+%         subplot(1,2,2)
+%         hold on
+%         histogram(cell2mat(EfvsP_NS(:,5)),'BinWidth',0.025,'FaceColor','b')
+%         histogram(cell2mat(EfvsP(:,5)),'BinWidth',0.025,'FaceColor','r')
+%         hold off
+%
+%         figure
+%         subplot(1,2,1)
+%         hold on
+%         title('Somas vs Processes')
+%         scatter(cell2mat(SvsP_NS(:,8)),cell2mat(SvsP_NS(:,7)))
+%         scatter(cell2mat(SvsP(:,8)),cell2mat(SvsP(:,7)))
+%         hold off
+%         subplot(1,2,2)
+%         hold on
+%         title('Somas vs Processes')
+%         histogram(cell2mat(SvsP_NS(:,5)),'BinWidth',0.025,'FaceColor','b')
+%         histogram(cell2mat(SvsP(:,5)),'BinWidth',0.025,'FaceColor','r')
+%         hold off
+%
+%         figure
+%         subplot(1,2,1)
+%         hold on
+%         title('Endfeet vs Somas')
+%         scatter(cell2mat(EfvsS_NS(:,8)),cell2mat(EfvsS_NS(:,7)))
+%         scatter(cell2mat(EfvsS(:,8)),cell2mat(EfvsS(:,7)))
+%         hold off
+%         subplot(1,2,2)
+%         hold on
+%         title('Endfeet vs Somas')
+%         histogram(cell2mat(EfvsS_NS(:,5)),'BinWidth',0.025,'FaceColor','b')
+%         histogram(cell2mat(EfvsS(:,5)),'BinWidth',0.025,'FaceColor','r')
+%         hold off
+%
+% %%
+% % save('crossCor_11_6_15.mat','Rxcor','-v7.3')
+% % save('crossCor_lag_11_6_15.mat','Rxcor_lags','-v7.3')
+% % save('RCor_11_6_15.mat','Rcor','-v7.3')
+% % save('RCor_mean_11_6_15.mat','Rcor_mean','-v7.3')
+% % save('RCor_pvalues_11_6_15.mat','Pvalue','-v7.3')

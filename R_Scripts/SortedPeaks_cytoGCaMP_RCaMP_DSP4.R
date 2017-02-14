@@ -63,10 +63,11 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-peaks.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_01_30_2017.csv", header=TRUE, sep = ",")
-auc.control <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_01_30_2017.csv", header=TRUE, sep = ",")
+peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_11_02_2017.csv", header=TRUE, sep = ",")
+
 peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+#auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
 
 #peaks.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
 #auc.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
@@ -76,23 +77,22 @@ auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results
 lsm.options(pbkrtest.limit = 100000)
 
 # treatment
-peaks.control$treatment<-"Control"
-auc.control$treatment<-"Control"
+peaks.control1$treatment<-"Control"
+peaks.control2$treatment<-"Control"
 peaks.DSP4$treatment<-"DSP4"
-auc.DSP4$treatment<-"DSP4"
 
-stim.all<-rbind(peaks.control, peaks.DSP4)
-auc.all<-rbind(auc.control, auc.DSP4)
+
+stim.all<-rbind(peaks.control1, peaks.control2,peaks.DSP4)
+
 
 
 ######
 # exclude DSP4 data FOR NOW
 
 stim.all<-subset(stim.all, treatment=="Control")
-auc.all<-subset(auc.all, treatment=="Control")
 
 stim.all$treatment<-as.factor(stim.all$treatment)
-auc.all$treatment<-as.factor(auc.all$treatment)
+
 
 # stim onset at 5 sec
 stim.all$peakTime<-stim.all$peakTime-5
@@ -113,25 +113,12 @@ stim.all$ROIType[grepl("np",stim.all$ROIname)]="Neuropil"
 stim.all$ROIType<- as.factor(stim.all$ROIType)
 
 
-auc.all$ROIType= 0
-auc.all$ROIType[grepl("r",auc.all$ROI)]="Process"
-auc.all$ROIType[grepl("E",auc.all$ROI)]="Endfoot"
-auc.all$ROIType[grepl("S",auc.all$ROI)]="Soma"
-auc.all$ROIType[grepl("N",auc.all$ROI)]="Neuron"
-auc.all$ROIType[grepl("np",auc.all$ROIname)]="Neuropil"
-
-auc.all$ROIType<- as.factor(auc.all$ROIType)
-
-
 #unique ROI names
 stim.all$ROIs_trial<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial,stim.all$ROIname, sep= "_")
-auc.all$ROIs_trial<-paste(auc.all$Animal, auc.all$Spot, auc.all$Trial, auc.all$ROI, sep= "_")
 
 stim.all$ROIs<-paste(stim.all$Animal, stim.all$Spot, stim.all$ROIname, sep= "_")
-auc.all$ROIs<-paste(auc.all$Animal, auc.all$Spot, auc.all$ROI, sep= "_")
 
 stim.all$trials<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial, sep= "_")
-auc.all$trials<-paste(auc.all$Animal, auc.all$Spot, auc.all$Trial, sep= "_")
 
 
 # exclude RG10 cause it moves too much
@@ -148,7 +135,7 @@ stim.all2<-stim.all[!Overlap,]
 
 ##########
 # remove ROIs from AUC data frame
-#AUC_overlap<- subset(auc.all, ROIs_trial !%in% OverlapROIs)
+
 
 # make rows with no peak zero instead of NaN
 #test3 = is.na(stim.all2$amplitude)
@@ -273,11 +260,11 @@ stim.all3<-rbind(GCaMP, RCaMP)
 # short stim= peak between 0 and 2 sec, duration < 3 s
 
 # find responding neurons
-responding.neurons_long<- subset(longstim, peakTime>0 & peakTime<8 & Duration<11 & ROIType=="Neuron")
-responding.neurons_short<- subset(shortstim, peakTime>0 & peakTime<2 & Duration<3 & ROIType=="Neuron")
+responding.neurons_long<- subset(longstim, peakTime>0 & peakTime<9 & Duration<11 & Channel=="RCaMP")
+responding.neurons_short<- subset(shortstim, peakTime>0 & peakTime<2 & Duration<3 & Channel=="RCaMP")
 
-responding.trials_long<-unique(responding.neurons_long$trials)  # 225 trials of 265- 85% of trials
-responding.trials_short<-unique(responding.neurons_short$trials) # 102 trials of 272- 38% of trials
+responding.trials_long<-unique(responding.neurons_long$trials)  # 215 trials of 253- 84.9% of trials
+responding.trials_short<-unique(responding.neurons_short$trials) # 46 trials of 121- 38.0% of trials
 
 longstim.responding<-subset(longstim, trials %in% responding.trials_long)
 shortstim.responding<-subset(shortstim, trials %in% responding.trials_short)
@@ -310,13 +297,13 @@ midresponding<-subset(neurons_longstim.mean, Prom_mean<=Prominence_percentiles[2
 lowresponding<-subset(neurons_longstim.mean, Prom_mean<Prominence_percentiles[11])
 
 longstim.responding$NeuronGroup <- 0
-highresponders=unique(highresponding$ROIs)
-midresponders=unique(midresponding$ROIs)
-lowresponders=unique(lowresponding$ROIs)
+long.highresponders=unique(highresponding$ROIs)
+long.midresponders=unique(midresponding$ROIs)
+long.lowresponders=unique(lowresponding$ROIs)
 
-longstim.responding$NeuronGroup[longstim.responding$ROIs %in% highresponders]<-"high"
-longstim.responding$NeuronGroup[longstim.responding$ROIs %in% midresponders]<-"mid"
-longstim.responding$NeuronGroup[longstim.responding$ROIs %in% lowresponders]<-"low"
+longstim.responding$NeuronGroup[longstim.responding$ROIs %in% long.highresponders]<-"high"
+longstim.responding$NeuronGroup[longstim.responding$ROIs %in% long.midresponders]<-"mid"
+longstim.responding$NeuronGroup[longstim.responding$ROIs %in% long.lowresponders]<-"low"
 
 
 # consider all peaks with a time near 10 s
@@ -337,13 +324,16 @@ midresponding<-subset(neurons_shortstim.mean, Prom_mean<=Prominence_percentiles[
 lowresponding<-subset(neurons_shortstim.mean, Prom_mean<Prominence_percentiles[11])
 
 shortstim.responding$NeuronGroup <- 0
-highresponders=unique(highresponding$ROIs)
-midresponders=unique(midresponding$ROIs)
-lowresponders=unique(lowresponding$ROIs)
+short.highresponders=unique(highresponding$ROIs)
+short.midresponders=unique(midresponding$ROIs)
+short.lowresponders=unique(lowresponding$ROIs)
 
-shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% highresponders]<-"high"
-shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% midresponders]<-"mid"
-shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% lowresponders]<-"low"
+shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% short.highresponders]<-"high"
+shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% short.midresponders]<-"mid"
+shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% short.lowresponders]<-"low"
+
+# are high responders the same during long stim or short stim?
+overlaping_high<-intersect(long.highresponders, short.highresponders)
 
 #########
 # LONG STIM (90Hz, 8sec)
@@ -352,7 +342,7 @@ shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% lowresponders]<-
 longstim.responding$ActivePeak <- 0
 
 #responding neurons
-farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<8 & longstim.responding$Duration<11 & longstim.responding$ROIType=="Neuron"
+farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11 & longstim.responding$ROIType=="Neuron"
 longstim.responding$ActivePeak[farpeaks1] <- 1 
 
 #responding astrocytes
@@ -398,7 +388,7 @@ df2A2<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("Chan
 ggplot(longstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(binwidth=0.05, position="dodge") +
   ggtitle("long stim prop active ")
 
-df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Endfoot","Soma","Process"))
+df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
 ggplot(data=df2A1, aes(x=ROIType, y=propActive, fill=ROIType)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
@@ -482,67 +472,6 @@ ggplot(data=df2B2, aes(x=Channel, y=propActive, fill=Channel)) +
   ylab("Proportion of Responding ROIs") +
   ggtitle("Responding ROIs for short stim") 
 
-
-
-##########
-
-## Signal characteristics for all peaks together
-respondingAUC.long<- subset(auc.all, trials %in% responding.trials_long & Condition=="Stim")
-respondingAUC.short<- subset(auc.all, trials %in% responding.trials_short & Condition=="shortstim")
-
-# trace AUC for first 10 s
-df1A <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("Condition","ROIType"),na.rm=TRUE)
-df1B <- summarySE(auc.all, measurevar="AUC10s", groupvars=c("treatment","Condition","ROIType"),na.rm=TRUE)
-df1C <- summarySE(respondingAUC.long, measurevar="AUC10s", groupvars=c("treatment","ROIType"),na.rm=TRUE)
-df1D <- summarySE(respondingAUC.short, measurevar="AUC10s", groupvars=c("treatment","ROIType"),na.rm=TRUE)
-
-ggplot(data=df1A, aes(x=ROIType, y=AUC10s, fill=Condition)) +
-  geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("AUC for 10s of trace") +
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-ggplot(data=df1B, aes(x=interaction(ROIType,treatment), y=AUC10s, fill=Condition)) +
-  geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("AUC for 10s of trace") +
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-ggplot(data=df1C, aes(x=ROIType, y=AUC10s, fill=treatment)) +
-  geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("AUC for 10s of trace") +
-  ggtitle("responding long stim")+
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-ggplot(data=df1D, aes(x=ROIType, y=AUC10s, fill=treatment)) +
-  geom_errorbar(aes(ymin=AUC10s-se, ymax=AUC10s+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("AUC for 10s of trace") +
-  ggtitle("responding short stim")+
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-# hand circled neurons and FLIK
-Cond_ROI_treat=interaction(auc.all$Condition, auc.all$treatment, auc.all$ROIType)
-auc.null = lmer(AUC10s ~ (1|Animal) + (1|Spot) , auc.all,REML=FALSE)
-auc.model1 = lmer(AUC10s ~ Condition + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
-auc.model2A = lmer(AUC10s ~ Condition+ROIType + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
-auc.model2B = lmer(AUC10s ~ Condition*ROIType + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
-auc.model3A = lmer(AUC10s ~ Condition+ROIType+treatment + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
-auc.model3B = lmer(AUC10s ~ Cond_ROI_treat + (1|Animal) + (1|Spot), auc.all,REML=FALSE)
-auc.anova <- anova(auc.null, auc.model1,auc.model2A,auc.model2B,auc.model3A,auc.model3B)
-print(auc.anova)
-# p values
-auc.pv.stim2 <- glht(auc.model3B, mcp(Cond_ROI_treat= "Tukey"))
-summary(auc.pv.stim2)
 
 ##########
 # considering peaks in stim window
