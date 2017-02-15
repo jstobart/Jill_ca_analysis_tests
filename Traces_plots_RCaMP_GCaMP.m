@@ -2,8 +2,16 @@
 clearvars
 close all
 
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\S&LStim_cGC&RC_traces_01_30_2017.mat');
+%load data traces
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\S&LStim_cGC&RC_traces_14_02_2017.mat');
 
+Long_Short=All_traces;
+
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LStim_cGC&RC_traces_11_02_2017.mat');
+
+Long=All_traces;
+
+All_traces=vertcat(Long_Short,Long);
 FrameRate=11.84;
 
 searchString='Stim';
@@ -37,19 +45,22 @@ for iROI=1:length(All_traces)
     All_traces{iROI,15}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,1},'_',All_traces{iROI,6});
     All_traces{iROI,16}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,6});
     All_traces{iROI,17}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2});
+     
+end
+
+data_traces = All_traces(str_idx',:);
+
+for iROI=1:length(data_traces)
     %if a process ROI is overlapping with a soma or process, exclude it
     %from data
     %All_traces{iROI,11}=0;
-    nonOverlapIdx(iROI)=~ischar(All_traces{iROI,11});
+    nonOverlapIdx(iROI)=~ischar(data_traces{iROI,11});
     
 end
 
-
 % remove overlapping processes
-All_traces = All_traces(nonOverlapIdx',:);
+data_traces = data_traces(nonOverlapIdx',:);
 
-% only trials for this condition
-data_traces = All_traces(str_idx',:);
 
 %% Plot all traces for the entire trial
 
@@ -87,7 +98,7 @@ XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROI
 [~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
 responders=data(2:end,:);
 
-%separate out responding trials from responding neurons and astrocytes
+%separate out traces of responding neurons and astrocytes
 RespondingROIs=[];
 for xROI=1:length(responders)
     currentROI=responders{xROI, 24};
@@ -395,7 +406,7 @@ figure('name', 'Raster plot all ROIs')% ROIType{iType})
 hold on
 axis off
 for iType=1:5
-    ROIType={'Neuron','Neuropil','Endfoot','Soma','Process'};
+    ROIType={'Neuron','Neuropil','Endfeet','Soma','Process'};
     
     %find ROITypes
     for xROI= 1:size(responders,1)
@@ -457,44 +468,68 @@ for iTrial=1:size(uniqueTrials,1)
     
     NIndx= ~cellfun(@isempty, Nstr);
     NeuronData=trialData(NIndx,:);
+    NData=[];
+    %find if there are multiple peaks for a given neuron and choose the
+    %faster peak time
+    if length(unique(NeuronData(:,24)))==length(NeuronData(:,24))
+        NData=NeuronData;
+    else
+        uniqueNeurons=unique(NeuronData(:,24)); % list of unique neurons
+        for xxROI= 1:size(uniqueNeurons,1)
+            for kROI= 1:size(NeuronData,1)
+                NeuronIdx(kROI)= strcmp(NeuronData{kROI,24},uniqueNeurons{xxROI});
+            end
+            singleNeurons=NeuronData(NeuronIdx,:); % index of each individual neuron
+            clear NeuronIdx
+            if size(singleNeurons,1)>1 % if there is more than one peak
+                [~,fastPeak]=min(cell2mat(singleNeurons(:,6)));
+                singleNeurons2=singleNeurons(fastPeak,:); % find the fastest peak
+            else
+                singleNeurons2=singleNeurons;
+            end
+            NData=vertcat(NData,singleNeurons2);
+            clear singleNeurons singleNeurons2
+        end
+    end
+
     AstrocyteData=trialData(~NIndx,:);
     
     %compare neuronal and astrocyte peaks times
-    for iN= 1:size(NeuronData, 1)
+    for iN= 1:size(NData, 1)
         for iA= 1:size(AstrocyteData,1)
-            timeComparisons{iA,1}=NeuronData{iN,26};
-            timeComparisons{iA,2}=NeuronData{iN,23};
-            timeComparisons{iA,3}=NeuronData{iN,11};
-            timeComparisons{iA,4}=NeuronData{iN,6}; % neuronal max peak time
-            timeComparisons{iA,5}=NeuronData{iN,8}; % neuronal onset time
+            timeComparisons{iA,1}=NData{iN,26};
+            timeComparisons{iA,2}=NData{iN,23};
+            timeComparisons{iA,3}=NData{iN,11};
+            timeComparisons{iA,4}=NData{iN,6}; % neuronal max peak time
+            timeComparisons{iA,5}=NData{iN,8}; % neuronal onset time
             timeComparisons{iA,6}=AstrocyteData{iA,23};
             timeComparisons{iA,7}=AstrocyteData{iA,11};
             timeComparisons{iA,8}=AstrocyteData{iA,6};
             timeComparisons{iA,9}=AstrocyteData{iA,8};
-            timeComparisons{iA,10}=AstrocyteData{iA,6}-NeuronData{iN,6}; % max peak time (AC) minus max peak time (N)
-            timeComparisons{iA,11}=AstrocyteData{iA,6}-NeuronData{iN,8}; % max peak time (AC) minus onset time (N)
-            timeComparisons{iA,12}=AstrocyteData{iA,8}-NeuronData{iN,8}; % onset time (AC) minus onset time (N)
-            timeComparisons{iA,13}=AstrocyteData{iA,8}-NeuronData{iN,6}; % onset time (AC) minus max peak time (N)
+            timeComparisons{iA,10}=AstrocyteData{iA,6}-NData{iN,6}; % max peak time (AC) minus max peak time (N)
+            timeComparisons{iA,11}=AstrocyteData{iA,6}-NData{iN,8}; % max peak time (AC) minus onset time (N)
+            timeComparisons{iA,12}=AstrocyteData{iA,8}-NData{iN,8}; % onset time (AC) minus onset time (N)
+            timeComparisons{iA,13}=AstrocyteData{iA,8}-NData{iN,6}; % onset time (AC) minus max peak time (N)
         end
         timeDiffs=vertcat(timeDiffs,timeComparisons);
         
         % shift traces of all ROIs by each neuronal peak time
         for iTrace=1:size(trialTraces,1)
-            ShiftTrace{iTrace,1}=NeuronData{iN,26};
-            ShiftTrace{iTrace,2}=NeuronData{iN,23};
-            ShiftTrace{iTrace,3}=NeuronData{iN,11};
-            ShiftTrace{iTrace,4}=NeuronData{iN,6};
-            ShiftTrace{iTrace,5}=NeuronData{iN,8};
+            ShiftTrace{iTrace,1}=NData{iN,26};
+            ShiftTrace{iTrace,2}=NData{iN,23};
+            ShiftTrace{iTrace,3}=NData{iN,11};
+            ShiftTrace{iTrace,4}=NData{iN,6};
+            ShiftTrace{iTrace,5}=NData{iN,8};
             ShiftTrace{iTrace,6}=trialTraces{iTrace,12};
             ShiftTrace{iTrace,7}=trialTraces{iTrace,1};
             ShiftTrace{iTrace,8}=trialTraces{iTrace,8};
-            ShiftTrace{iTrace,9}=TimeX-(5+NeuronData{iN,6}); % minus neuronal peak time
-            ShiftTrace{iTrace,10}=TimeX-(5+NeuronData{iN,8}); % minus neuronal onset time
+            ShiftTrace{iTrace,9}=TimeX-(5+NData{iN,6}); % minus neuronal peak time
+            ShiftTrace{iTrace,10}=TimeX-(5+NData{iN,8}); % minus neuronal onset time
         end
         ShiftedTraces=vertcat(ShiftedTraces,ShiftTrace);
         clear timeComparisons ShiftTrace
     end
-    clear Nstr NIndx trialData trialTraces Trial_str2 Trial_str
+    clear Nstr NIndx NData trialData trialTraces Trial_str2 Trial_str
 end
 
 for iROI=1:size(timeDiffs,1)
@@ -523,14 +558,14 @@ stimwindow2=round(FrameRate*50);
 figure ('name', 'Shifted traces- All trials by Neuron peak time')
 hold on
 axis off
-for xROI= 1:size(ShiftedTraces,2)
+for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
     tempX = ShiftedTraces{xROI,9}; % shifted by peak time
     grey = [0.8,0.8,0.8];
     plot(tempX(1:stimwindow2),tempY(1:stimwindow2)','Color',grey,'LineWidth',0.01);
-    plot([ShiftedTraces{xROI,4} ShiftedTraces{xROI,4}],[-1 10], 'k--','LineWidth', 0.5)
 end
-plot([0 8],[-2 -2], 'k','LineWidth', 2)
+ plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+%plot([0 8],[-2 -2], 'k','LineWidth', 2)
 
 
 figure ('name', 'Shifted traces- RCaMP vs GCaMP by Neuron peak time')
@@ -542,11 +577,11 @@ for xROI= 1:size(ShiftedTraces,1)
     grey = [0.8,0.8,0.8];
     if strcmp(ShiftedTraces{xROI,6},'Neuron') || strcmp(ShiftedTraces{xROI,6},'Neuropil')
         plot(tempX,tempY','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
     else
         plot(tempX,(tempY'+50),'Color',grey,'LineWidth',0.01);
     end
 end
+plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
 %plot([0 8],[-2 -2], 'k','LineWidth', 2)
 
 x1 = -30;
@@ -569,9 +604,9 @@ for xROI= 1:size(ShiftedTraces,1)
     grey = [0.8,0.8,0.8];
     if strcmp(ShiftedTraces{xROI,6},'Neuron')
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
     end
 end
+plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
 x1 = -10;
 y1 = 5;
 txt1 = 'Neuron';
@@ -600,7 +635,7 @@ axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
     tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Endfoot')
+    if strcmp(ShiftedTraces{xROI,6},'Endfeet')
         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
         plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
     end
@@ -645,133 +680,6 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 
 
 
-
-%% ROITypes Shifted Traces- All Astrocyte traces shifted by neuronal peak times
-
-stimwindow2=round(FrameRate*50);
-figure ('name', 'Shifted traces- All trials by Neuron peak time')
-hold on
-axis off
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
-    grey = [0.8,0.8,0.8];
-    plot(tempX(1:stimwindow2),tempY(1:stimwindow2)','Color',grey,'LineWidth',0.01);
-    plot([ShiftedTraces{xROI,4} ShiftedTraces{xROI,4}],[-1 10], 'k--','LineWidth', 0.5)
-end
-%plot([0 8],[-2 -2], 'k','LineWidth', 2)
-
-
-figure ('name', 'Shifted traces- RCaMP vs GCaMP by Neuron peak time')
-hold on
-axis off
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
-    grey = [0.8,0.8,0.8];
-    if strcmp(ShiftedTraces{xROI,6},'Neuron') || strcmp(ShiftedTraces{xROI,6},'Neuropil')
-        plot(tempX,tempY','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
-    else
-        plot(tempX,(tempY'+50),'Color',grey,'LineWidth',0.01);
-    end
-end
-%plot([0 8],[-2 -2], 'k','LineWidth', 2)
-
-x1 = -30;
-y1 = 5;
-y2 = 50;
-txt1 = 'RCaMP';
-txt2 = 'GCaMP';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-text(x1,y2,txt2,'HorizontalAlignment','right')
-
-%% example traces algining astrocytes and neurons ROITypes
-figure ('name', 'Shifted traces- ROITypes by Neuron peak time')
-
-subplot(1,5,1)
-hold on
-axis off
-
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
-    grey = [0.8,0.8,0.8];
-    if strcmp(ShiftedTraces{xROI,6},'Neuron')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
-    end
-end
-x1 = -10;
-y1 = 5;
-txt1 = 'Neuron';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot(1,5,2)
-hold on
-axis off
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Neuropil')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
-    end
-end
-x1 = -10;
-y1 = 5;
-txt1 = 'Neuropil';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-subplot(1,5,3)
-hold on
-axis off
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Endfoot')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
-    end
-end
-x1 = -10;
-y1 = 5;
-txt1 = 'Endfeet';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-subplot(1,5,4)
-hold on
-axis off
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Soma')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
-    end
-end
-x1 = -10;
-y1 = 5;
-txt1 = 'Somata';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-subplot(1,5,5)
-hold on
-axis off
-for xROI= 1:size(ShiftedTraces,1)
-    tempY = ShiftedTraces{xROI,8};
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Process')
-        
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.01);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
-    end
-end
-x1 = -10;
-y1 = 5;
-txt1 = 'Processes';
-text(x1,y1,txt1,'HorizontalAlignment','right')
 
 
 %% ROITypes Shifted Traces- All Astrocyte traces shifted by neuronal onset time
@@ -902,5 +810,12 @@ txt1 = 'Processes';
 text(x1,y1,txt1,'HorizontalAlignment','right')
 
 
+
+%% Isolate the early traces from the shifted data
+
+for xROI= 1:size(timeDiffs,1)
+    earlyIdx(xROI)= timeDiffs{xROI,10}<=0;
+end
+    early=timeDiffs(earlyIdx,:);
 
 
