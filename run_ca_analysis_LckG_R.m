@@ -126,7 +126,7 @@ for iAnimal = 1:numAnimals
                 %% Configs for Finding ROIs
                 %Astrocyte Calcium
                 % automated selection
-                findConf{1} = ConfigFindROIsFLIKA_2p5D.from_preset('ca_memb_astro', 'baselineFrames',...
+                findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_memb_astro', 'baselineFrames',...
                     BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                     'sigmaT', 0.1,'threshold_std', 7, 'threshold2D', 0.2,...
                     'min_rise_time',0.0845, 'max_rise_time', 1,'minPuffArea', 10,...
@@ -185,8 +185,8 @@ for iAnimal = 1:numAnimals
                 
                 %% Make the debugging plots
                     CSArray_Ch1_FLIKA.plot;
-                    CSArray_Ch1_Hand.plot;
-                    CSArray_Ch2_Hand.plot;
+%                     CSArray_Ch1_Hand.plot;
+%                     CSArray_Ch2_Hand.plot;
                     
                     % for working out find peaks parameters
                     %CSArray_Ch1_FLIKA(3).opt_config()
