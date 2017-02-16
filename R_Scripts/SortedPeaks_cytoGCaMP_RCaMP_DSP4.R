@@ -63,16 +63,15 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_11_02_2017.csv", header=TRUE, sep = ",")
+#peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
+#peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_11_02_2017.csv", header=TRUE, sep = ",")
 
-peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-#auc.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+#peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
 
-#peaks.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-#auc.control <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/awake_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
-#peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_01_2017.csv", header=TRUE, sep = ",")
-#auc.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_AUC_01_2017.csv", header=TRUE, sep = ",")
+peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
+peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_11_02_2017.csv", header=TRUE, sep = ",")
+
+peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
@@ -88,8 +87,8 @@ stim.all<-rbind(peaks.control1, peaks.control2,peaks.DSP4)
 
 ######
 # exclude DSP4 data FOR NOW
-
-stim.all<-subset(stim.all, treatment=="Control")
+#stim.all<-subset(stim.all, treatment=="Control")
+#stim.all<-subset(stim.all, treatment=="DSP4")
 
 stim.all$treatment<-as.factor(stim.all$treatment)
 
@@ -112,7 +111,6 @@ stim.all$ROIType[grepl("np",stim.all$ROIname)]="Neuropil"
 
 stim.all$ROIType<- as.factor(stim.all$ROIType)
 
-
 #unique ROI names
 stim.all$ROIs_trial<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial,stim.all$ROIname, sep= "_")
 
@@ -120,11 +118,8 @@ stim.all$ROIs<-paste(stim.all$Animal, stim.all$Spot, stim.all$ROIname, sep= "_")
 
 stim.all$trials<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial, sep= "_")
 
-
-# exclude RG10 cause it moves too much
-#stim.all<- subset(stim.all, Animal!="RG10")
-
-
+# exclude GCaMP neuropil signals
+stim.all<-stim.all[!(stim.all$ROIType=="Neuropil" & stim.all$Channel=="GCaMP"),]
 
 # remove matching astrocyte process and soma ROIs
 Overlap= stim.all$overlap!=0
@@ -134,23 +129,6 @@ OverlapROIs<-unique(stim.all$ROIs_trial[Overlap])
 stim.all2<-stim.all[!Overlap,]
 
 ##########
-# remove ROIs from AUC data frame
-
-
-# make rows with no peak zero instead of NaN
-#test3 = is.na(stim.all2$amplitude)
-#stim.all2$peakAUC[test3] = 0
-#stim.all2$prominence[test3] = 0
-#stim.all2$amplitude[test3] = 0
-#stim.all2$peakTime[test3] = -5
-#stim.all2$halfWidth[test3] = 0
-#stim.all2$fullWidth[test3] = 0
-#stim.all2$Duration[test3] = 0
-#stim.all2$numPeaks[test3] = 0
-
-
-
-#######
 # histogram of peak times for stim
 longstim<-subset(stim.all2, Condition=="Stim")
 ggplot(longstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
@@ -192,52 +170,52 @@ ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwid
 ###########
 
 # remove data with really large prominences
-stim.all3<- subset(stim.all2, prominence<15)
+#stim.all3<- subset(stim.all2, prominence<15)
 
-ggplot(stim.all3, aes(x=prominence, fill=treatment)) + geom_histogram(binwidth=1, position="dodge")
+#ggplot(stim.all3, aes(x=prominence, fill=treatment)) + geom_histogram(binwidth=1, position="dodge")
 
 # outliers in each GCaMP or RCaMP group
 
-outlierKD <- function(dt, var) {
-  var_name <- eval(substitute(var),eval(dt))
-  na1 <- sum(is.na(var_name))
-  m1 <- mean(var_name, na.rm = T)
-  par(mfrow=c(2, 2), oma=c(0,0,3,0))
-  boxplot(var_name, main="With outliers")
-  hist(var_name, main="With outliers", xlab=NA, ylab=NA)
-  outlier <- boxplot.stats(var_name)$out
-  mo <- mean(outlier)
-  var_name <- ifelse(var_name %in% outlier, NA, var_name)
-  boxplot(var_name, main="Without outliers")
-  hist(var_name, main="Without outliers", xlab=NA, ylab=NA)
-  title("Outlier Check", outer=TRUE)
-  na2 <- sum(is.na(var_name))
-  cat("Outliers identified:", na2 - na1, "n")
-  cat("Propotion (%) of outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "n")
-  cat("Mean of the outliers:", round(mo, 2), "n")
-  m2 <- mean(var_name, na.rm = T)
-  cat("Mean without removing outliers:", round(m1, 2), "n")
-  cat("Mean if we remove outliers:", round(m2, 2), "n")
-  response <- readline(prompt="Do you want to remove outliers and to replace with NA? [yes/no]: ")
-  if(response == "y" | response == "yes"){
-    dt[as.character(substitute(var))] <- invisible(var_name)
-    assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
-    cat("Outliers successfully removed", "n")
-    return(invisible(dt))
-  } else{
-    cat("Nothing changed", "n")
-    return(invisible(var_name))
-  }
-}
+#outlierKD <- function(dt, var) {
+ # var_name <- eval(substitute(var),eval(dt))
+  #na1 <- sum(is.na(var_name))
+  #m1 <- mean(var_name, na.rm = T)
+  #par(mfrow=c(2, 2), oma=c(0,0,3,0))
+  #boxplot(var_name, main="With outliers")
+  #hist(var_name, main="With outliers", xlab=NA, ylab=NA)
+  #outlier <- boxplot.stats(var_name)$out
+  #mo <- mean(outlier)
+  #var_name <- ifelse(var_name %in% outlier, NA, var_name)
+  #boxplot(var_name, main="Without outliers")
+  #hist(var_name, main="Without outliers", xlab=NA, ylab=NA)
+  #title("Outlier Check", outer=TRUE)
+  #na2 <- sum(is.na(var_name))
+  #cat("Outliers identified:", na2 - na1, "n")
+  #cat("Propotion (%) of outliers:", round((na2 - na1) / sum(!is.na(var_name))*100, 1), "n")
+  #cat("Mean of the outliers:", round(mo, 2), "n")
+  #m2 <- mean(var_name, na.rm = T)
+  #cat("Mean without removing outliers:", round(m1, 2), "n")
+  #cat("Mean if we remove outliers:", round(m2, 2), "n")
+  #response <- readline(prompt="Do you want to remove outliers and to replace with NA? [yes/no]: ")
+  #if(response == "y" | response == "yes"){
+   # dt[as.character(substitute(var))] <- invisible(var_name)
+  #  assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
+   # cat("Outliers successfully removed", "n")
+    #return(invisible(dt))
+#  } else{
+ #   cat("Nothing changed", "n")
+  #  return(invisible(var_name))
+  #}
+#}
 
 #source("http://goo.gl/UUyEzD")
-outlierKD(GCaMP, prominence)
-yes
+#outlierKD(GCaMP, prominence)
+#yes
 
-outlierKD(RCaMP, prominence)
-yes
+#outlierKD(RCaMP, prominence)
+#yes
 
-stim.all3<-rbind(GCaMP, RCaMP)
+#stim.all3<-rbind(GCaMP, RCaMP)
 
 #remove ROIs with NaNs
 #stim.all3 = stim.all3[complete.cases(stim.all3$prominence),]
@@ -263,8 +241,8 @@ stim.all3<-rbind(GCaMP, RCaMP)
 responding.neurons_long<- subset(longstim, peakTime>0 & peakTime<9 & Duration<11 & Channel=="RCaMP")
 responding.neurons_short<- subset(shortstim, peakTime>0 & peakTime<2 & Duration<3 & Channel=="RCaMP")
 
-responding.trials_long<-unique(responding.neurons_long$trials)  # 215 trials of 253- 84.9% of trials
-responding.trials_short<-unique(responding.neurons_short$trials) # 46 trials of 121- 38.0% of trials
+responding.trials_long<-unique(responding.neurons_long$trials)  # 215 trials of 253- 84.9% of trials, DSP4 data: 80 of 93
+responding.trials_short<-unique(responding.neurons_short$trials) # 46 trials of 121- 38.0% of trials, DSP4 data: 24 of 96
 
 longstim.responding<-subset(longstim, trials %in% responding.trials_long)
 shortstim.responding<-subset(shortstim, trials %in% responding.trials_short)
@@ -333,7 +311,7 @@ shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% short.midrespond
 shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% short.lowresponders]<-"low"
 
 # are high responders the same during long stim or short stim?
-overlaping_high<-intersect(long.highresponders, short.highresponders)
+overlapping_high<-intersect(long.highresponders, short.highresponders)
 
 #########
 # LONG STIM (90Hz, 8sec)
@@ -342,11 +320,12 @@ overlaping_high<-intersect(long.highresponders, short.highresponders)
 longstim.responding$ActivePeak <- 0
 
 #responding neurons
-farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11 & longstim.responding$ROIType=="Neuron"
+farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11 & longstim.responding$Channel=="RCaMP"
 longstim.responding$ActivePeak[farpeaks1] <- 1 
+#longstim.responding$ActivePeak[longstim.responding$ROIs_trial %in% unique(responding.neurons_long$ROIs_trial)]<-1
 
 #responding astrocytes
-farpeaks2 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<20 & longstim.responding$ROIType!="Neuron"
+farpeaks2 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<20 & longstim.responding$Channel=="GCaMP"
 longstim.responding$ActivePeak[farpeaks2] <- 1 
 
 # pull out only the peaks that occur around the stimulation
@@ -365,7 +344,9 @@ ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + g
 #####
 library(xlsx)
 respondingNeurons_Astrocytes=subset(longstim.responding, ActivePeak==1)
-write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_longstim.xlsx")
+#write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_DSP4longstim.xlsx")
+#write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_longstim.xlsx")
+#write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_DSP4longstim.xlsx")
 
 
 #########
@@ -389,19 +370,21 @@ ggplot(longstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(bi
   ggtitle("long stim prop active ")
 
 df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
-ggplot(data=df2A1, aes(x=ROIType, y=propActive, fill=ROIType)) +
+ggplot(data=df2A1, aes(x=interaction(ROIType,treatment), y=propActive, fill=ROIType)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
   xlab("ROIType") +
-  ylab("Proportion of Responding ROIs") +
+  ylab("Mean Proportion of Responding ROIs Per Trial") +
   ggtitle("Responding ROIs for long stim") 
 
-
-ggplot(data=df2A2, aes(x=Channel, y=propActive, fill=Channel)) +
+df2A2$Channel <- factor(df2A2$Channel , levels = c("RCaMP","GCaMP"))
+ggplot(data=df2A2, aes(x=interaction(Channel, treatment), y=propActive, fill=Channel)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  scale_fill_manual(
+    values=c("red", "green")) + 
   xlab("Channel") +
-  ylab("Proportion of Responding ROIs") +
+  ylab("Mean Proportion of Responding ROIs Per Trial") +
   ggtitle("Responding ROIs for long stim") 
 
 
@@ -607,7 +590,85 @@ HM.pv.ROIType <- glht(HM.model1, mcp(ROIType= "Tukey"))
 summary(HM.pv.ROIType)
 
 
+############
+# consider peaks that are close together in time (determined in Matlab)
+TimeDiffs1<-read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LongStim_TimeDiffs.csv", header=TRUE, sep = ",")
+TimeDiffs2<-read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4LongStim_TimeDiffs.csv", header=TRUE, sep = ",")
 
+TimeDiffs1$treatment<-"Control"
+TimeDiffs2$treatment<-"DSP4"
+TimeDiffs<-rbind(TimeDiffs1, TimeDiffs2)
+
+#find ROIs with specific timediffs
+
+TimeDiffs$TimeGroup<-0
+TimeDiffs$TimeGroup[TimeDiffs$peak_peak<=0]<-"early"
+TimeDiffs$TimeGroup[TimeDiffs$peak_peak>0]<-"late"
+
+TimeDiffs$ROI_trials_X<-paste(TimeDiffs$TrialName, TimeDiffs$ROI_X, sep= "_")
+TimeDiffs$ROI_trials_Y<-paste(TimeDiffs$TrialName, TimeDiffs$ROI_Y, sep= "_")
+
+
+
+
+#proportion of stim trials that have at least one early astrocyte ROI
+AllTrials<-length(unique(TimeDiffs$TrialName))
+
+TrialsWithEarly<-length(unique(earlyROIs$TrialName))
+ProportionOfEarly<-TrialsWithEarly/AllTrials  #69.9% of trials total (including DSP4)
+
+
+#proportion of astrocyte ROIs that are early/late in each treatment group, in each trial
+earlyROIs<-subset(TimeDiffs, TimeGroup=="early")
+earlyROINames<-unique(earlyROIs$ROI_trials_Y)
+
+allAC.Names<-unique(longstim$ROIs_trial[longstim$Channel=="GCaMP"])
+respondingAC.Names<-unique(longstim.responding$ROIs_trial[longstim.responding$Channel=="GCaMP"])
+
+
+activeROIs1<- ddply(longstim.responding, c("Animal", "Spot", "Channel","trials","ROIType","treatment", "ROIs_trial"), summarise, 
+                    nEvents = sum(ActivePeak))
+
+activeROIs1$ROIActive<-0
+active1 <- activeROIs1$nEvents>0
+activeROIs1$ROIActive[active1] <- 1 
+
+longstim.propActive<- ddply(activeROIs1, c("Animal", "Spot", "Channel","trials","ROIType","treatment"), summarise, 
+                            nSignals = sum(nEvents), nROIs= length(unique(ROIs_trial)),
+                            nActiveROIs = sum(ROIActive))
+longstim.propActive$propActive<-longstim.propActive$nActiveROIs/longstim.propActive$nROIs
+
+df2A1<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("ROIType","treatment"))
+df2A2<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("Channel","treatment"))
+
+ggplot(longstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(binwidth=0.05, position="dodge") +
+  ggtitle("long stim prop active ")
+
+df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df2A1, aes(x=interaction(ROIType,treatment), y=propActive, fill=ROIType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("ROIType") +
+  ylab("Mean Proportion of Responding ROIs Per Trial") +
+  ggtitle("Responding ROIs for long stim") 
+
+df2A2$Channel <- factor(df2A2$Channel , levels = c("RCaMP","GCaMP"))
+ggplot(data=df2A2, aes(x=interaction(Channel, treatment), y=propActive, fill=Channel)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  scale_fill_manual(
+    values=c("red", "green")) + 
+  xlab("Channel") +
+  ylab("Mean Proportion of Responding ROIs Per Trial") +
+  ggtitle("Responding ROIs for long stim") 
+
+
+#what are the mean characteristics of early astrocyte ROIs
+#amplitudes, mean peak times, etc.
+
+
+#what are the correlations of the ROIs with these time differences?
+#spatially similar?
 
 
 #######
