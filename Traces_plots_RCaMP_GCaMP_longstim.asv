@@ -48,7 +48,7 @@ for iROI=1:length(All_traces)
     All_traces{iROI,15}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,1},'_',All_traces{iROI,6});
     All_traces{iROI,16}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,6});
     All_traces{iROI,17}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2});
-     
+    
 end
 
 data_traces = All_traces(str_idx',:);
@@ -103,7 +103,7 @@ end
 
 RCaMP_traces=data_traces(RC_idx',:);
 GCaMP_traces=data_traces(~RC_idx',:);
-    
+
 %find neuropil
 for xROI= 1:length(RCaMP_traces)
     NP_str= strfind(RCaMP_traces{xROI, 12},'Neuropil');
@@ -118,7 +118,7 @@ for xROI= 1:length(GCaMP_traces)
     
     tempY= GCaMP_traces{xROI,8};
     if ~isempty(NP_str)
-       GCaMP_np_traces= horzcat(GCaMP_np_traces, tempY);
+        GCaMP_np_traces= horzcat(GCaMP_np_traces, tempY);
     end
 end
 % means and SDs
@@ -156,6 +156,12 @@ XLfile = 'D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROIs_longstim.xlsx'
 [~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
 responders=data(2:end,:);
 
+for xROI=1:length(responders)
+    responders(strcmp(responders{xROI,15},'GCaMP')&& strcmp(responders{xROI,23},'Neuropil'),:)=[];
+end
+
+
+
 %separate out traces of responding neurons and astrocytes
 RespondingROIs=[];
 for xROI=1:length(responders)
@@ -165,14 +171,19 @@ for xROI=1:length(responders)
     for iROI = 1:length(data_traces)
         ROIIndex=strcmp(data_traces{iROI,14},currentROI);
         if ROIIndex
-            if strcmp(currentChannel,'GCaMP') 
-                if strcmp(currentType,'Neuropil'))
-                    
-            RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
+            if strcmp(currentChannel,'GCaMP')
+                if strcmp(currentType,'Neuropil')
+                    continue
+                else
+                    RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
+                end
+            else
+                RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
             end
         end
     end
 end
+
 
 
 
@@ -562,7 +573,7 @@ for iTrial=1:size(uniqueTrials,1)
             clear singleNeurons singleNeurons2
         end
     end
-
+    
     AstrocyteData=trialData(~NIndx,:);
     
     %compare neuronal and astrocyte peaks times
@@ -635,7 +646,7 @@ for xROI= 1:size(ShiftedTraces,1)
     grey = [0.8,0.8,0.8];
     plot(tempX(1:stimwindow2),tempY(1:stimwindow2)','Color',grey,'LineWidth',0.01);
 end
- plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
 %plot([0 8],[-2 -2], 'k','LineWidth', 2)
 
 
@@ -897,16 +908,16 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 for xROI= 1:size(timeDiffs,1)
     earlyIdx(xROI)= timeDiffs{xROI,10}<=0;
 end
-    early=timeDiffs(earlyIdx,:);
-    late=timeDiffs(~earlyIdx,:);
+early=timeDiffs(earlyIdx,:);
+late=timeDiffs(~earlyIdx,:);
 
-    earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
-        'ROITypeY','ROI_Y','ROI_Y_peakTime','ROI_Y_onset',...
-        'peak_peak','peak_onset','onset_onset','onset_peak'};
+earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
+    'ROITypeY','ROI_Y','ROI_Y_peakTime','ROI_Y_onset',...
+    'peak_peak','peak_onset','onset_onset','onset_peak'};
 
-    AllTimeDiffs=vertcat(earlyNames,timeDiffs);
-    cd('D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
-    cell2csv('LongStim_TimeDiffs.csv',AllTimeDiffs);
-    
-    
+AllTimeDiffs=vertcat(earlyNames,timeDiffs);
+cd('D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
+cell2csv('LongStim_TimeDiffs.csv',AllTimeDiffs);
+
+
 

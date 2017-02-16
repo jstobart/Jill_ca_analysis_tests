@@ -608,63 +608,75 @@ TimeDiffs$TimeGroup[TimeDiffs$peak_peak>0]<-"late"
 TimeDiffs$ROI_trials_X<-paste(TimeDiffs$TrialName, TimeDiffs$ROI_X, sep= "_")
 TimeDiffs$ROI_trials_Y<-paste(TimeDiffs$TrialName, TimeDiffs$ROI_Y, sep= "_")
 
+ggplot(TimeDiffs, aes(x=peak_peak, fill=ROITypeY)) + geom_histogram(binwidth=0.5, position="dodge") +
+  ggtitle("ROITypes peak-peak time diffs ")
 
 
-
-#proportion of stim trials that have at least one early astrocyte ROI
-AllTrials<-length(unique(TimeDiffs$TrialName))
-
-TrialsWithEarly<-length(unique(earlyROIs$TrialName))
-ProportionOfEarly<-TrialsWithEarly/AllTrials  #69.9% of trials total (including DSP4)
-
-
+#####
 #proportion of astrocyte ROIs that are early/late in each treatment group, in each trial
 earlyROIs<-subset(TimeDiffs, TimeGroup=="early")
 earlyROINames<-unique(earlyROIs$ROI_trials_Y)
+lateROIs<-subset(TimeDiffs, TimeGroup=="late")
+lateROINames<-unique(lateROIs$ROI_trials_Y)
 
-allAC.Names<-unique(longstim$ROIs_trial[longstim$Channel=="GCaMP"])
-respondingAC.Names<-unique(longstim.responding$ROIs_trial[longstim.responding$Channel=="GCaMP"])
+
+longstim.gcamp=subset(longstim, Channel=="GCaMP")
+longstim.gcamp$TimeGroup<-0
+longstim.gcamp$TimeGroup[longstim.gcamp$ROIs_trial %in% earlyROINames]<-"early"
+longstim.gcamp$TimeGroup[longstim.gcamp$ROIs_trial %in% lateROINames]<-"late"
+
+# identify active ROIs
+longstim.gcamp$ActivePeak <- 0
+longstim.gcamp$earlyAC<-0
+
+#responding astrocytes
+farpeaks2 <- longstim.gcamp$peakTime>0 & longstim.gcamp$peakTime<20
+longstim.gcamp$ActivePeak[farpeaks2] <- 1 
+
+longstim.gcamp$earlyAC[longstim.gcamp$ROIs_trial %in% earlyROINames]<-1
+
+# proportion of ROIs that respond per trial
+earlyROIs1<- ddply(longstim.gcamp, c("Animal", "Spot", "trials","ROIType","treatment", "ROIs_trial"), summarise, 
+                   nEvents = sum(ActivePeak), nEarly = sum(earlyAC))
+
+earlyROIs1$ROIActive<-0
+active1<- earlyROIs1$nEvents>0
+earlyROIs1$ROIActive[active1] <- 1 
 
 
-activeROIs1<- ddply(longstim.responding, c("Animal", "Spot", "Channel","trials","ROIType","treatment", "ROIs_trial"), summarise, 
-                    nEvents = sum(ActivePeak))
+earlyROIs1$ROIEarly<-0
+earlygroup<- earlyROIs1$nEarly>0
+earlyROIs1$ROIEarly[earlygroup] <- 1 
 
-activeROIs1$ROIActive<-0
-active1 <- activeROIs1$nEvents>0
-activeROIs1$ROIActive[active1] <- 1 
-
-longstim.propActive<- ddply(activeROIs1, c("Animal", "Spot", "Channel","trials","ROIType","treatment"), summarise, 
-                            nSignals = sum(nEvents), nROIs= length(unique(ROIs_trial)),
+longstim.propEarly<- ddply(earlyROIs1, c("Animal", "Spot", "trials","treatment"), summarise, 
+                            nEarlyROIs = sum(ROIEarly), nROIs= length(unique(ROIs_trial)),
                             nActiveROIs = sum(ROIActive))
-longstim.propActive$propActive<-longstim.propActive$nActiveROIs/longstim.propActive$nROIs
+longstim.propEarly$propActive<-longstim.propEarly$nActiveROIs/longstim.propEarly$nROIs
+longstim.propEarly$propEarlyTot<-longstim.propEarly$nEarlyROIs/longstim.propEarly$nROIs
+longstim.propEarly$propEarlyResp<-longstim.propEarly$nEarlyROIs/longstim.propEarly$nActiveROIs
 
-df2A1<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("ROIType","treatment"))
-df2A2<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("Channel","treatment"))
+df3A1<-summarySE(longstim.propEarly, measurevar="propEarlyTot", groupvars=c("treatment"))
+df3A2<-summarySE(longstim.propEarly, measurevar="propEarlyResp", groupvars=c("treatment"))
 
-ggplot(longstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(binwidth=0.05, position="dodge") +
-  ggtitle("long stim prop active ")
-
-df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
-ggplot(data=df2A1, aes(x=interaction(ROIType,treatment), y=propActive, fill=ROIType)) +
+ggplot(data=df3A1, aes(x=treatment, y=propEarlyTot, fill=treatment)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  geom_errorbar(aes(ymin=propEarlyTot-se, ymax=propEarlyTot+se), colour="black", width=.1,  position=position_dodge(.9)) +
   xlab("ROIType") +
-  ylab("Mean Proportion of Responding ROIs Per Trial") +
-  ggtitle("Responding ROIs for long stim") 
+  ylab("Mean Proportion of Early ROIs from Total Per Trial") +
+  ggtitle("Early ROIs Proportion from total") 
 
-df2A2$Channel <- factor(df2A2$Channel , levels = c("RCaMP","GCaMP"))
-ggplot(data=df2A2, aes(x=interaction(Channel, treatment), y=propActive, fill=Channel)) +
+ggplot(data=df3A2, aes(x=treatment, y=propEarlyResp, fill=treatment)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  scale_fill_manual(
-    values=c("red", "green")) + 
-  xlab("Channel") +
-  ylab("Mean Proportion of Responding ROIs Per Trial") +
-  ggtitle("Responding ROIs for long stim") 
+  geom_errorbar(aes(ymin=propEarlyResp-se, ymax=propEarlyResp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("ROIType") +
+  ylab("Mean Proportion of Early ROIs from Responding Per Trial") +
+  ggtitle("Early ROIs Proportion from responding") 
 
 
 #what are the mean characteristics of early astrocyte ROIs
 #amplitudes, mean peak times, etc.
+
+
 
 
 #what are the correlations of the ROIs with these time differences?
@@ -673,15 +685,13 @@ ggplot(data=df2A2, aes(x=interaction(Channel, treatment), y=propActive, fill=Cha
 
 #######
 # peak features
+respGCaMP<-subset(longstim.stimwindow, Channel=="GCaMP")
+respGCaMP$TimeGroup<-"late"
+respGCaMP$TimeGroup[respGCaMP$ROIs_trial %in% earlyROINames]<-"early"
 
 # amplitude
 df2A <- summarySE(longstim.stimwindow, measurevar="amplitude", groupvars=c("ROIType","treatment"),na.rm=TRUE)
-df2B <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","treatment"),na.rm=TRUE)
-
-df2B <- summarySE(longstim.peaks, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
-df2B <- summarySE(stim.all3, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
-
-df2C <- summarySE(longstim.peaks_after, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"))
+df2B <- summarySE(respGCaMP, measurevar="amplitude", groupvars=c("TimeGroup","treatment"),na.rm=TRUE)
 
 ggplot(data=df2A, aes(x=ROIType, y=amplitude, fill=treatment)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
@@ -691,48 +701,19 @@ ggplot(data=df2A, aes(x=ROIType, y=amplitude, fill=treatment)) +
     values=c("black", "red", "blue")) + 
   max.theme
 
-ggplot(data=df2B, aes(x=interaction(Condition,ROIType), y=amplitude, fill=treatment)) +
+ggplot(data=df2B, aes(x=TimeGroup, y=amplitude, fill=treatment)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("amplitude") +
   scale_fill_manual(
     values=c("black", "red", "blue","green")) + 
   max.theme
-
-ggplot(data=df2C, aes(x=interaction(Condition,ROIType), y=amplitude, fill=treatment)) +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("amplitude") +
-  scale_fill_manual(
-    values=c("black", "red", "blue","green")) + 
-  max.theme
-
 
 # prominence
 
-df3A <- summarySE(longstim.peaks, measurevar="prominence", groupvars=c("Condition","treatment"))
-df3B <- summarySE(longstim.peaks, measurevar="prominence", groupvars=c("Condition","ROIType","treatment"))
-
-ggplot(data=df3A, aes(x=treatment, y=prominence, fill=Condition)) +
-  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("prominence") +
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-ggplot(data=df3B, aes(x=interaction(Condition,ROIType), y=prominence, fill=treatment)) +
-  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("prominence") +
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-
 # duration
-df4A <- summarySE(longstim.peaks, measurevar="Duration", groupvars=c("Condition","treatment"))
-df4B <- summarySE(longstim.peaks, measurevar="Duration", groupvars=c("Condition","ROIType","treatment"))
+df4A <- summarySE(longstim.stimwindow, measurevar="Duration", groupvars=c("ROIType","treatment"),na.rm=TRUE)
+df4B <- summarySE(respGCaMP, measurevar="Duration", groupvars=c("TimeGroup","treatment"),na.rm=TRUE)
 
 ggplot(data=df4A, aes(x=treatment, y=Duration, fill=Condition)) +
   geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
@@ -742,7 +723,7 @@ ggplot(data=df4A, aes(x=treatment, y=Duration, fill=Condition)) +
     values=c("black", "red", "blue")) + 
   max.theme
 
-ggplot(data=df4B, aes(x=interaction(Condition,ROIType), y=Duration, fill=treatment)) +
+ggplot(data=df4B, aes(x=TimeGroup, y=Duration, fill=treatment)) +
   geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("Duration") +

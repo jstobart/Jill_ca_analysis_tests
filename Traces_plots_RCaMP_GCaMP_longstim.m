@@ -156,24 +156,20 @@ XLfile = 'D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROIs_longstim.xlsx'
 [~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
 responders=data(2:end,:);
 
+for xROI=1:length(responders)
+    responders(strcmp(responders{xROI,15},'GCaMP')&& strcmp(responders{xROI,23},'Neuropil'),:)=[];
+end
+
+
+
 %separate out traces of responding neurons and astrocytes
 RespondingROIs=[];
 for xROI=1:length(responders)
     currentROI=responders{xROI, 24};
-    currentChannel=responders{xROI,15};
-    currentType=responders{xROI,23};
     for iROI = 1:length(data_traces)
         ROIIndex=strcmp(data_traces{iROI,14},currentROI);
         if ROIIndex
-            if strcmp(currentChannel,'GCaMP')
-                if strcmp(currentType,'Neuropil')
-                    continue
-                else
-                    RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
-                end
-            else
-                RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
-            end
+            RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
         end
     end
 end

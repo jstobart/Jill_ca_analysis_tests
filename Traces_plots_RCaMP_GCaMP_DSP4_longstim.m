@@ -74,6 +74,8 @@ nframes=length(All_traces{1,8});
 
 TimeX(1:nframes) = (1:nframes)/FrameRate;
 
+stimwindow=round(FrameRate*30);
+
 traces=[];
 figure ('name', 'Overlaid traces-All ROIs- whole trial')
 hold on
@@ -91,7 +93,6 @@ plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 % plot([0 0],[18.5 19.5], 'k','LineWidth', 2)
 
 
-
 %% Plot only the responding neurons and astrocytes from the same field of view
 
 
@@ -100,6 +101,11 @@ XLfile = 'D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROIs_DSP4longstim.x
 
 [~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
 responders=data(2:end,:);
+
+
+for xROI=1:length(responders)
+    responders(strcmp(responders{xROI,15},'GCaMP')&& strcmp(responders{xROI,23},'Neuropil'),:)=[];
+end
 
 %separate out traces of responding neurons and astrocytes
 RespondingROIs=[];
@@ -213,7 +219,6 @@ end
 plot([5 13],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX, RespGCmeanTrace, 'k', 'LineWidth',1)
 
-stimwindow=round(FrameRate*30);
 figure ('name', 'Overlaid traces: All RCaMP responding ROIs- stim window')
 hold on
 axis off

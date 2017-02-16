@@ -3,7 +3,8 @@ clearvars
 close all
 
 %load data traces
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_14_02_2017.mat');
+%load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_14_02_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_14_02_2017.mat');
 
 FrameRate=11.84;
 
@@ -86,7 +87,7 @@ plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 %% Plot only the responding neurons and astrocytes from the same field of view
 
 
-XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROIs_longstim.xlsx';
+XLfile = 'D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_longstim.xlsx';
 
 [~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
 responders=data(2:end,:);

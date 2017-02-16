@@ -36,8 +36,8 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-
+#stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
+stim.all  <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
 lsm.options(pbkrtest.limit = 100000)
 
 # treatment
@@ -237,8 +237,8 @@ ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + g
 #####
 library(xlsx)
 respondingNeurons_Astrocytes=subset(longstim.responding, ActivePeak==1)
-write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
-
+#write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
+write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
 
 #########
 # proportion of ROIs that respond per trial
