@@ -14,6 +14,7 @@ Long_Short=All_traces;
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LStim_cGC&RC_traces_11_02_2017.mat');
 
 Long=All_traces;
+Long(:,11)=[];
 
 All_traces=vertcat(Long_Short,Long);
 
@@ -464,8 +465,6 @@ save(FileSave{1,1}, 'All_Corrs','-v7.3');
 
 %% Lck
 
-
-
 %% Clear workspace
 clearvars
 
@@ -477,14 +476,12 @@ Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
 
 Settings.AnimalNames = {
         'RG14',...
-        'RG16',...
-        'RG17',...
+        'RG12',...
         'RG18',...
     };
 Settings.ScoreSheetNames = {
         'RG14_Scoresheet_LongTrialsShortStim.xls',...
-        'RG16_Scoresheet_LongTrialsShortStim.xls',...
-        'RG17_Scoresheet_LongTrialsShortStim.xls',...
+        'RG12_Scoresheet_LongTrialsShortStim.xls',...
         'RG18_Scoresheet_LongTrialsShortStim.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim','shortstim'};
@@ -653,7 +650,7 @@ for iAnimal = 1:numAnimals
                 %end
                 
                 %% Make the debugging plots
-                     CSArray_Ch1_FLIKA.plot;
+%                     CSArray_Ch1_FLIKA.plot;
 %                     CSArray_Ch1_Hand.plot;
 %                     CSArray_Ch2_Hand.plot;
                     
