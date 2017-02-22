@@ -30,32 +30,44 @@ max.theme <- theme_classic() +
 #Correlation of RCaMP and GCaMP Signals during long stim
 CorrData <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
 
-ggplot(CorrData, aes(x=Long_Corr)) + geom_histogram(binwidth=0.05, position="dodge") +
+CorrData$CompChannel<-paste(CorrData$ChannelX, CorrData$ChannelY, sep= "_")
+CorrData$CompType<-paste(CorrData$ROI_X_type, CorrData$ROI_Y_type, sep= "_")
+
+ggplot(CorrData, aes(x=Long_Corr, fill=CompType)) + geom_histogram(binwidth=0.05, position="dodge") +
   ggtitle("Distribution of Correlation- All comparisons")
 
-ggplot(CorrData, aes(x=Lag)) + geom_histogram(binwidth=1, position="dodge") +
-  ggtitle("Distribution of TimeLags- All comparisons")
+ggplot(CorrData, aes(x=Long_Corr, fill=CompChannel)) + geom_histogram(binwidth=0.05, position="dodge") +
+  ggtitle("Distribution of Correlation- All comparisons")
 
+ggplot(CorrData, aes(x=Short_Corr, fill=CompChannel)) + geom_histogram(binwidth=0.05, position="dodge") +
+  ggtitle("Distribution of stim window Correlation- All comparisons")
+
+ggplot(CorrData, aes(x=Lag, fill=CompChannel)) + geom_histogram(binwidth=0.5, position="dodge") +
+  ggtitle("Distribution of lags- All comparisons")
+
+ggplot(CorrData, aes(x=xCorr, fill=CompChannel)) + geom_histogram(binwidth=0.1, position="dodge") +
+  ggtitle("Distribution of CrossCorrelations- All comparisons")
+
+
+df1A<- summarySE(CorrData, measurevar="Short_Corr", groupvars=c("CompChannel"))
+df1B<- summarySE(CorrData, measurevar="xCorr", groupvars=c("CompChannel"))
+df1C<- summarySE(CorrData, measurevar="Lag", groupvars=c("CompChannel"))
+
+
+GCaMP_RCaMP<-subset(CorrData, CompChannel=="GCaMP_RCaMP")
+
+with(GCaMP_RCaMP, xyplot(GCaMP_RCaMP$xCorr ~ GCaMP_RCaMP$minDistance, 
+                                   main="post30 vs post30 ",xlab="ROI Distance ", ylab="xCorrelation",))
 
 ##################################
-# aggregate ROIs
-WF.ROIs.Corr<- ddply(All, c("Animal", "Spot", "Layer", "Condition","ROI_X", "ROI_Y"), summarise, 
-                      Corr_mean = mean(Corr), Corr_SD = sd(Corr),
-                      Dis_mean = mean(Distance), Dis_SD = sd(Distance),
-                      Lag_mean = mean(TimeLag), Lag_SD = sd(TimeLag),
-                      N= length(Corr))
+#higher correlated data during stimulation window
 
-# compare the 90Hz and Nostim peak AUC for significantly greater 90Hz
-stim= subset(WF.ROIs.Corr, Condition=="Stim")
-nostim= subset(WF.ROIs.Corr, Condition=="Nostim")
-shortstim= subset(WF.ROIs.Corr, Condition=="ShortStim")
+highcorr<- subset(CorrData, Short_Corr>0.5)
 
-WF.ROIs.diff<- stim
-WF.ROIs.diff$Corr_diff_S <-stim$Corr_mean-nostim$Corr_mean
-WF.ROIs.diff$Corr_diff_SS <-shortstim$Corr_mean-nostim$Corr_mean
-#WF.ROIs.diff$Corr_mean <- NULL
-#WF.ROIs.diff$Corr_SD <- NULL
-#WF.ROIs.diff$Condition <- NULL
+df1A<- summarySE(highcorr, measurevar="Short_Corr", groupvars=c("CompType"))
+
+ggplot(highcorr, aes(x=xCorr, fill=CompChannel)) + geom_histogram(binwidth=0.1, position="dodge") +
+  ggtitle("Distribution of CrossCorrelations- All comparisons")
 
 ##################
 df1A<- summarySE(WF.ROIs.Corr, measurevar="Corr_mean", groupvars=c("Condition"))

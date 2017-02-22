@@ -37,11 +37,18 @@ max.theme <- theme_classic() +
 
 # whole frame and automatic RCaMP ROI selection:
 #stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-stim.all  <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
+peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+
 lsm.options(pbkrtest.limit = 100000)
 
 # treatment
-stim.all$treatment<-"Control"
+peaks.control1$treatment<-"Control"
+peaks.control2$treatment<-"Control"
+
+
+stim.all<-rbind(peaks.control1, peaks.control2)
+
 
 # stim onset at 5 sec
 stim.all$peakTime<-stim.all$peakTime-5
@@ -135,8 +142,8 @@ ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwid
 responding.neurons_long<- subset(longstim, peakTime>0 & peakTime<9 & Duration<11 & Channel=="RCaMP")
 responding.neurons_short<- subset(shortstim, peakTime>0 & peakTime<2 & Duration<3 & Channel=="RCaMP")
 
-responding.trials_long<-unique(responding.neurons_long$trials)  # 215 trials of 253- 84.9% of trials
-responding.trials_short<-unique(responding.neurons_short$trials) # 46 trials of 121- 38.0% of trials
+responding.trials_long<-unique(responding.neurons_long$trials)  # 313 trials of 423- 73.9% of trials
+responding.trials_short<-unique(responding.neurons_short$trials) # 96 trials of 149- 64.4% of trials
 
 longstim.responding<-subset(longstim, trials %in% responding.trials_long)
 shortstim.responding<-subset(shortstim, trials %in% responding.trials_short)
@@ -218,7 +225,7 @@ farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & l
 longstim.responding$ActivePeak[farpeaks1] <- 1 
 
 #responding astrocytes
-farpeaks2 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<20 & longstim.responding$ROIType!="Neuron"
+farpeaks2 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11& longstim.responding$ROIType!="Neuron"
 longstim.responding$ActivePeak[farpeaks2] <- 1 
 
 # pull out only the peaks that occur around the stimulation
@@ -237,6 +244,8 @@ ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + g
 #####
 library(xlsx)
 respondingNeurons_Astrocytes=subset(longstim.responding, ActivePeak==1)
+ggplot(respondingNeurons_Astrocytes, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
+  ggtitle("long stim responding")
 #write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
 write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
 
@@ -286,7 +295,7 @@ shortstim.responding$ActivePeak <- 0
 farpeaks1 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<2 & shortstim.responding$Duration<3 & shortstim.responding$ROIType=="Neuron"
 shortstim.responding$ActivePeak[farpeaks1] <- 1 
 
-farpeaks2 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<20 & shortstim.responding$ROIType!="Neuron"
+farpeaks2 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<2 & shortstim.responding$ROIType!="Neuron"
 shortstim.responding$ActivePeak[farpeaks2] <- 1 
 
 # pull out only the peaks that occur around the stimulation
@@ -305,7 +314,9 @@ ggplot(shortstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + 
 
 #respondingNeurons_AstrocytesShort=subset(shortstim.responding, ActivePeak==1)
 #write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_shortstim.xlsx")
-
+respondingNeurons_Astrocytes=subset(shortstim.responding, ActivePeak==1)
+ggplot(respondingNeurons_Astrocytes, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
+  ggtitle("short stim responding")
 
 
 activeROIs2<- ddply(shortstim.responding, c("Animal", "Spot", "Channel","trials","ROIType","treatment", "ROIs_trial"), summarise, 
@@ -352,6 +363,8 @@ ggplot(data=df2B2, aes(x=Channel, y=propActive, fill=Channel)) +
 
 df9A <- summarySE(longstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment"))
 df9B <- summarySE(shortstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment"))
+df9C <- summarySE(respondingNeurons_Astrocytes, measurevar="peakTime", groupvars=c("ROIType","treatment"))
+
 
 df10A <- summarySE(longstim.stimwindow, measurevar="peakStart", groupvars=c("ROIType","treatment"))
 df10B <- summarySE(shortstim.stimwindow, measurevar="peakStart", groupvars=c("ROIType","treatment"))

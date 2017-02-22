@@ -68,10 +68,10 @@ max.theme <- theme_classic() +
 
 #peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
 
-peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_11_02_2017.csv", header=TRUE, sep = ",")
+peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
-peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
+peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
@@ -258,6 +258,7 @@ ggplot(shortstim.responding, aes(x=peakTime, fill=interaction(Channel,treatment)
 #neuronal population sort into high, mid, low groups
 
 # consider all peaks with a time near 10 s
+#mean for each neuron
 neurons_longstim.mean<- ddply(responding.neurons_long, c("Animal", "Spot", "treatment", "ROIs"), summarise, 
                               PA_mean = mean(peakAUC), nEvents = length(peakAUC),
                               Dur_mean = mean(Duration), Prom_mean = mean(prominence),
@@ -285,6 +286,7 @@ longstim.responding$NeuronGroup[longstim.responding$ROIs %in% long.lowresponders
 
 
 # consider all peaks with a time near 10 s
+# mean for each responding neuron
 neurons_shortstim.mean<- ddply(responding.neurons_short, c("Animal", "Spot", "treatment", "ROIs"), summarise, 
                               PA_mean = mean(peakAUC), nEvents = length(peakAUC),
                               Dur_mean = mean(Duration), Prom_mean = mean(prominence),
@@ -313,6 +315,132 @@ shortstim.responding$NeuronGroup[shortstim.responding$ROIs %in% short.lowrespond
 # are high responders the same during long stim or short stim?
 overlapping_high<-intersect(long.highresponders, short.highresponders)
 
+########
+#Is there an effect across trials?
+# Do the neurons get stronger or weaker? Do fewer neurons respond?
+
+trialNames=c("trial1","trial2","trial3","trial4","trial5")
+
+resp.N_long<-subset(responding.neurons_long, Trial %in% trialNames)
+
+trial.neurons.mean<-ddply(resp.N_long, c("Animal", "Spot", "Trial","treatment"), summarise, 
+                     PA_mean = mean(peakAUC), nEvents = length(peakAUC),
+                     Dur_mean = mean(Duration), Prom_mean = mean(prominence),
+                     amp_mean = mean(amplitude), HalfDur = mean(halfWidth),
+                     peakT_mean = mean(peakTime),peakHalf_mean= mean(peakStartHalf),
+                     nNeurons=length(unique(ROIs)))
+
+dfNeuronTrials.amp<-summarySE(trial.neurons.mean, measurevar="amp_mean", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.num<-summarySE(trial.neurons.mean, measurevar="nNeurons", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.pAUC<-summarySE(trial.neurons.mean, measurevar="PA_mean", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.pT<-summarySE(trial.neurons.mean, measurevar="peakT_mean", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.pHT<-summarySE(trial.neurons.mean, measurevar="peakHalf_mean", groupvars=c("Trial","treatment"),na.rm=TRUE)
+
+dfNeuronTrials.amp1<-summarySE(resp.N_long, measurevar="amplitude", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.pAUC1<-summarySE(resp.N_long, measurevar="peakAUC", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.pT1<-summarySE(resp.N_long, measurevar="peakTime", groupvars=c("Trial","treatment"),na.rm=TRUE)
+dfNeuronTrials.pHT1<-summarySE(resp.N_long, measurevar="peakStartHalf", groupvars=c("Trial","treatment"),na.rm=TRUE)
+#######
+ggplot(data=dfNeuronTrials.amp1, aes(x=Trial, y=amplitude, fill=treatment)) +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.pAUC1, aes(x=Trial, y=peakAUC, fill=treatment)) +
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("peakAUC") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.pT, aes(x=Trial, y=peakT_mean, fill=treatment)) +
+  geom_errorbar(aes(ymin=peakT_mean-se, ymax=peakT_mean+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("peak time") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.pHT, aes(x=Trial, y=peakHalf_mean, fill=treatment)) +
+  geom_errorbar(aes(ymin=peakHalf_mean-se, ymax=peakHalf_mean+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("peak time half") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+######
+resp.N_long$Trial_treatment<-interaction(resp.N_long$Trial,resp.N_long$treatment)
+Namp.null = lmer(peakAUC ~ (1|Animal) + (1|Spot), resp.N_long,REML=FALSE)
+Namp.model1 = lmer(peakAUC ~ Trial + (1|Animal) + (1|Spot), resp.N_long,REML=FALSE)
+Namp.model2A = lmer(peakAUC ~ treatment + (1|Animal) + (1|Spot), resp.N_long,REML=FALSE)
+Namp.model2B = lmer(peakAUC ~ Trial+treatment + (1|Animal) + (1|Spot), resp.N_long,REML=FALSE)
+Namp.model3B = lmer(peakAUC ~ Trial_treatment + (1|Animal) + (1|Spot), resp.N_long,REML=FALSE)
+Namp.anova <- anova(Namp.null, Namp.model1,Namp.model2A,Namp.model2B,Namp.model3B)
+print(Namp.anova)
+# p values
+Namp.pv.longstim2 <- glht(Namp.model3B, mcp(Trial_treatment= "Tukey"))
+summary(Namp.pv.longstim2)
+
+#######
+ggplot(data=dfNeuronTrials.amp, aes(x=Trial, y=amp_mean, fill=treatment)) +
+  geom_errorbar(aes(ymin=amp_mean-se, ymax=amp_mean+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.num, aes(x=Trial, y=nNeurons, fill=treatment)) +
+  geom_errorbar(aes(ymin=nNeurons-se, ymax=nNeurons+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("nNeurons") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.pAUC, aes(x=Trial, y=PA_mean, fill=treatment)) +
+  geom_errorbar(aes(ymin=PA_mean-se, ymax=PA_mean+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("PA_mean") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.pT, aes(x=Trial, y=peakT_mean, fill=treatment)) +
+  geom_errorbar(aes(ymin=peakT_mean-se, ymax=peakT_mean+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("peak time") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+ggplot(data=dfNeuronTrials.pHT, aes(x=Trial, y=peakHalf_mean, fill=treatment)) +
+  geom_errorbar(aes(ymin=peakHalf_mean-se, ymax=peakHalf_mean+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  ylab("peak time half") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) + 
+  max.theme
+
+trial.neurons.mean$Trial_treatment<-interaction(trial.neurons.mean$Trial,trial.neurons.mean$treatment)
+# stats
+Namp.null = lmer(amp_mean ~ (1|Animal) + (1|Spot), trial.neurons.mean,REML=FALSE)
+Namp.model1 = lmer(amp_mean ~ Trial + (1|Animal) + (1|Spot), trial.neurons.mean,REML=FALSE)
+Namp.model2A = lmer(amp_mean ~ treatment + (1|Animal) + (1|Spot), trial.neurons.mean,REML=FALSE)
+Namp.model2B = lmer(amp_mean ~ Trial+treatment + (1|Animal) + (1|Spot), trial.neurons.mean,REML=FALSE)
+Namp.model3B = lmer(amp_mean ~ Trial_treatment + (1|Animal) + (1|Spot), trial.neurons.mean,REML=FALSE)
+Namp.anova <- anova(Namp.null, Namp.model1,Namp.model2A,Namp.model2B,Namp.model3B)
+print(Namp.anova)
+# p values
+Namp.pv.longstim2 <- glht(Namp.model3B, mcp(Trial_treatment= "Tukey"))
+summary(Namp.pv.longstim2)
+
+
 #########
 # LONG STIM (90Hz, 8sec)
 
@@ -331,15 +459,17 @@ longstim.responding$ActivePeak[farpeaks2] <- 1
 # pull out only the peaks that occur around the stimulation
 longstim.stimwindow<- subset(longstim.responding, peakTime>=0 & peakTime<=20)
 
-
-
 ggplot(longstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
   ggtitle("long stim responding")
 
-longstim.after<- subset(longstim.responding, peakTime>20 & peakTime<80)
+#longstim.after<- subset(longstim.responding, peakTime>20 & peakTime<80)
 
-ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
-  ggtitle("long stim after")
+#ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
+ # ggtitle("long stim after")
+
+######
+
+
 
 #####
 library(xlsx)
