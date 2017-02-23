@@ -63,15 +63,15 @@ max.theme <- theme_classic() +
 # relative "active ROI" between groups based on peak auc and frequency
 
 # whole frame and automatic RCaMP ROI selection:
-#peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-#peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_11_02_2017.csv", header=TRUE, sep = ",")
+peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
-#peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
+peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
-peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
-peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+#peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/S&LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+#peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/LStim_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
-peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+#peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
@@ -168,6 +168,7 @@ GCaMP.shortstim<- subset(GCaMP, Condition=="shortstim")
 ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
   ggtitle("GCaMP short stim")
 ###########
+
 
 # remove data with really large prominences
 #stim.all3<- subset(stim.all2, prominence<15)
@@ -467,7 +468,6 @@ ggplot(longstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))
 #ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
  # ggtitle("long stim after")
 
-######
 
 
 
@@ -569,8 +569,8 @@ ggplot(shortstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(b
   ggtitle("short stim prop active ")
 
 
-df2B1$ROIType <- factor(df2B1$ROIType , levels = c("Neuron","Endfoot","Soma","Process"))
-ggplot(data=df2B1, aes(x=ROIType, y=propActive, fill=ROIType)) +
+df2B1$ROIType <- factor(df2B1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df2B1, aes(x=interaction(ROIType,treatment), y=propActive, fill=ROIType)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
   xlab("ROIType") +
@@ -578,7 +578,7 @@ ggplot(data=df2B1, aes(x=ROIType, y=propActive, fill=ROIType)) +
   ggtitle("Responding ROIs for short stim") 
 
 
-ggplot(data=df2B2, aes(x=Channel, y=propActive, fill=Channel)) +
+ggplot(data=df2B2, aes(x=treatment, y=propActive, fill=Channel)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
   xlab("Channel") +
@@ -814,32 +814,121 @@ ggplot(data=df3A2, aes(x=treatment, y=propEarlyResp, fill=treatment)) +
 
 
 #######
+
 # peak features
-respGCaMP<-subset(longstim.stimwindow, Channel=="GCaMP")
-respGCaMP$TimeGroup<-"late"
-respGCaMP$TimeGroup[respGCaMP$ROIs_trial %in% earlyROINames]<-"early"
 
-# amplitude
-df2A <- summarySE(longstim.stimwindow, measurevar="amplitude", groupvars=c("ROIType","treatment"),na.rm=TRUE)
-df2B <- summarySE(respGCaMP, measurevar="amplitude", groupvars=c("TimeGroup","treatment"),na.rm=TRUE)
+#all ROIs- long and short stim
+stim<-subset(stim.all, Condition!="Nostim")
+#ROIs responding to stim and shortstim only
+stim.responding<-rbind(longstim.responding,shortstim.responding)
+stim.stimwindow<-rbind(longstim.stimwindow,shortstim.stimwindow)
+#
 
-ggplot(data=df2A, aes(x=ROIType, y=amplitude, fill=treatment)) +
+#check dSP4 data on different imaging days
+
+dfDSP4.amp<-summarySE(peaks.DSP4, measurevar="amplitude", groupvars=c("Spot","Condition"),na.rm=TRUE)
+dfDSP4.amp2<-summarySE(subset(stim.stimwindow, treatment=="DSP4"), measurevar="amplitude", groupvars=c("Spot","Condition"),na.rm=TRUE)
+ggplot(peaks.DSP4, aes(x=Spot,y=amplitude, fill=Condition)) + geom_boxplot()
+
+ggplot(data=dfDSP4.amp, aes(x=Spot, y=amplitude, fill=Condition)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
   ylab("amplitude") +
   scale_fill_manual(
     values=c("black", "red", "blue")) + 
   max.theme
 
-ggplot(data=df2B, aes(x=TimeGroup, y=amplitude, fill=treatment)) +
+
+# amplitude
+df3A <- summarySE(stim, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)
+df3B <- summarySE(stim.responding, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)
+df3C <- summarySE(stim.stimwindow, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)
+df3D <- summarySE(nostim, measurevar="amplitude", groupvars=c("ROIType","treatment"),na.rm=TRUE)
+
+ggplot(data=df3A, aes(x=interaction(treatment,Condition), y=amplitude, fill=ROIType)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("amplitude") +
   scale_fill_manual(
-    values=c("black", "red", "blue","green")) + 
+    values=c("black", "red", "blue","green","yellow","purple")) + 
+  max.theme
+
+df3B$ROIType <- factor(df3B$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df3B, aes(x=interaction(ROIType,Condition), y=amplitude, fill=treatment)) +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green","orange")) + 
+  max.theme
+
+df3C$ROIType <- factor(df3C$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df3C, aes(x=interaction(ROIType,Condition), y=amplitude, fill=treatment)) +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green","orange")) + 
   max.theme
 
 # prominence
+df4A <- summarySE(stim.stimwindow, measurevar="prominence", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)
+
+df4A$ROIType <- factor(df4A$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df4A, aes(x=interaction(ROIType,Condition), y=prominence, fill=treatment)) +
+  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("prominence") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green","orange")) + 
+  max.theme
+
+df4A1 <- summarySE(shortstim.stimwindow, measurevar="prominence", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)
+
+df4A1$ROIType <- factor(df4A1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df4A1, aes(x=interaction(ROIType,Condition), y=prominence, fill=treatment)) +
+  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("prominence") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green","orange")) + 
+  max.theme
+
+df4A2 <- summarySE(longstim.stimwindow, measurevar="prominence", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)
+
+df4A2$ROIType <- factor(df4A2$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df4A2, aes(x=interaction(ROIType,Condition), y=prominence, fill=treatment)) +
+  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("prominence") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green","orange")) + 
+  max.theme
+
+df4A3 <- summarySE(nostim, measurevar="prominence", groupvars=c("ROIType","treatment"),na.rm=TRUE)
+
+df4A3$ROIType <- factor(df4A3$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
+ggplot(data=df4A3, aes(x=ROIType, y=prominence, fill=treatment)) +
+  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("prominence") +
+  scale_fill_manual(
+    values=c("black", "red", "blue","green","orange")) + 
+  max.theme
+
+# hand circled neurons and FLIKA
+shortstim.stimwindow$treatment_ROIType=interaction(shortstim.stimwindow$treatment,shortstim.stimwindow$ROIType)
+prom.null = lmer(prominence ~ (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+prom.model1 = lmer(prominence ~ ROIType + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+prom.model2A = lmer(prominence ~ treatment + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+prom.model2B = lmer(prominence ~ ROIType+treatment + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+prom.model3B = lmer(prominence ~ treatment_ROIType + (1|Animal) + (1|Spot), shortstim.stimwindow,REML=FALSE)
+prom.anova <- anova(prom.null, prom.model1,prom.model2A,prom.model2B,prom.model3B)
+print(prom.anova)
+# p values
+prom.pv.longstim2 <- glht(prom.model3B, mcp(treatment_ROIType= "Tukey"))
+summary(prom.pv.longstim2)
+
 
 # duration
 df4A <- summarySE(longstim.stimwindow, measurevar="Duration", groupvars=c("ROIType","treatment"),na.rm=TRUE)
@@ -873,8 +962,8 @@ nostim.trials<- ddply(nostim, c("Animal", "Spot", "trials","Channel","ROIType","
 nostim.trials$peaks_min=nostim.trials$freq/1.5
 nostim.trials$signals_min=nostim.trials$nEvents/1.5
 
-df5A <- summarySE(nostim.trials, measurevar="peaks_min", groupvars=c("Channel"), na.rm = T)
-df5B <- summarySE(nostim.trials, measurevar="signals_min", groupvars=c("Channel"),na.rm = T)
+df5A <- summarySE(nostim.trials, measurevar="peaks_min", groupvars=c("Channel","treatment"), na.rm = T)
+df5B <- summarySE(nostim.trials, measurevar="signals_min", groupvars=c("Channel","treatment"),na.rm = T)
 
 ggplot(data=df4A, aes(x=treatment, y=Duration, fill=Condition)) +
   geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
