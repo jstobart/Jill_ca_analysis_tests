@@ -178,7 +178,7 @@ for itrial= 1:length(trial_condition)
                     [minDistance(k), indexOfMin] = min(allDistances);
                 end
                 % Find the overall min distance
-                CorrData{1,23} = (min(minDistance)*CurrentData(kROI,11));
+                CorrData{1,23} = (min(minDistance)*cell2mat(CurrentData(kROI,11)));
             else
                 CorrData{1,23} = [];
             end
@@ -427,7 +427,7 @@ for itrial= 1:length(trial_condition)
                     [minDistance(k), indexOfMin] = min(allDistances);
                 end
                 % Find the overall min distance
-                CorrData{1,23} = (min(minDistance)*CurrentData(kROI,11));
+                CorrData{1,23} = (min(minDistance)*cell2mat(CurrentData(kROI,11)));
             else
                 CorrData{1,23} = [];
             end
@@ -642,7 +642,7 @@ for itrial= 1:length(trial_condition)
                     [minDistance(k), indexOfMin] = min(allDistances);
                 end
                 % Find the overall min distance
-                CorrData{1,23} = (min(minDistance)*CurrentData(kROI,11));
+                CorrData{1,23} = (min(minDistance)*cell2mat(CurrentData(kROI,11)));
             else
                 CorrData{1,23} = [];
             end
