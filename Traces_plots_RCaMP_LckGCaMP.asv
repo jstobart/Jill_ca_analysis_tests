@@ -101,64 +101,8 @@ meanTrace = mean(traces,2);
 plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 % plot([0 0],[18.5 19.5], 'k','LineWidth', 2)
 
-% %% Plot astrocyte "neuropil" vs. neuronal "neuropil"
-% RCaMP_np_traces=[];
-% GCaMP_np_traces=[];
-% RCaMP_traces=[];
-% GCaMP_traces=[];
-% %find GCaMP, RCaMP
-% for xROI= 1:length(data_traces)
-%     RC_str{xROI}= strfind(data_traces{xROI, 3},'RCaMP');
-%     RC_idx(xROI)=~isempty(RC_str{xROI});
-% end
-%
-% RCaMP_traces=data_traces(RC_idx',:);
-% GCaMP_traces=data_traces(~RC_idx',:);
-%
-% %find neuropil
-% for xROI= 1:length(RCaMP_traces)
-%     NP_str= strfind(RCaMP_traces{xROI, 12},'Neuropil');
-%
-%     tempY= RCaMP_traces{xROI,8};
-%     if ~isempty(NP_str)
-%         RCaMP_np_traces= horzcat(RCaMP_np_traces, tempY);
-%     end
-% end
-% for xROI= 1:length(GCaMP_traces)
-%     NP_str= strfind(GCaMP_traces{xROI, 12},'Neuropil');
-%
-%     tempY= GCaMP_traces{xROI,8};
-%     if ~isempty(NP_str)
-%         GCaMP_np_traces= horzcat(GCaMP_np_traces, tempY);
-%     end
-% end
-% % means and SDs
-% %RCaMP NP
-% RCNPmeanTrace = mean(RCaMP_np_traces,2);
-% RCNPSDTrace = std(RCaMP_np_traces');
-%
-% %GCaMP NP
-% GCNPmeanTrace = mean(GCaMP_np_traces,2);
-% GCNPSDTrace = std(GCaMP_np_traces');
-%
-% figure ('name', 'Overlaid traces: GCaMP and RCaMP neuropil ROIs')
-% hold on
-% axis off
-% for xROI= 1:size(RCaMP_np_traces,2)
-%     tempY = RCaMP_np_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-% end
-% for xROI= 1:size(GCaMP_np_traces,2)
-%     tempY = GCaMP_np_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-% end
-% plot(TimeX(1:stimwindow), GCNPmeanTrace(1:stimwindow), 'g', 'LineWidth',1)
-% plot(TimeX(1:stimwindow), RCNPmeanTrace(1:stimwindow), 'r', 'LineWidth',1)
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-
-%% Plot only the responding neurons and astrocytes from the same field of view
+%%
+%%  Plot only the responding neurons and astrocytes from the same field of view
 
 
 %XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\respondingROIs_longstim.xlsx';
@@ -999,11 +943,62 @@ earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
 
 %% Plot early ROI traces
 
+% all GCaMP ROIs
+GC_idx=find(strcmp(RespondingROIs(:,3),'GCaMP'));
+GCaMP_ROI= RespondingROIs(GC_idx,:);
+
+%remove duplicate traces
+wd=GCaMP_ROI;
+[~,idx]=unique(wd(:,15));
+GCaMP_ROI=wd(idx,:);
+
+numROI=length(unique(GCaMP_ROI(:,15)));
+
+for iROI=1:size(GCaMP_ROI,1)
+    %area under the curve
+    tempY=GCaMP_ROI{iROI,8};
+    %first 3 sec after stim onset
+    x1=round(FrameRate*5);
+    x2=round(FrameRate*7);
+    GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
+end
+
+%%
+% find the ROIs that have a decend area under the curve for the first 3 sec
+% of window
+AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>10);
+earlyGC=GCaMP_ROI(AUC_idx,:);
+
+allearlyGC=[];
+
+figure('name', 'AUC greater than 10 in first 2 sec')
+hold on
+axis off
+
+for xROI= 1:size(earlyGC,1)
+    tempY = earlyGC{xROI,8};
+    if length(tempY)>600
+        tempY=tempY(1:592);
+    end
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+    allearlyGC= horzcat(allearlyGC, tempY);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
+meanEarlyTrace = mean(allearlyGC,2);
+plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+%% 3d plot
+plot3(TimeX(1:stimwindow),allearlyGC
+
+%% early based on time shifts
 % make new names
 for iROI=1:size(early,1)
     early{iROI,14}=strcat(early{iROI,1},'_',early{iROI,7});
 end
 earlyROIs=unique(early(:,14));
+
 % find the index of ROIs at are in the early ROI group
 ind1=find(ismember(RespondingROIs(:,15),earlyROIs(:,1)));
 earlyROIs_traces=RespondingROIs(ind1,:);
@@ -1011,34 +1006,39 @@ earlyROIs_traces=RespondingROIs(ind1,:);
 ind2=find(ismember(responders(:,26),earlyROIs(:,1)));
 earlyROIs_peaks=responders(ind2,:);
 
-%separate out traces of neurons and astrocytes that are unique
-[b, m, n]=unique(earlyROIs_traces(:,15));
-dupindx=find(diff(sort(m))>1)+1 ;
-dupvals=earlyROIs_traces(dupindx,15);
+%remove duplicate traces
+wd=earlyROIs_traces;
+[~,idx]=unique(wd(:,15));
+earlyROIs_traces=wd(idx,:);
 
-% remove duplicates where there were 2 peaks from the same ROI that were
-% early
-ind3=find(~ismember(earlyROIs_traces(:,15),dupvals(:,1)));
-earlyROIs_traces=earlyROIs_traces(ind3,:);
-%ind4=find(~ismember(earlyROIs_peaks(:,24),dupvals(:,1)));
-%earlyROIs_peaks=earlyROIs_peaks(ind4,:);
+%separate out traces of neurons and astrocytes that are unique
+% [b, m, n]=unique(earlyROIs_traces(:,15));
+% dupindx=find(diff(sort(m))>1)+1 ;
+% dupvals=earlyROIs_traces(dupindx,15);
+
+
 
 %%
-earlytraces=[];
-figure('name', 'Early traces- unshifted')
+
+figure('name', 'Early Extra traces- unshifted 20')
 hold on
 axis off
 ylim([-2 10])
 
 for xROI= 1:size(earlyROIs_traces,1)
     tempY = earlyROIs_traces{xROI,8};
+    if length(tempY)>600
+        tempY=tempY(1:592);
+    end
+    if earlyROIs_traces{xROI,17}>5
     grey = [0.8,0.8,0.8];
     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
-    earlytraces= horzcat(earlytraces, tempY);
+    earlyExtratraces= horzcat(earlyExtratraces, tempY);
+    end
 end
 plot([5 13],[-2 -2], 'k','LineWidth', 2)
 plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
-meanEarlyTrace = mean(earlytraces,2);
+meanEarlyTrace = mean(earlyExtratraces,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
 
