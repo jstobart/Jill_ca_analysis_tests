@@ -959,7 +959,7 @@ for iROI=1:size(GCaMP_ROI,1)
     tempY=GCaMP_ROI{iROI,8};
     %first 3 sec after stim onset
     x1=round(FrameRate*5);
-    x2=round(FrameRate*7);
+    x2=round(FrameRate*6);
     GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
 end
 
@@ -990,8 +990,21 @@ meanEarlyTrace = mean(allearlyGC,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
 %% 3d plot
-plot3(TimeX(1:stimwindow),allearlyGC
+x1=zeros(1,size(allearlyGC,2));
+y1=zeros(1,size(allearlyGC,2));
+z1=1:size(allearlyGC,2);
 
+earlywindow=allearlyGC(1:stimwindow,:);
+figure
+h=ribbon(TimeX(1:stimwindow),earlywindow);
+set(h, {'CData'}, get(h,'ZData'), 'FaceColor','interp','MeshStyle','column')
+
+[X,Y] = meshgrid(1:8, 1:36);
+figure(1)
+ribbon(Y, M, 0.1)
+set(gca, 'Xtick', 1:8, 'XtickLabel', Xt, 'FontSize',6) 
+set (gca, 'YTick', 1:36, 'YtickLabel', Yt, 'FontSize',6)
+view([50 50])
 %% early based on time shifts
 % make new names
 for iROI=1:size(early,1)
