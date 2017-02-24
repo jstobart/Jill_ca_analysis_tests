@@ -969,6 +969,11 @@ end
 AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>10);
 earlyGC=GCaMP_ROI(AUC_idx,:);
 
+earlyNames=earlyGC(:,15);
+ cd('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
+ cell2csv('Early_LckGCaMPROIs.csv',earlyNames);
+
+
 allearlyGC=[];
 
 figure('name', 'AUC greater than 10 in first 2 sec')
@@ -1002,13 +1007,14 @@ set(h, {'CData'}, get(h,'ZData'), 'FaceColor','interp','MeshStyle','column')
 %plot3(x1,y1,z1, 'k','LineWidth',2)
 %zlim([0 15])
 
-figure
-h=ribbon(earlywindow', TimeX(1:stimwindow),0.5);
-set(h, {'CData'}, get(h,'ZData'), 'FaceColor','interp','MeshStyle','column')
-zlim([0 15])
+% figure
+% h=ribbon(earlywindow', TimeX(1:stimwindow),0.5);
+% set(h, {'CData'}, get(h,'ZData'), 'FaceColor','interp','MeshStyle','column')
+% zlim([0 15])
 
 %%
-h=colormap(winter);
+%map=[0 0.5 0.5;0.5 1 1];
+h=colormap(gca,'parula');
 HeatMap(earlywindow','colormap',h);
 
 %% early based on time shifts
