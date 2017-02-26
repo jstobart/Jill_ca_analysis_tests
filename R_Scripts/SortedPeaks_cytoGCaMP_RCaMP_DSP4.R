@@ -87,7 +87,7 @@ stim.all<-rbind(peaks.control1, peaks.control2,peaks.DSP4)
 
 ######
 # exclude DSP4 data FOR NOW
-#stim.all<-subset(stim.all, treatment=="Control")
+stim.all<-subset(stim.all, treatment=="Control")
 #stim.all<-subset(stim.all, treatment=="DSP4")
 
 stim.all$treatment<-as.factor(stim.all$treatment)

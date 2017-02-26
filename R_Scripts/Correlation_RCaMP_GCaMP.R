@@ -127,8 +127,13 @@ earlyAUC<-read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/EarlyGC_byAUC.csv
 earlyTimeDiff<-read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/EarlyGC_byTimeDiff.csv", header=TRUE, sep = ",")
 
 respondingGC<-subset(responders, Channel=="GCaMP")
+respondingRC<-subset(responders, Channel=="RCaMP")
+
+GCaMP_RCaMP$RCaMP_ROIs<-paste(GCaMP_RCaMP$Animal, GCaMP_RCaMP$Spot, GCaMP_RCaMP$Trial,GCaMP_RCaMP$ROI_Y, sep= "_")
 
 respGC.corr<-subset(GCaMP_RCaMP, ROIs_trial %in% respondingGC$ROIs_trial)
+respGC.corr<-subset(respGC.corr, RCaMP_ROIs %in% respondingRC$ROIs_trial)
+
 
 Corr_EarlyAUC<-subset(respGC.corr,  ROIs_trial %in% earlyAUC$names)
 Corr_EarlyTD<-subset(respGC.corr,  ROIs_trial %in% earlyTimeDiff$names)
@@ -305,6 +310,41 @@ summary(xCorr.Group)
 xCorr.Group_types <- glht(xCorr.model4, mcp(Group_CompType= "Tukey"))
 summary(xCorr.Group_types)
 
+#lag
+Lag.null = lmer(Lag ~ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP.CorrTD,REML=FALSE)
+Lag.model1 = lmer(Lag ~ Group + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP.CorrTD,REML=FALSE)
+Lag.model2 = lmer(Lag ~ CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP.CorrTD,REML=FALSE)
+Lag.model3 = lmer(Lag ~ CompType+Group + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP.CorrTD,REML=FALSE)
+Lag.model4 = lmer(Lag ~ Group_CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP.CorrTD,REML=FALSE)
+
+Lag.anova <- anova(Lag.null,Lag.model1,Lag.model2,Lag.model3,Lag.model4)
+print(Lag.anova)
+
+# p values
+Lag.Group <- glht(Lag.model1, mcp(Group= "Tukey"))
+summary(Lag.Group)
+
+Lag.Group_types <- glht(Lag.model4, mcp(Group_CompType= "Tukey"))
+summary(Lag.Group_types)
+
+
+#####
+#distance
+
+df6A<- summarySE(GCaMP.CorrAUC, measurevar="MinDistance", groupvars=c("Group"))
+df6B<- summarySE(GCaMP.CorrAUC, measurevar="MinDistance", groupvars=c("Group","CompType"))
+df6C<- summarySE(GCaMP.CorrTD, measurevar="MinDistance", groupvars=c("Group"))
+df6D<- summarySE(GCaMP.CorrTD, measurevar="MinDistance", groupvars=c("Group","CompType"))
+
+
+ggplot(GCaMP.CorrTD, aes(x=MinDistance, fill=Group)) + geom_histogram(binwidth=5, position="dodge") +
+  ggtitle("Distribution of distances- responding AC and N")
+
+ggplot(GCaMP.CorrTD, aes(x=MinDistance, y=Lag,fill=Group)) + geom_point(aes(colour=Group))
+
+
+
+test= subset(GCaMP.CorrTD, Lag==0 & MinDistance==0)
 
 #####
 ggplot(data=Corr_EarlyAUC, aes(x=Lag, fill=CompType)) +

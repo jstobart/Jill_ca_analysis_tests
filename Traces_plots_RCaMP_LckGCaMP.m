@@ -961,13 +961,15 @@ for iROI=1:size(GCaMP_ROI,1)
     x1=round(FrameRate*5);
     x2=round(FrameRate*6);
     GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
-end
+end 
 
 %%
-% find the ROIs that have a decend area under the curve for the first 3 sec
+% find the ROIs that have a decent area under the curve for the first 3 sec
 % of window
 AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>10);
+AUC_idx2=find(cell2mat(GCaMP_ROI(:,17))<=10);
 earlyGC=GCaMP_ROI(AUC_idx,:);
+lateGC=GCaMP_ROI(AUC_idx2,:);
 
 earlyNames=earlyGC(:,15);
  cd('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
@@ -994,6 +996,27 @@ plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanEarlyTrace = mean(allearlyGC,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
+allLateGC=[];
+figure('name', 'late- responding ROIs not in early group')
+hold on
+axis off
+for xROI= 1:size(lateGC,1)
+    tempY = lateGC{xROI,8};
+    if length(tempY)>600
+        tempY=tempY(1:592);
+    end
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+    allLateGC= horzcat(allLateGC, tempY);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
+meanLateTrace = mean(allLateGC,2);
+plot(TimeX(1:stimwindow), meanLateTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+lateExport=allLateGC(1:355,:);
+lateExport2=TimeX(1:355);
+lateExport2=[lateExport2,lateExport];
 %% 3d plot
 x1=zeros(1,size(allearlyGC,2));
 y1=ones(1,size(allearlyGC,2));

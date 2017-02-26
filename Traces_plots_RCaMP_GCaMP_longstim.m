@@ -178,7 +178,7 @@ responders=responders(~GCNP',:);
 
 RespondingROIs=[];
 for xROI=1:length(responders)
-    currentROI=responders{xROI, 24};
+    currentROI=responders{xROI, 25};
     for iROI = 1:size(data_traces,1)
         ROIIndex=strcmp(data_traces{iROI,15},currentROI);
         if ROIIndex
@@ -548,7 +548,7 @@ for iTrial=1:size(uniqueTrials,1)
     
     %find neuron and neuropil ROIs
     for iROI=1:size(trialData,1)
-        Nstr{iROI}= regexp(trialData{iROI,23},'N*');
+        Nstr{iROI}= regexp(trialData{iROI,24},'N*');
     end
     
     NIndx= ~cellfun(@isempty, Nstr);
@@ -556,13 +556,13 @@ for iTrial=1:size(uniqueTrials,1)
     NData=[];
     %find if there are multiple peaks for a given neuron and choose the
     %faster peak time
-    if length(unique(NeuronData(:,24)))==length(NeuronData(:,24))
+    if length(unique(NeuronData(:,25)))==length(NeuronData(:,25))
         NData=NeuronData;
     else
-        uniqueNeurons=unique(NeuronData(:,24)); % list of unique neurons
+        uniqueNeurons=unique(NeuronData(:,25)); % list of unique neurons
         for xxROI= 1:size(uniqueNeurons,1)
             for kROI= 1:size(NeuronData,1)
-                NeuronIdx(kROI)= strcmp(NeuronData{kROI,24},uniqueNeurons{xxROI});
+                NeuronIdx(kROI)= strcmp(NeuronData{kROI,25},uniqueNeurons{xxROI});
             end
             singleNeurons=NeuronData(NeuronIdx,:); % index of each individual neuron
             clear NeuronIdx
@@ -582,12 +582,12 @@ for iTrial=1:size(uniqueTrials,1)
     %compare neuronal and astrocyte peaks times
     for iN= 1:size(NData, 1)
         for iA= 1:size(AstrocyteData,1)
-            timeComparisons{iA,1}=NData{iN,26}; % unique trial name
-            timeComparisons{iA,2}=NData{iN,23}; % neuron ROI type
+            timeComparisons{iA,1}=NData{iN,27}; % unique trial name
+            timeComparisons{iA,2}=NData{iN,24}; % neuron ROI type
             timeComparisons{iA,3}=NData{iN,11}; % neuron name
             timeComparisons{iA,4}=NData{iN,6}; % neuronal max peak time
             timeComparisons{iA,5}=NData{iN,8}; % neuronal onset time
-            timeComparisons{iA,6}=AstrocyteData{iA,23}; % astrocyte ROI type
+            timeComparisons{iA,6}=AstrocyteData{iA,24}; % astrocyte ROI type
             timeComparisons{iA,7}=AstrocyteData{iA,11}; % astrocyte ROI name
             timeComparisons{iA,8}=AstrocyteData{iA,6}; % astrocyte peak time
             timeComparisons{iA,9}=AstrocyteData{iA,8}; % astrocyte onset
@@ -600,8 +600,8 @@ for iTrial=1:size(uniqueTrials,1)
         
         % shift traces of all ROIs by each neuronal peak time
         for iTrace=1:size(trialTraces,1)
-            ShiftTrace{iTrace,1}=NData{iN,26}; %unique trial name
-            ShiftTrace{iTrace,2}=NData{iN,23}; % Neuron Type (soma or neuropil)
+            ShiftTrace{iTrace,1}=NData{iN,27}; %unique trial name
+            ShiftTrace{iTrace,2}=NData{iN,24}; % Neuron Type (soma or neuropil)
             ShiftTrace{iTrace,3}=NData{iN,11}; % Neuron name 
             ShiftTrace{iTrace,4}=NData{iN,6}; % Neuron peak time
             ShiftTrace{iTrace,5}=NData{iN,8}; % Neuron onset time (half start)
@@ -937,18 +937,7 @@ plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
 
 
-%%
-iROI=501:550;
-figure('name', 'responding RCaMP + Early traces GCaMP')
-hold on
-axis off
 
-for xROI=1:50
-    xxROI=iROI(xROI);
-    tempY = earlyROIs_traces{xxROI,8};
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow)+(2*xROI),'Color',grey,'LineWidth',0.1);
-end
 
 %%
 
