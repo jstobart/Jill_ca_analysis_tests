@@ -813,22 +813,26 @@ ggplot(data=df3A2, aes(x=treatment, y=propEarlyResp, fill=treatment)) +
 #spatially similar?
 
 
-#######
 
-# peak features
 
+##### 
+#DSP4 features
 #all ROIs- long and short stim
-stim<-subset(stim.all, Condition!="Nostim")
-#ROIs responding to stim and shortstim only
-stim.responding<-rbind(longstim.responding,shortstim.responding)
-stim.stimwindow<-rbind(longstim.stimwindow,shortstim.stimwindow)
+
 #
-
 #check dSP4 data on different imaging days
+AC.DSP4<-subset(peaks.DSP4, Channel=="GCaMP")
+AC.DSP4$Ani_Spot<-paste(AC.DSP4$Animal,AC.DSP4$Spot, sep='_')
 
-dfDSP4.amp<-summarySE(peaks.DSP4, measurevar="amplitude", groupvars=c("Spot","Condition"),na.rm=TRUE)
+dfDSP4.amp<-summarySE(AC.DSP4, measurevar="amplitude", groupvars=c("Ani_Spot","Condition"),na.rm=TRUE)
+
+ggplot(AC.DSP4[AC.DSP4$Condition=="Nostim",], aes(x=Spot,y=amplitude, fill=Animal)) + geom_boxplot()
+ggplot(AC.DSP4[AC.DSP4$Condition=="Stim",], aes(x=Spot,y=amplitude, fill=Animal)) + geom_boxplot()
+ggplot(AC.DSP4[AC.DSP4$Condition=="shortstim",], aes(x=Spot,y=amplitude, fill=Animal)) + geom_boxplot()
+
 dfDSP4.amp2<-summarySE(subset(stim.stimwindow, treatment=="DSP4"), measurevar="amplitude", groupvars=c("Spot","Condition"),na.rm=TRUE)
-ggplot(peaks.DSP4, aes(x=Spot,y=amplitude, fill=Condition)) + geom_boxplot()
+peaks.DSP4$Ani_Spot<-paste(peaks.DSP4$Animal,peaks.DSP4$Spot, sep='_')
+ggplot(peaks.DSP4, aes(x=Ani_Spot,y=amplitude, fill=Condition)) + geom_boxplot()
 
 ggplot(data=dfDSP4.amp, aes(x=Spot, y=amplitude, fill=Condition)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
@@ -838,6 +842,36 @@ ggplot(data=dfDSP4.amp, aes(x=Spot, y=amplitude, fill=Condition)) +
     values=c("black", "red", "blue")) + 
   max.theme
 
+
+#count the number of astrocyte plateaus in DSP4 no stim vs control no stim
+AC.nostim<-subset(GCaMP, Condition=="Nostim")
+LC.peaks<-subset(AC.nostim, amplitude>2 & Duration>20) #find LC activations?
+
+LC.count<- ddply(LC.peaks, c("Animal", "Spot", "treatment"), summarise, 
+                             nSignals = length(peakAUC))
+
+df.LC.plateau<-summarySE(LC.count, measurevar="nSignals", groupvars=c("treatment"),na.rm=TRUE)
+df.LC.amp<-summarySE(LC.peaks, measurevar="amplitude", groupvars=c("treatment"),na.rm=TRUE)
+df.LC.duration<-summarySE(LC.peaks, measurevar="Duration", groupvars=c("treatment"),na.rm=TRUE)
+
+# hand circled neurons and FLIKA
+platcount.null = lmer(nSignals ~ (1|Animal) + (1|Spot), LC.count,REML=FALSE)
+platcount.model1 = lmer(nSignals ~ treatment + (1|Animal) + (1|Spot), LC.count,REML=FALSE)
+platcount.anova <- anova(platcount.null, platcount.model1)
+print(platcount.anova)
+# p values
+platcount.pv <- glht(platcount.model1, mcp(treatment= "Tukey"))
+summary(platcount.pv)
+
+
+########
+
+# peak features
+
+stim<-subset(stim.all, Condition!="Nostim")
+#ROIs responding to stim and shortstim only
+stim.responding<-rbind(longstim.responding,shortstim.responding)
+stim.stimwindow<-rbind(longstim.stimwindow,shortstim.stimwindow)
 
 # amplitude
 df3A <- summarySE(stim, measurevar="amplitude", groupvars=c("Condition","ROIType","treatment"),na.rm=TRUE)

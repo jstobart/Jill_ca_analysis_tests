@@ -816,7 +816,7 @@ for iROI=1:size(GCaMP_ROI,1)
 end
 
 %%
-% find the ROIs that have a decend area under the curve for the first 3 sec
+% find the ROIs that have a decent area under the curve for the first 3 sec
 % of window
 AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>30);
 earlyGC=GCaMP_ROI(AUC_idx,:);
@@ -841,7 +841,12 @@ plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanEarlyTrace = mean(allearlyGC,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
-%% Plot early ROI traces
+%save names
+ earlyGCnames=earlyGC(:,15);
+ earlyGCnames2=vertcat('names',earlyGCnames);
+cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
+cell2csv('earlyGC_byAUC.csv',earlyGCnames2);
+
 
 %% early based on time shifts
 % make new names
@@ -853,6 +858,7 @@ earlyROIs=unique(early(:,14));
 % find the index of ROIs at are in the early ROI group
 ind1=find(ismember(RespondingROIs(:,15),earlyROIs(:,1)));
 earlyROIs_traces=RespondingROIs(ind1,:);
+lateROIs_traces=RespondingROIs(~ind1,:);
 
 ind2=find(ismember(responders(:,26),earlyROIs(:,1)));
 earlyROIs_peaks=responders(ind2,:);
@@ -877,6 +883,16 @@ for iROI=1:size(earlyROIs_traces,1)
 end
 
 %%
+%remove giant ROIs
+earlyROIs_traces(222,:)=[];
+earlyROIs_traces(228,:)=[];
+earlyROIs_traces(459,:)=[];
+earlyROIs_traces(459,:)=[];
+earlyROIs_traces(459,:)=[];
+earlyROIs_traces(459,:)=[];
+earlyROIs_traces(459,:)=[];
+earlyROIs_traces(459,:)=[];
+%%
 earlyExtratraces=[];
 
 figure('name', 'Early Extra traces- unshifted 5')
@@ -900,16 +916,7 @@ plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanEarlyTrace = mean(earlyExtratraces,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
-%%
-%remove giant ROIs
-earlyROIs_traces(222,:)=[];
-earlyROIs_traces(228,:)=[];
-earlyROIs_traces(459,:)=[];
-earlyROIs_traces(459,:)=[];
-earlyROIs_traces(459,:)=[];
-earlyROIs_traces(459,:)=[];
-earlyROIs_traces(459,:)=[];
-earlyROIs_traces(459,:)=[];
+
 % remove duplicates where there were 2 peaks from the same ROI that were
 % early
 %ind3=find(~ismember(earlyROIs_traces(:,15),dupvals(:,1)));
@@ -935,20 +942,27 @@ plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanEarlyTrace = mean(earlytraces,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
-
+%save names
+earlyGCnames=earlyROIs_traces(:,15);
+earlyGCnames2=vertcat('names',earlyGCnames);
+cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
+cell2csv('earlyGC_byTimeDiff.csv',earlyGCnames2);
 
 %%
-iROI=501:550;
-figure('name', 'responding RCaMP + Early traces GCaMP')
-hold on
-axis off
-
-for xROI=1:50
-    xxROI=iROI(xROI);
-    tempY = earlyROIs_traces{xxROI,8};
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow)+(2*xROI),'Color',grey,'LineWidth',0.1);
-end
+h=colormap('winter');
+HeatMap(earlyExtratraces','colormap', h)
+%%
+% iROI=501:550;
+% figure('name', 'responding RCaMP + Early traces GCaMP')
+% hold on
+% axis off
+% 
+% for xROI=1:50
+%     xxROI=iROI(xROI);
+%     tempY = earlyROIs_traces{xxROI,8};
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow)+(2*xROI),'Color',grey,'LineWidth',0.1);
+% end
 
 %%
 
