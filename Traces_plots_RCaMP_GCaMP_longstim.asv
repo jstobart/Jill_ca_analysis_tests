@@ -215,11 +215,11 @@ end
 
 %find ROITypes
 for xROI= 1:length(RespondingROIs)
-    N_str= strfind(RespondingROIs{xROI, 13},'Neuron');
-    S_str= strfind(RespondingROIs{xROI, 13},'Soma');
-    EF_str= strfind(RespondingROIs{xROI, 13},'Endfeet');
-    P_str= strfind(RespondingROIs{xROI, 13},'Process');
-    NP_str= strfind(RespondingROIs{xROI, 13},'Neuropil');
+    N_str= strfind(RespondingROIs{xROI, 12},'Neuron');
+    S_str= strfind(RespondingROIs{xROI, 12},'Soma');
+    EF_str= strfind(RespondingROIs{xROI, 12},'Endfeet');
+    P_str= strfind(RespondingROIs{xROI, 12},'Process');
+    NP_str= strfind(RespondingROIs{xROI, 12},'Neuropil');
     
     tempY= RespondingROIs{xROI,8};
     if ~isempty(N_str)
@@ -346,27 +346,25 @@ RespPSDTrace = std(Resp_processes_traces');
 % 
 % 
 % 
-%% ROITypes
-figure ('name', 'Overlaid traces + mean:All responding ROItype')
-subplot_tight(1,4,1,0.03)
-hold on
-axis off
-ylim([-5 30]);
-for xROI= 1:size(Resp_neuron_traces,2)
-    tempY = Resp_neuron_traces(:,xROI);
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.5);
-   % ylim([-5 300]);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 3)
-plot(TimeX(1:stimwindow), RespNmeanTrace(1:stimwindow)', 'k', 'LineWidth',2)
-plot([5 5],[-1 10], 'k--','LineWidth', 1)
-x1 = 0;
-y1 = 5;
-txt1 = 'Neurons';
-%text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
+% %% ROITypes
+% figure ('name', 'Overlaid traces + mean:All responding ROItype')
+% subplot(1,5,1)
+% hold on
+% axis off
+% for xROI= 1:size(Resp_neuron_traces,2)
+%     tempY = Resp_neuron_traces(:,xROI);
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+%     ylim([-5 300]);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespNmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Neurons';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
 % subplot(1,5,2)
 % hold on
 % axis off
@@ -383,94 +381,91 @@ txt1 = 'Neurons';
 % y1 = 5;
 % txt1 = 'Neuropil';
 % text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot_tight(1,4,2,[0.03])
-hold on
-axis off
-ylim([-5 30]);
-for xROI= 1:size(Resp_EF_traces,2)
-    tempY = Resp_EF_traces(:,xROI);
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.5);
-   % ylim([-5 300]);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 3)
-plot(TimeX(1:stimwindow), RespEFmeanTrace(1:stimwindow), 'k', 'LineWidth',2)
-plot([5 5],[-1 10], 'k--','LineWidth', 1)
-x1 = 0;
-y1 = 5;
-txt1 = 'Endfeet';
-%text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot_tight(1,4,3,[0.03])
-hold on
-axis off
-ylim([-5 30]);
-for xROI= 1:size(Resp_somata_traces,2)
-    tempY = Resp_somata_traces(:,xROI);
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.5);
-   % ylim([-5 300]);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 3)
-plot(TimeX(1:stimwindow), RespSmeanTrace(1:stimwindow), 'k', 'LineWidth',2)
-plot([5 5],[-1 10], 'k--','LineWidth', 1)
-x1 = 0;
-y1 = 5;
-txt1 = 'Somata';
-%text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot_tight(1,4,4,[0.03])
-hold on
-axis off
-ylim([-5 30]);
-for xROI= 1:size(Resp_processes_traces,2)
-    tempY = Resp_processes_traces(:,xROI);
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.5);
-    %ylim([-5 300]);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 3)
-plot(TimeX(1:stimwindow), RespPmeanTrace(1:stimwindow), 'k', 'LineWidth',3)
-plot([5 5],[-1 10], 'k--','LineWidth', 1)
-x1 = 0;
-y1 = 5;
-txt1 = 'Processes';
-%text(x1,y1,txt1,'HorizontalAlignment','right')
-
-%% mean ROItype traces
-
-figure ('name', 'Mean traces plus errorbar: ROITypes responding- stim window')
-hold on
-axis off
-plot([5 13],[-1 -1], 'k','LineWidth', 2)
-shadedErrorBar(TimeX(1:stimwindow),RespNmeanTrace(1:stimwindow)',RespNSDTrace(1:stimwindow),'r');
-shadedErrorBar(TimeX(1:stimwindow),(RespNPmeanTrace(1:stimwindow)' + 3),RespNPSDTrace(1:stimwindow),'b');
-shadedErrorBar(TimeX(1:stimwindow),(RespSmeanTrace(1:stimwindow)' + 6),RespSSDTrace(1:stimwindow),'g');
-shadedErrorBar(TimeX(1:stimwindow),(RespEFmeanTrace(1:stimwindow)' + 9),RespEFSDTrace(1:stimwindow),'c');
-shadedErrorBar(TimeX(1:stimwindow),(RespPmeanTrace(1:stimwindow)' + 15),RespPSDTrace(1:stimwindow),'m');
-plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
-x1 = -0.5;
-y1 = 0;
-y2 = 3;
-y3 = 6;
-y4 = 9;
-y5 = 15;
-
-txt1 = 'Neuron';
-txt2 = 'Neuropil';
-txt3 = 'Somata';
-txt4 = 'Endfeet';
-txt5 = 'Processes';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-text(x1,y2,txt2,'HorizontalAlignment','right')
-text(x1,y3,txt3,'HorizontalAlignment','right')
-text(x1,y4,txt4,'HorizontalAlignment','right')
-text(x1,y5,txt5,'HorizontalAlignment','right')
-
+% 
+% 
+% subplot(1,5,3)
+% hold on
+% axis off
+% for xROI= 1:size(Resp_EF_traces,2)
+%     tempY = Resp_EF_traces(:,xROI);
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+%     ylim([-5 300]);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespEFmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Endfeet';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% 
+% subplot(1,5,4)
+% hold on
+% axis off
+% for xROI= 1:size(Resp_somata_traces,2)
+%     tempY = Resp_somata_traces(:,xROI);
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+%     ylim([-5 300]);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespSmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Somata';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% 
+% subplot(1,5,5)
+% hold on
+% axis off
+% for xROI= 1:size(Resp_processes_traces,2)
+%     tempY = Resp_processes_traces(:,xROI);
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+%     ylim([-5 300]);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Processes';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% %% mean ROItype traces
+% 
+% figure ('name', 'Mean traces plus errorbar: ROITypes responding- stim window')
+% hold on
+% axis off
+% plot([5 13],[-1 -1], 'k','LineWidth', 2)
+% shadedErrorBar(TimeX(1:stimwindow),RespNmeanTrace(1:stimwindow)',RespNSDTrace(1:stimwindow),'r');
+% shadedErrorBar(TimeX(1:stimwindow),(RespNPmeanTrace(1:stimwindow)' + 3),RespNPSDTrace(1:stimwindow),'b');
+% shadedErrorBar(TimeX(1:stimwindow),(RespSmeanTrace(1:stimwindow)' + 6),RespSSDTrace(1:stimwindow),'g');
+% shadedErrorBar(TimeX(1:stimwindow),(RespEFmeanTrace(1:stimwindow)' + 9),RespEFSDTrace(1:stimwindow),'c');
+% shadedErrorBar(TimeX(1:stimwindow),(RespPmeanTrace(1:stimwindow)' + 15),RespPSDTrace(1:stimwindow),'m');
+% plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
+% x1 = -0.5;
+% y1 = 0;
+% y2 = 3;
+% y3 = 6;
+% y4 = 9;
+% y5 = 15;
+% 
+% txt1 = 'Neuron';
+% txt2 = 'Neuropil';
+% txt3 = 'Somata';
+% txt4 = 'Endfeet';
+% txt5 = 'Processes';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% text(x1,y2,txt2,'HorizontalAlignment','right')
+% text(x1,y3,txt3,'HorizontalAlignment','right')
+% text(x1,y4,txt4,'HorizontalAlignment','right')
+% text(x1,y5,txt5,'HorizontalAlignment','right')
+% 
 % 
 % %ROITypes
 % figure ('name', 'Mean traces only: responding ROITypes- stim window')

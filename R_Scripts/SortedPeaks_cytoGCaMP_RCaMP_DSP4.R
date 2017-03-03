@@ -25,7 +25,9 @@ max.theme <- theme_classic() +
     axis.title=element_text(size=14, face="bold"),
     axis.title.y=element_text(vjust=1),
     legend.text=element_text(size=12),
-    legend.title=element_text(size=14, face="bold"))
+    legend.title=element_text(size=14, face="bold"),
+    axis.line.x=element_line(colour="black",size=1,linetype="solid"),
+    axis.line.y=element_line(colour="black",size=1,linetype="solid"))
 
 
 ###########
@@ -73,6 +75,9 @@ peaks.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Resul
 
 #peaks.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
+earlynames<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/earlyGC_byTimeDiff.csv", header=TRUE, sep = ",")
+
+
 lsm.options(pbkrtest.limit = 100000)
 
 # treatment
@@ -87,7 +92,7 @@ stim.all<-rbind(peaks.control1, peaks.control2,peaks.DSP4)
 
 ######
 # exclude DSP4 data FOR NOW
-#stim.all<-subset(stim.all, treatment=="Control")
+stim.all<-subset(stim.all, treatment=="Control")
 #stim.all<-subset(stim.all, treatment=="DSP4")
 
 stim.all$treatment<-as.factor(stim.all$treatment)
@@ -120,6 +125,7 @@ stim.all$trials<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial, sep= "_")
 
 # exclude GCaMP neuropil signals
 stim.all<-stim.all[!(stim.all$ROIType=="Neuropil" & stim.all$Channel=="GCaMP"),]
+stim.all<-stim.all[!(stim.all$ROIType=="Neuron" & stim.all$Channel=="GCaMP"),]
 
 # remove matching astrocyte process and soma ROIs
 Overlap= stim.all$overlap!=0
@@ -461,7 +467,9 @@ longstim.responding$ActivePeak[farpeaks2] <- 1
 longstim.stimwindow<- subset(longstim.responding, peakTime>=0 & peakTime<=20)
 
 ggplot(longstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
-  ggtitle("long stim responding")
+  scale_fill_manual(
+    values=c("green", "red", "blue")) + 
+  max.theme
 
 #longstim.after<- subset(longstim.responding, peakTime>20 & peakTime<80)
 
@@ -474,7 +482,7 @@ ggplot(longstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))
 #####
 library(xlsx)
 respondingNeurons_Astrocytes=subset(longstim.responding, ActivePeak==1)
-#write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_DSP4longstim.xlsx")
+#write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_longstim.xlsx")
 #write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_longstim.xlsx")
 #write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_DSP4longstim.xlsx")
 
@@ -493,19 +501,22 @@ longstim.propActive<- ddply(activeROIs1, c("Animal", "Spot", "Channel","trials",
                             nActiveROIs = sum(ROIActive))
 longstim.propActive$propActive<-longstim.propActive$nActiveROIs/longstim.propActive$nROIs
 
-df2A1<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("ROIType","treatment"))
+df2A1<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("ROIType","treatment","Channel"))
 df2A2<-summarySE(longstim.propActive, measurevar="propActive", groupvars=c("Channel","treatment"))
 
 ggplot(longstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(binwidth=0.05, position="dodge") +
   ggtitle("long stim prop active ")
 
-df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
-ggplot(data=df2A1, aes(x=interaction(ROIType,treatment), y=propActive, fill=ROIType)) +
+df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Endfoot","Soma","Process"))
+ggplot(data=df2A1, aes(x=ROIType, y=propActive, fill=Channel)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
   xlab("ROIType") +
-  ylab("Mean Proportion of Responding ROIs Per Trial") +
-  ggtitle("Responding ROIs for long stim") 
+  ylab("Proportion of Responding ROIs") +
+  scale_fill_manual(
+    values=c("green", "red")) + 
+  max.theme
+
 
 df2A2$Channel <- factor(df2A2$Channel , levels = c("RCaMP","GCaMP"))
 ggplot(data=df2A2, aes(x=interaction(Channel, treatment), y=propActive, fill=Channel)) +
@@ -591,23 +602,25 @@ ggplot(data=df2B2, aes(x=treatment, y=propActive, fill=Channel)) +
 # when do AC peaks come after neuronal peak?
 # bin the number of AC peaks per time point after stim?
 
-df9A <- summarySE(longstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment"))
+df9A <- summarySE(longstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment","Channel"))
 df9B <- summarySE(shortstim.stimwindow, measurevar="peakTime", groupvars=c("ROIType","treatment"))
 
 df10A <- summarySE(longstim.stimwindow, measurevar="peakStart", groupvars=c("ROIType","treatment"))
 df10B <- summarySE(shortstim.stimwindow, measurevar="peakStart", groupvars=c("ROIType","treatment"))
 
-df11A <- summarySE(longstim.stimwindow, measurevar="peakStartHalf", groupvars=c("ROIType","treatment"))
+df11A <- summarySE(longstim.stimwindow, measurevar="peakStartHalf", groupvars=c("ROIType","treatment","Channel"))
 df11B <- summarySE(shortstim.stimwindow, measurevar="peakStartHalf", groupvars=c("ROIType","treatment"))
 
-df9A$ROIType <- factor(df9A$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
-ggplot(data=df9A, aes(x=ROIType, y=peakTime, fill=ROIType)) +
+df9A$ROIType <- factor(df9A$ROIType , levels = c("Neuron","Endfoot","Soma","Process"))
+ggplot(data=df9A, aes(x=ROIType, y=peakTime, fill=Channel)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
   coord_flip() +
   xlab("ROIType") +
   ylab("Mean Peak Time (s)") +
-  ggtitle("max peak time for long stim") 
+  scale_fill_manual(
+    values=c("green", "red")) + 
+  max.theme 
 
 df9B$ROIType <- factor(df9B$ROIType , levels = c("Neuron","Neuropil","Endfoot","Soma","Process"))
 ggplot(data=df9B, aes(x=ROIType, y=peakTime, fill=ROIType)) +
@@ -641,7 +654,8 @@ ggplot(data=df10B, aes(x=ROIType, y=peakStart, fill=treatment)) +
   max.theme
 
 
-ggplot(data=df11A, aes(x=ROIType, y=peakStartHalf, fill=treatment)) +
+df11A$ROIType <- factor(df11A$ROIType , levels = c("Neuron","Endfoot","Soma","Process"))
+ggplot(data=df11A, aes(x=ROIType, y=peakStartHalf, fill=Channel)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=peakStartHalf-se, ymax=peakStartHalf+se), colour="black", width=.1,  position=position_dodge(.9)) +
   coord_flip() +
@@ -649,8 +663,8 @@ ggplot(data=df11A, aes(x=ROIType, y=peakStartHalf, fill=treatment)) +
   ylab("peakStartHalf Time (t1/2)") +
   ggtitle("peakStartHalf times for long stim") +
   scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
+    values=c("green", "red")) + 
+  max.theme 
 
 ggplot(data=df11B, aes(x=ROIType, y=peakStartHalf, fill=treatment)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -845,14 +859,37 @@ ggplot(data=dfDSP4.amp, aes(x=Spot, y=amplitude, fill=Condition)) +
 
 #count the number of astrocyte plateaus in DSP4 no stim vs control no stim
 AC.nostim<-subset(GCaMP, Condition=="Nostim")
-LC.peaks<-subset(AC.nostim, amplitude>2 & Duration>20) #find LC activations?
+LC.peaks<-subset(AC.nostim, Duration>30) #find LC activations?
+LC.peaks<-subset(LC.peaks, ROIType!="Neuron")
 
-LC.count<- ddply(LC.peaks, c("Animal", "Spot", "treatment"), summarise, 
+LC.count<- ddply(LC.peaks, c("Animal", "Spot", "treatment","trials"), summarise, 
                              nSignals = length(peakAUC))
+LC.count.type<- ddply(LC.peaks, c("Animal", "Spot", "treatment","ROIType","trials"), summarise, 
+                 nSignals = length(peakAUC))
 
 df.LC.plateau<-summarySE(LC.count, measurevar="nSignals", groupvars=c("treatment"),na.rm=TRUE)
+df.LC.plateau.type<-summarySE(LC.count.type, measurevar="nSignals", groupvars=c("treatment","ROIType"),na.rm=TRUE)
 df.LC.amp<-summarySE(LC.peaks, measurevar="amplitude", groupvars=c("treatment"),na.rm=TRUE)
 df.LC.duration<-summarySE(LC.peaks, measurevar="Duration", groupvars=c("treatment"),na.rm=TRUE)
+
+ggplot(data=df.LC.plateau, aes(x=treatment, y=nSignals, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=nSignals-se, ymax=nSignals+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocytes") +
+  ylab("# of spontaneous peaks/field of view") +
+  scale_fill_manual(
+    values=c("red", "blue")) +
+  max.theme
+
+df.LC.plateau.type$ROIType <- factor(df.LC.plateau.type$ROIType , levels = c("Endfoot","Soma","Process"))
+ggplot(data=df.LC.plateau.type[df.LC.plateau.type$ROIType!="Neuron",], aes(x=ROIType, y=nSignals, fill=treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=nSignals-se, ymax=nSignals+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocytes") +
+  ylab("# of spontaneous peaks/field of view") +
+  scale_fill_manual(
+    values=c("red", "blue")) +
+  max.theme
 
 # hand circled neurons and FLIKA
 platcount.null = lmer(nSignals ~ (1|Animal) + (1|Spot), LC.count,REML=FALSE)
@@ -862,6 +899,18 @@ print(platcount.anova)
 # p values
 platcount.pv <- glht(platcount.model1, mcp(treatment= "Tukey"))
 summary(platcount.pv)
+
+# hand circled neurons and FLIKA
+LC.count.type$treatment_type<-interaction(LC.count.type$ROIType,LC.count.type$treatment)
+platcount.type.null = lmer(nSignals ~ (1|Animal) + (1|Spot), LC.count.type,REML=FALSE)
+platcount.type.model1 = lmer(nSignals ~ treatment + (1|Animal) + (1|Spot), LC.count.type,REML=FALSE)
+platcount.type.model2 = lmer(nSignals ~ treatment+ROIType + (1|Animal) + (1|Spot), LC.count.type,REML=FALSE)
+platcount.type.model3 = lmer(nSignals ~ treatment_type + (1|Animal) + (1|Spot), LC.count.type,REML=FALSE)
+platcount.type.anova <- anova(platcount.type.null, platcount.type.model1,platcount.type.model2,platcount.type.model3)
+print(platcount.type.anova)
+# p values
+platcount.type.pv <- glht(platcount.type.model3, mcp(treatment_type= "Tukey"))
+summary(platcount.type.pv)
 
 
 ########
