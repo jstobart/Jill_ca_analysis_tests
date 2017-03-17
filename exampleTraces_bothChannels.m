@@ -34,12 +34,15 @@ stimwindow=round(30*11.84);
 figure('name','GCaMP and RCaMP examples')
 hold on
 axis off
-for ii=2:size(GC,2)
+for ii=1:size(GC,2)
     tempY1=smooth(DeltaF_G(:,ii),5);
     tempY1=tempY1(1:stimwindow);
 plot(TimeX(1:stimwindow),tempY1'+(0.5*(ii-1)),'g')%'LineWidth',1);
+   
+end
+for ii=16:20 %ii=1:size(RC,2)
     tempY2=smooth(DeltaF_R(:,ii),5);
-    tempY2=tempY2(1:stimwindow);
+   tempY2=tempY2(1:stimwindow);
 
 plot(TimeX(1:stimwindow),tempY2'+(0.5*(ii-1)),'r')
 plot([5 5],[-1 5], 'k--','LineWidth', 0.5)

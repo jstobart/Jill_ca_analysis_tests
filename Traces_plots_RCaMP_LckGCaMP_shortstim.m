@@ -17,7 +17,7 @@ All_traces=vertcat(Long_Short,Long);
 FrameRate=11.84;
 stimwindow=round(FrameRate*30);
 
-searchString='Stim';
+searchString='shortstim';
 
 for iROI=1:length(All_traces)
     Stim_str{iROI} = strfind(All_traces{iROI,6},searchString);
@@ -96,7 +96,7 @@ for xROI= 1:nROIs
     end
 end
 
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 meanTrace = mean(traces,2);
 plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 % plot([0 0],[18.5 19.5], 'k','LineWidth', 2)
@@ -105,8 +105,8 @@ plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 %%  Plot only the responding neurons and astrocytes from the same field of view
 
 
-%XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_shortstim.xlsx';
-XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_longstim.xlsx';
+XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_shortstim.xlsx';
+%XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_longstim.xlsx';
 
 %XLfile = 'D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_longstim.xlsx';
 
@@ -227,7 +227,7 @@ for xROI= 1:size(Resp_RCaMP_traces,2)
     end
 end
 
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX, RespRCmeanTrace, 'k', 'LineWidth',1)
 
 figure ('name', 'Overlaid traces: All GCaMP responding ROIs')
@@ -237,12 +237,12 @@ for xROI= 1:size(Resp_GCaMP_traces,2)
     tempY = Resp_GCaMP_traces(:,xROI);
     if length(tempY)>590
         tempY=tempY(1:nframes);
-    grey = [0.8,0.8,0.8];
-    plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
     end
 end
 
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX, RespGCmeanTrace, 'k', 'LineWidth',1)
 
 
@@ -258,7 +258,7 @@ for xROI= 1:size(Resp_RCaMP_traces,2)
     end
 end
 
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 
 figure ('name', 'Overlaid traces: All GCaMP responding ROIs- stim window')
@@ -273,7 +273,7 @@ for xROI= 1:size(Resp_GCaMP_traces,2)
     end
 end
 
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespGCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 
 %% Mean RCaMP vs GCaMP
@@ -281,7 +281,7 @@ plot(TimeX(1:stimwindow), RespGCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 figure ('name', 'Mean traces with error bar: GCaMP vs RCaMP responding ROIs- stim window')
 hold on
 axis off
-plot([5 13],[-1 -1], 'k','LineWidth', 2)
+plot([5 6],[-1 -1], 'k','LineWidth', 2)
 shadedErrorBar(TimeX(1:stimwindow),RespRCmeanTrace(1:stimwindow)',RespRCSDTrace(1:stimwindow),'r');
 shadedErrorBar(TimeX(1:stimwindow),(RespGCmeanTrace(1:stimwindow)' + 5),RespGCSDTrace(1:stimwindow),'g');
 plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
@@ -302,7 +302,7 @@ axis off
 plot(TimeX(1:stimwindow),smooth(RespRCmeanTrace(1:stimwindow)',5),'r','LineWidth',1.5);
 plot(TimeX(1:stimwindow),smooth(RespGCmeanTrace(1:stimwindow)',5),'g','LineWidth', 1.5);
 plot([5 5],[-1 2], 'k--','LineWidth', 1)
-plot([5 13],[0 0], 'k','LineWidth', 3)
+plot([5 6],[0 0], 'k','LineWidth', 3)
 legend('RCaMP','GCaMP')
 
 
@@ -312,17 +312,17 @@ figure ('name', 'Overlaid traces + mean:All responding ROItype')
 subplot(1,5,1)
 hold on
 axis off
-ylim([-5 40]);
+ylim([-5 15]);
 for xROI= 1:size(Resp_neuron_traces,2)
     tempY = Resp_neuron_traces(:,xROI);
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
     end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
     
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespNmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
 x1 = 0;
@@ -333,16 +333,16 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 subplot(1,5,2)
 hold on
 axis off
-ylim([-5 40]);
+ylim([-5 15]);
 for xROI= 1:size(Resp_neuropil_traces,2)
     tempY = Resp_neuropil_traces(:,xROI);
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
     end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespNPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
 x1 = 0;
@@ -354,16 +354,16 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 subplot(1,5,4)
 hold on
 axis off
-ylim([-5 40]);
+ylim([-5 15]);
 for xROI= 1:size(Resp_EF_traces,2)
     tempY = Resp_EF_traces(:,xROI);
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
     end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespEFmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
 x1 = 0;
@@ -375,16 +375,16 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 subplot(1,5,3)
 hold on
 axis off
-ylim([-5 40]);
+ylim([-5 15]);
 for xROI= 1:size(Resp_somata_traces,2)
     tempY = Resp_somata_traces(:,xROI);
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
     end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespSmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
 x1 = 0;
@@ -396,16 +396,16 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 subplot(1,5,5)
 hold on
 axis off
-ylim([-5 40]);
+ylim([-5 15]);
 for xROI= 1:size(Resp_processes_traces,2)
     tempY = Resp_processes_traces(:,xROI);
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
     end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot(TimeX(1:stimwindow), RespPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
 plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
 x1 = 0;
@@ -418,7 +418,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 figure ('name', 'Mean traces plus errorbar: ROITypes responding- stim window')
 hold on
 axis off
-plot([5 13],[-1 -1], 'k','LineWidth', 2)
+plot([5 6],[-1 -1], 'k','LineWidth', 2)
 shadedErrorBar(TimeX(1:stimwindow),RespNmeanTrace(1:stimwindow)',RespNSDTrace(1:stimwindow),'r');
 shadedErrorBar(TimeX(1:stimwindow),(RespNPmeanTrace(1:stimwindow)' + 3),RespNPSDTrace(1:stimwindow),'b');
 shadedErrorBar(TimeX(1:stimwindow),(RespSmeanTrace(1:stimwindow)' + 6),RespSSDTrace(1:stimwindow),'g');
@@ -454,7 +454,7 @@ plot(TimeX(1:stimwindow),smooth(RespSmeanTrace(1:stimwindow)',5),'g','LineWidth'
 plot(TimeX(1:stimwindow),smooth(RespEFmeanTrace(1:stimwindow)',5),'k','LineWidth', 1.5);
 plot(TimeX(1:stimwindow),smooth(RespPmeanTrace(1:stimwindow)',5),'m','LineWidth', 1.5);
 plot([5 5],[-1 2], 'k--','LineWidth', 1)
-plot([5 13],[0 0], 'k','LineWidth', 3)
+plot([5 6],[0 0], 'k','LineWidth', 3)
 legend('Neuron','Neuropil','Dendrites','Endfeet','Processes')
 
 
@@ -624,12 +624,12 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
+        tempX = ShiftedTraces{xROI,9}; % shifted by peak time
+        grey = [0.8,0.8,0.8];
+        plot(tempX(1:stimwindow2),tempY(1:stimwindow2)','Color',grey,'LineWidth',0.01);
     end
-    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
-    grey = [0.8,0.8,0.8];
-    plot(tempX(1:stimwindow2),tempY(1:stimwindow2)','Color',grey,'LineWidth',0.01);
 end
 plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
 %plot([0 8],[-2 -2], 'k','LineWidth', 2)
@@ -640,15 +640,15 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
-    end
-    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
-    grey = [0.8,0.8,0.8];
-    if strcmp(ShiftedTraces{xROI,6},'Neuron') || strcmp(ShiftedTraces{xROI,6},'Neuropil')
-        plot(tempX,tempY','Color',grey,'LineWidth',0.01);
-    else
-        plot(tempX,(tempY'+50),'Color',grey,'LineWidth',0.01);
+        tempX = ShiftedTraces{xROI,9}; % shifted by peak time
+        grey = [0.8,0.8,0.8];
+        if strcmp(ShiftedTraces{xROI,6},'Neuron') || strcmp(ShiftedTraces{xROI,6},'Neuropil')
+            plot(tempX,tempY','Color',grey,'LineWidth',0.01);
+        else
+            plot(tempX,(tempY'+50),'Color',grey,'LineWidth',0.01);
+        end
     end
 end
 plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
@@ -670,15 +670,15 @@ axis off
 
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
-    end
-    tempX = ShiftedTraces{xROI,9}; % shifted by peak time
-    grey = [0.8,0.8,0.8];
-    if strcmp(ShiftedTraces{xROI,6},'Neuron')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
-            'LineWidth',0.01);
-        ylim([-5 30]);
+        tempX = ShiftedTraces{xROI,9}; % shifted by peak time
+        grey = [0.8,0.8,0.8];
+        if strcmp(ShiftedTraces{xROI,6},'Neuron')
+            plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
+                'LineWidth',0.01);
+            ylim([-5 30]);
+        end
     end
 end
 plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
@@ -693,15 +693,15 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
-    end
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Neuropil')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
-            'LineWidth',0.01);
-        ylim([-5 30]);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        tempX = ShiftedTraces{xROI,9};
+        if strcmp(ShiftedTraces{xROI,6},'Neuropil')
+            plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
+                'LineWidth',0.01);
+            ylim([-5 30]);
+            plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        end
     end
 end
 x1 = -10;
@@ -714,15 +714,15 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
-    end
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Endfeet')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
-            'LineWidth',0.01);
-        ylim([-5 30]);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        tempX = ShiftedTraces{xROI,9};
+        if strcmp(ShiftedTraces{xROI,6},'Endfeet')
+            plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
+                'LineWidth',0.01);
+            ylim([-5 30]);
+            plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        end
     end
 end
 x1 = -10;
@@ -735,15 +735,15 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
-    end
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Soma')
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
-            'LineWidth',0.01);
-        ylim([-5 30]);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        tempX = ShiftedTraces{xROI,9};
+        if strcmp(ShiftedTraces{xROI,6},'Soma')
+            plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
+                'LineWidth',0.01);
+            ylim([-5 30]);
+            plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        end
     end
 end
 x1 = -10;
@@ -756,16 +756,16 @@ hold on
 axis off
 for xROI= 1:size(ShiftedTraces,1)
     tempY = ShiftedTraces{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:nframes);
-    end
-    tempX = ShiftedTraces{xROI,9};
-    if strcmp(ShiftedTraces{xROI,6},'Process')
-        
-        plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
-            'LineWidth',0.01);
-        ylim([-5 30]);
-        plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        tempX = ShiftedTraces{xROI,9};
+        if strcmp(ShiftedTraces{xROI,6},'Process')
+            
+            plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
+                'LineWidth',0.01);
+            ylim([-5 30]);
+            plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
+        end
     end
 end
 x1 = -10;
@@ -794,9 +794,7 @@ earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
 % cd('D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
 % cell2csv('LongStim_TimeDiffs.csv',AllTimeDiffs);
 
-%% Plot early ROI traces
-
-% all GCaMP ROIs
+%% calculate area under the curve for the first 1 sec
 GC_idx=find(strcmp(RespondingROIs(:,3),'GCaMP'));
 GCaMP_ROI= RespondingROIs(GC_idx,:);
 
@@ -805,18 +803,15 @@ wd=GCaMP_ROI;
 [~,idx]=unique(wd(:,15));
 GCaMP_ROI=wd(idx,:);
 
-numROI=length(unique(GCaMP_ROI(:,15)));
-
 for iROI=1:size(GCaMP_ROI,1)
     %area under the curve
     tempY=GCaMP_ROI{iROI,8};
-    %first 3 sec after stim onset
+    %first 2 sec after stim onset
     x1=round(FrameRate*5);
     x2=round(FrameRate*6);
     GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
-end 
+end
 
-%%
 % find the ROIs that have a decent area under the curve for the first 1 sec
 % of window
 AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>5);
@@ -825,26 +820,50 @@ earlyGC=GCaMP_ROI(AUC_idx,:);
 lateGC=GCaMP_ROI(AUC_idx2,:);
 
 earlyNames=earlyGC(:,15);
- %cd('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
- %cell2csv('Early_LckGCaMPROIs.csv',earlyNames);
+%cd('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
+%cell2csv('Early_LckGCaMPROIs.csv',earlyNames);
 
 
+% control
+% check area outside the stim window
+for iROI=1:size(RespondingROIs,1)
+    %area under the curve
+    tempY=RespondingROIs{iROI,8};
+    %first 2 sec after stim onset
+    if length(tempY)>590
+    x1=round(FrameRate*30);
+    x2=round(FrameRate*31);
+    RespondingROIs{iROI,17}=trapz(tempY(x1:x2));
+    end
+end
+
+% find the ROIs that have a decent area under the curve for the first 1 sec
+% of window
+gcamp_idx2=find(strcmp(RespondingROIs(:,3),'GCaMP'));
+controlGC=RespondingROIs(gcamp_idx2,:);
+
+controlGC_idx=find(cell2mat(controlGC(:,17))>5);
+controlGC=controlGC(controlGC_idx,:);
+
+earlyNames=earlyGC(:,15);
+
+%% plots
 allearlyGC=[];
 
-figure('name', 'AUC greater than 10 in first 2 sec')
+figure('name', 'AUC greater than 5 in first 1 sec')
 hold on
 axis off
 
 for xROI= 1:size(earlyGC,1)
     tempY = earlyGC{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:592);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+        allearlyGC= horzcat(allearlyGC, tempY);
     end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
-    allearlyGC= horzcat(allearlyGC, tempY);
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanEarlyTrace = mean(allearlyGC,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
@@ -855,24 +874,45 @@ hold on
 axis off
 for xROI= 1:size(lateGC,1)
     tempY = lateGC{xROI,8};
-    if length(tempY)>600
+    if length(tempY)>590
         tempY=tempY(1:592);
-    end
     grey = [0.8,0.8,0.8];
     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
     allLateGC= horzcat(allLateGC, tempY);
+    end
 end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
 plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanLateTrace = mean(allLateGC,2);
 plot(TimeX(1:stimwindow), meanLateTrace(1:stimwindow), 'k', 'LineWidth',1)
 
-lateExport=allLateGC(1:355,:);
-lateExport2=TimeX(1:355);
-lateExport2=[lateExport2,lateExport];
+% lateExport=allLateGC(1:355,:);
+% lateExport2=TimeX(1:355);
+% lateExport2=[lateExport2,lateExport];
+
+% control plots
+allcontrolGC=[];
+figure('name', 'control with AUC greater than 5 in sec 30-31')
+hold on
+axis off
+
+for xROI= 1:size(controlGC,1)
+    tempY = controlGC{xROI,8};
+    if length(tempY)>590
+        tempY=tempY(1:592);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+        allcontrolGC= horzcat(allcontrolGC, tempY);
+    end
+end
+plot([5 6],[-2 -2], 'k','LineWidth', 2)
+plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
+meanEarlyTrace = mean(allcontrolGC,2);
+plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
+
 
 %%
-figure('name', 'Mean Late & early traces')
+figure('name', 'Mean Late and early traces')
 hold on
 axis off
 
@@ -881,7 +921,7 @@ plot(TimeX(1:stimwindow), smooth(meanEarlyTrace(1:stimwindow),3), 'b', 'LineWidt
 % %RCaMP
 RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
 plot(TimeX(1:stimwindow), smooth(RespRCmeanTrace(1:stimwindow),3), 'r', 'LineWidth',1)
-plot([5 13],[-0.5 -0.5], 'k','LineWidth', 2)
+plot([5 6],[-0.5 -0.5], 'k','LineWidth', 2)
 plot([5 5],[-0.5 1], 'k--','LineWidth', 0.5)
 plot([-1 -1],[0 0.5], 'k','LineWidth', 1)
 
@@ -890,11 +930,11 @@ figure('name', 'Mean Early traces')
 hold on
 axis off
 
-plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'g', 'LineWidth',1)
+
 % %RCaMP
 RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
 plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'r', 'LineWidth',1)
-plot([5 13],[-0.5 -0.5], 'k','LineWidth', 2)
+plot([5 6],[-0.5 -0.5], 'k','LineWidth', 2)
 plot([5 5],[-0.5 1], 'k--','LineWidth', 0.5)
 plot([-1 -1],[0 0.5], 'k','LineWidth', 1)
 %% 3d plot
@@ -922,10 +962,10 @@ HeatMap(earlywindow','colormap',h);
 
 
 %save names
- earlyGCnames=earlyGC(:,15);
- earlyGCnames2=vertcat('names',earlyGCnames);
+earlyGCnames=earlyGC(:,15);
+earlyGCnames2=vertcat('names',earlyGCnames);
 cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
-%cell2csv('earlyGC_byAUC.csv',earlyGCnames2)
+cell2csv('earlyGC_byAUCshort.csv',earlyGCnames2)
 
 % %% early based on time shifts
 % % make new names
@@ -952,8 +992,8 @@ cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
 % % dupvals=earlyROIs_traces(dupindx,15);
 % 
 % %save names
-%  earlyGCnames=earlyROIs_traces(:,15);
-%  earlyGCnames2=vertcat('names',earlyGCnames);
+% earlyGCnames=earlyROIs_traces(:,15);
+% earlyGCnames2=vertcat('names',earlyGCnames);
 % cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
 % cell2csv('earlyGC_byTimeDiff.csv',earlyGCnames2)
 % 
@@ -966,16 +1006,16 @@ cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
 % 
 % for xROI= 1:size(earlyROIs_traces,1)
 %     tempY = earlyROIs_traces{xROI,8};
-%     if length(tempY)>600
+%     if length(tempY)>590
 %         tempY=tempY(1:592);
-%     end
-%     if earlyROIs_traces{xROI,17}>5
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
-%     earlyExtratraces= horzcat(earlyExtratraces, tempY);
+%         if earlyROIs_traces{xROI,17}>5
+%             grey = [0.8,0.8,0.8];
+%             plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+%             earlyExtratraces= horzcat(earlyExtratraces, tempY);
+%         end
 %     end
 % end
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot([5 6],[-2 -2], 'k','LineWidth', 2)
 % plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 % meanEarlyTrace = mean(earlyExtratraces,2);
 % plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
@@ -1001,7 +1041,7 @@ cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
 %     plot(TimeX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.1);
 % end
 % plot([5 5],[-1 100], 'k--','LineWidth', 0.5)
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot([5 6],[-2 -2], 'k','LineWidth', 2)
 % %%
 % % early_early=earlyROIs_peaks{:,6}<5;
 % for iR=1:size(earlyROIs_peaks,1)

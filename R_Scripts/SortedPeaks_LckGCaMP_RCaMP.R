@@ -39,11 +39,11 @@ max.theme <- theme_classic() +
 
 # whole frame and automatic RCaMP ROI selection:
 #stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
-peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+#peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+#peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
-#peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
-#peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
@@ -226,19 +226,25 @@ overlaping_high<-intersect(long.highresponders, short.highresponders)
 longstim.responding$ActivePeak <- 0
 
 #responding neurons
-farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11 & longstim.responding$ROIType=="Neuron"
+farpeaks1 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11 & longstim.responding$Channel=="RCaMP"
 longstim.responding$ActivePeak[farpeaks1] <- 1 
 
 #responding astrocytes
-farpeaks2 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<9 & longstim.responding$Duration<11& longstim.responding$ROIType!="Neuron"
+farpeaks2 <- longstim.responding$peakTime>0 & longstim.responding$peakTime<12 & longstim.responding$Channel!="RCaMP"
 longstim.responding$ActivePeak[farpeaks2] <- 1 
 
 # pull out only the peaks that occur around the stimulation
 longstim.stimwindow<- subset(longstim.responding, peakTime>=0 & peakTime<=20)
+longstim.active<- subset(longstim.responding, ActivePeak==1)
 
 
 
 ggplot(longstim.stimwindow, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
+  scale_fill_manual(
+    values=c("green", "red", "blue")) + 
+  max.theme
+
+ggplot(longstim.active, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
   scale_fill_manual(
     values=c("green", "red", "blue")) + 
   max.theme
@@ -250,11 +256,8 @@ ggplot(longstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + g
 
 #####
 library(xlsx)
-respondingNeurons_Astrocytes=subset(longstim.responding, ActivePeak==1)
-ggplot(respondingNeurons_Astrocytes, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
-  ggtitle("long stim responding")
-#write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
-#write.xlsx(respondingNeurons_Astrocytes, "D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
+#write.xlsx(longstim.active, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
+#write.xlsx(longstim.active, "D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_longstim.xlsx")
 
 #########
 # proportion of ROIs that respond per trial
@@ -301,33 +304,36 @@ ggplot(data=df2A2, aes(x=Channel, y=propActive, fill=Channel)) +
 #########
 # SHORT STIM (90Hz, 1sec)
 shortstim.responding$ActivePeak <- 0
-farpeaks1 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<2 & shortstim.responding$Duration<3 & shortstim.responding$ROIType=="Neuron"
+farpeaks1 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<2 & shortstim.responding$Duration<3 & shortstim.responding$Channel=="RCaMP"
 shortstim.responding$ActivePeak[farpeaks1] <- 1 
 
-farpeaks2 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<2 & shortstim.responding$ROIType!="Neuron"
+farpeaks2 <- shortstim.responding$peakTime>0 & shortstim.responding$peakTime<5 & shortstim.responding$Channel!="RCaMP"
 shortstim.responding$ActivePeak[farpeaks2] <- 1 
 
 # pull out only the peaks that occur around the stimulation
 shortstim.stimwindow<- subset(shortstim.responding, peakTime>=0 & peakTime<=10)
 
-ggplot(shortstim.stimwindow, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
-  ggtitle("short stim responding")
+ggplot(shortstim.stimwindow, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
+  scale_fill_manual(
+    values=c("green", "red", "blue")) + 
+  max.theme
 
-ggplot(shortstim.stimwindow, aes(x=peakTime, y=prominence, color=interaction(Channel,treatment))) + geom_point() +
-  ggtitle("short stim responding")
+shortstim.active<- subset(shortstim.responding, ActivePeak==1)
+
+ggplot(shortstim.active, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
+  scale_fill_manual(
+    values=c("green", "red", "blue")) + 
+  max.theme
 
 shortstim.after<- subset(shortstim.responding, peakTime>10 & peakTime<80)
 
 ggplot(shortstim.after, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("short stim after")
 
-#respondingNeurons_AstrocytesShort=subset(shortstim.responding, ActivePeak==1)
-#write.xlsx(respondingNeurons_Astrocytes, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/respondingROIs_shortstim.xlsx")
-respondingNeurons_Astrocytes=subset(shortstim.responding, ActivePeak==1)
-ggplot(respondingNeurons_Astrocytes, aes(x=peakTime, fill=interaction(Channel,treatment))) + geom_histogram(binwidth=0.5, position="dodge") +
-  ggtitle("short stim responding")
+write.xlsx(shortstim.active, "E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/respondingROIs_shortstim.xlsx")
 
 
+#####
 activeROIs2<- ddply(shortstim.responding, c("Animal", "Spot", "Channel","trials","ROIType","treatment", "ROIs_trial"), summarise, 
                     nEvents = sum(ActivePeak))
 
@@ -348,7 +354,7 @@ ggplot(shortstim.propActive, aes(x=propActive, fill=Channel)) + geom_histogram(b
   ggtitle("short stim prop active ")
 
 
-df2A1$ROIType <- factor(df2A1$ROIType , levels = c("Neuron","Dendrite","Neuropil","Endfoot","Process"))
+df2B1$ROIType <- factor(df2B1$ROIType , levels = c("Neuron","Dendrite","Neuropil","Endfoot","Process"))
 ggplot(data=df2B1, aes(x=ROIType, y=propActive, fill=ROIType)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
@@ -504,7 +510,9 @@ summary(HM.pv.ROIType)
 
 ############
 # consider peaks that are close together in time (determined in Matlab)
-early<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/earlyGC_byAUC.csv", header=TRUE, sep = ",")
+#early<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/earlyGC_byAUC.csv", header=TRUE, sep = ",")
+early<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/earlyGC_byAUC.csv", header=TRUE, sep = ",")
+
 
 #proportion of astrocyte ROIs that are early/late in each treatment group, in each trial
 longstim.gcamp=subset(longstim.stimwindow, Channel=="GCaMP")
@@ -512,7 +520,9 @@ longstim.gcamp$TimeGroup<-0
 longstim.gcamp$TimeGroup[longstim.gcamp$ROIs_trial %in% early$names]<-"early"
 longstim.gcamp$TimeGroup[!(longstim.gcamp$ROIs_trial %in% early$names)]<-"late"
 
-
+longstim.rcamp=subset(longstim.stimwindow, Channel=="RCaMP")
+longstim.rcamp$TimeGroup<-"neurons"
+longstim.both<-rbind(longstim.gcamp, longstim.rcamp)
 
 # Simple Pie Chart
 Enum=length(early$names)
@@ -523,6 +533,7 @@ pct <- round(slices/sum(slices)*100)
 lbls <- paste(lbls, pct) # add percents to labels 
 lbls <- paste(lbls,"%",sep="") # ad % to labels 
 pie(slices,labels = lbls, col=rainbow(length(lbls)))
+
 
 #what are the mean characteristics of early astrocyte ROIs
 #amplitudes, mean peak times, etc.
@@ -559,9 +570,17 @@ print(amp.anova)
 amp.pv.ROIType <- glht(amp.model1, mcp(TimeGroup= "Tukey"))
 summary(amp.pv.ROIType)
 
-# amplitude
+# peakTimes
 df4A <- summarySE(longstim.gcamp, measurevar="peakTime", groupvars=c("TimeGroup"),na.rm=TRUE)
 df4B <- summarySE(longstim.gcamp, measurevar="peakStartHalf", groupvars=c("TimeGroup"),na.rm=TRUE)
+
+df4C <- summarySE(longstim.both, measurevar="peakTime", groupvars=c("TimeGroup"),na.rm=TRUE)
+df4D <- summarySE(longstim.both, measurevar="peakStartHalf", groupvars=c("TimeGroup"),na.rm=TRUE)
+df4E <- summarySE(longstim.both, measurevar="peakStart", groupvars=c("TimeGroup"),na.rm=TRUE)
+
+df4C$TimeGroup <- factor(df4C$TimeGroup, levels = c("neurons","early","late"))
+df4D$TimeGroup <- factor(df4D$TimeGroup, levels = c("neurons","early","late"))
+df4E$TimeGroup <- factor(df4E$TimeGroup, levels = c("neurons","early","late"))
 
 ggplot(data=df4A, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -580,6 +599,53 @@ ggplot(data=df4B, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
   scale_fill_manual(
     values=c("red", "blue")) + 
   max.theme
+
+ggplot(data=df4C, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakTime") +
+  scale_fill_manual(
+    values=c("red", "blue","green")) + 
+  max.theme
+
+ggplot(data=df4D, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStartHalf-se, ymax=peakStartHalf+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakStartHalf") +
+  scale_fill_manual(
+    values=c("red", "blue","green")) + 
+  max.theme
+
+ggplot(data=df4E, aes(x=TimeGroup, y=peakStart, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStart-se, ymax=peakStart+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakStart") +
+  scale_fill_manual(
+    values=c("red", "blue","green")) + 
+  max.theme
+
+
+#stats
+pSH.null = lmer(peakStartHalf ~ (1|Animal) + (1|Spot), longstim.both,REML=FALSE)
+pSH.model1 = lmer(peakStartHalf ~ TimeGroup+ (1|Animal) + (1|Spot), longstim.both,REML=FALSE)
+pSH.anova <- anova(pSH.null, pSH.model1)
+print(pSH.anova)
+# p values
+pSH.pv.ROIType <- glht(pSH.model1, mcp(TimeGroup= "Tukey"))
+summary(pSH.pv.ROIType)
+
+#stats
+pS.null = lmer(peakStart ~ (1|Animal) + (1|Spot), longstim.both,REML=FALSE)
+pS.model1 = lmer(peakStart ~ TimeGroup+ (1|Animal) + (1|Spot), longstim.both,REML=FALSE)
+pS.anova <- anova(pS.null, pS.model1)
+print(pS.anova)
+# p values
+pS.pv.ROIType <- glht(pS.model1, mcp(TimeGroup= "Tukey"))
+summary(pS.pv.ROIType)
+
 
 df5A <- summarySE(longstim.gcamp, measurevar="Duration", groupvars=c("TimeGroup"),na.rm=TRUE)
 ggplot(data=df5A, aes(x=TimeGroup, y=Duration, fill=TimeGroup)) +
@@ -603,6 +669,163 @@ summary(dur.pv.ROIType)
 
 #what are the correlations of the ROIs with these time differences?
 #spatially similar?
+
+#####
+# early short stim
+early<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/earlyGC_byAUCshort.csv", header=TRUE, sep = ",")
+
+#proportion of astrocyte ROIs that are early/late in each treatment group, in each trial
+shortstim.gcamp=subset(shortstim.stimwindow, Channel=="GCaMP")
+shortstim.gcamp$TimeGroup<-0
+shortstim.gcamp$TimeGroup[shortstim.gcamp$ROIs_trial %in% early$names]<-"early"
+shortstim.gcamp$TimeGroup[!(shortstim.gcamp$ROIs_trial %in% early$names)]<-"late"
+
+shortstim.rcamp=subset(shortstim.stimwindow, Channel=="RCaMP")
+shortstim.rcamp$TimeGroup<-"neurons"
+shortstim.both<-rbind(shortstim.gcamp, shortstim.rcamp)
+
+# Simple Pie Chart
+Enum=length(early$names)
+Lnum=length(unique(shortstim.gcamp$ROIs_trial))-Enum
+slices <- c(Enum, Lnum)
+lbls <- c("Fast", "Slow")
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct) # add percents to labels 
+lbls <- paste(lbls,"%",sep="") # ad % to labels 
+pie(slices,labels = lbls, col=rainbow(length(lbls)))
+
+
+#what are the mean characteristics of early astrocyte ROIs
+#amplitudes, mean peak times, etc.
+
+# amplitude
+df3A <- summarySE(shortstim.gcamp, measurevar="amplitude", groupvars=c("TimeGroup"),na.rm=TRUE)
+df3B <- summarySE(shortstim.gcamp, measurevar="amplitude", groupvars=c("TimeGroup","ROIType"),na.rm=TRUE)
+
+
+ggplot(data=df3A, aes(x=TimeGroup, y=amplitude, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("red", "blue")) + 
+  max.theme
+
+ggplot(data=df3B, aes(x=ROIType, y=amplitude, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("red", "blue")) + 
+  max.theme
+
+#stats
+amp.null = lmer(amplitude ~ (1|Animal) + (1|Spot), shortstim.gcamp,REML=FALSE)
+amp.model1 = lmer(amplitude ~ TimeGroup+ (1|Animal) + (1|Spot), shortstim.gcamp,REML=FALSE)
+amp.anova <- anova(amp.null, amp.model1)
+print(amp.anova)
+# p values
+amp.pv.ROIType <- glht(amp.model1, mcp(TimeGroup= "Tukey"))
+summary(amp.pv.ROIType)
+
+# peakTimes
+df4A <- summarySE(shortstim.gcamp, measurevar="peakTime", groupvars=c("TimeGroup"),na.rm=TRUE)
+df4B <- summarySE(shortstim.gcamp, measurevar="peakStartHalf", groupvars=c("TimeGroup"),na.rm=TRUE)
+
+df4C <- summarySE(shortstim.both, measurevar="peakTime", groupvars=c("TimeGroup"),na.rm=TRUE)
+df4D <- summarySE(shortstim.both, measurevar="peakStartHalf", groupvars=c("TimeGroup"),na.rm=TRUE)
+df4E <- summarySE(shortstim.both, measurevar="peakStart", groupvars=c("TimeGroup"),na.rm=TRUE)
+
+df4C$TimeGroup <- factor(df4C$TimeGroup, levels = c("neurons","early","late"))
+df4D$TimeGroup <- factor(df4D$TimeGroup, levels = c("neurons","early","late"))
+df4E$TimeGroup <- factor(df4E$TimeGroup, levels = c("neurons","early","late"))
+
+ggplot(data=df4A, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakTime") +
+  scale_fill_manual(
+    values=c("red", "blue")) + 
+  max.theme
+
+ggplot(data=df4B, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStartHalf-se, ymax=peakStartHalf+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakStartHalf") +
+  scale_fill_manual(
+    values=c("red", "blue")) + 
+  max.theme
+
+ggplot(data=df4C, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakTime") +
+  scale_fill_manual(
+    values=c("red", "blue","green")) + 
+  max.theme
+
+ggplot(data=df4D, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStartHalf-se, ymax=peakStartHalf+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakStartHalf") +
+  scale_fill_manual(
+    values=c("red", "blue","green")) + 
+  max.theme
+
+ggplot(data=df4E, aes(x=TimeGroup, y=peakStart, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakStart-se, ymax=peakStart+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("peakStart") +
+  scale_fill_manual(
+    values=c("red", "blue","green")) + 
+  max.theme
+
+
+#stats
+pSH.null = lmer(peakStartHalf ~ (1|Animal) + (1|Spot), shortstim.both,REML=FALSE)
+pSH.model1 = lmer(peakStartHalf ~ TimeGroup+ (1|Animal) + (1|Spot), shortstim.both,REML=FALSE)
+pSH.anova <- anova(pSH.null, pSH.model1)
+print(pSH.anova)
+# p values
+pSH.pv.ROIType <- glht(pSH.model1, mcp(TimeGroup= "Tukey"))
+summary(pSH.pv.ROIType)
+
+#stats
+pS.null = lmer(peakStart ~ (1|Animal) + (1|Spot), shortstim.both,REML=FALSE)
+pS.model1 = lmer(peakStart ~ TimeGroup+ (1|Animal) + (1|Spot), shortstim.both,REML=FALSE)
+pS.anova <- anova(pS.null, pS.model1)
+print(pS.anova)
+# p values
+pS.pv.ROIType <- glht(pS.model1, mcp(TimeGroup= "Tukey"))
+summary(pS.pv.ROIType)
+
+
+df5A <- summarySE(shortstim.gcamp, measurevar="Duration", groupvars=c("TimeGroup"),na.rm=TRUE)
+ggplot(data=df5A, aes(x=TimeGroup, y=Duration, fill=TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("TimeGroup") +
+  ylab("Duration") +
+  scale_fill_manual(
+    values=c("red", "blue")) + 
+  max.theme
+
+#stats
+dur.null = lmer(Duration ~ (1|Animal) + (1|Spot), shortstim.gcamp,REML=FALSE)
+dur.model1 = lmer(Duration ~ TimeGroup+ (1|Animal) + (1|Spot), shortstim.gcamp,REML=FALSE)
+dur.anova <- anova(dur.null, dur.model1)
+print(dur.anova)
+# p values
+dur.pv.ROIType <- glht(dur.model1, mcp(TimeGroup= "Tukey"))
+summary(dur.pv.ROIType)
+
 
 
 #######

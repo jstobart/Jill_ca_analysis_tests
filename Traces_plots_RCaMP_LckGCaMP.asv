@@ -812,15 +812,15 @@ for iROI=1:size(GCaMP_ROI,1)
     tempY=GCaMP_ROI{iROI,8};
     %first 3 sec after stim onset
     x1=round(FrameRate*5);
-    x2=round(FrameRate*6);
+    x2=round(FrameRate*7);
     GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
 end 
 
 %%
-% find the ROIs that have a decent area under the curve for the first 1 sec
+% find the ROIs that have a decent area under the curve for the first 3 sec
 % of window
-AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>5);
-AUC_idx2=find(cell2mat(GCaMP_ROI(:,17))<=5);
+AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>10);
+AUC_idx2=find(cell2mat(GCaMP_ROI(:,17))<=10);
 earlyGC=GCaMP_ROI(AUC_idx,:);
 lateGC=GCaMP_ROI(AUC_idx2,:);
 
@@ -927,83 +927,83 @@ HeatMap(earlywindow','colormap',h);
 cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
 %cell2csv('earlyGC_byAUC.csv',earlyGCnames2)
 
-% %% early based on time shifts
-% % make new names
-% for iROI=1:size(early,1)
-%     early{iROI,14}=strcat(early{iROI,1},'_',early{iROI,7});
-% end
-% earlyROIs=unique(early(:,14));
-% 
-% % find the index of ROIs at are in the early ROI group
-% ind1=find(ismember(RespondingROIs(:,15),earlyROIs(:,1)));
-% earlyROIs_traces=RespondingROIs(ind1,:);
-% 
-% ind2=find(ismember(responders(:,26),earlyROIs(:,1)));
-% earlyROIs_peaks=responders(ind2,:);
-% 
-% %remove duplicate traces
-% wd=earlyROIs_traces;
-% [~,idx]=unique(wd(:,15));
-% earlyROIs_traces=wd(idx,:);
-% 
-% %separate out traces of neurons and astrocytes that are unique
-% % [b, m, n]=unique(earlyROIs_traces(:,15));
-% % dupindx=find(diff(sort(m))>1)+1 ;
-% % dupvals=earlyROIs_traces(dupindx,15);
-% 
-% %save names
-%  earlyGCnames=earlyROIs_traces(:,15);
-%  earlyGCnames2=vertcat('names',earlyGCnames);
-% cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
-% cell2csv('earlyGC_byTimeDiff.csv',earlyGCnames2)
-% 
-% %%
-% 
-% figure('name', 'Early Extra traces- unshifted 20')
-% hold on
-% axis off
-% ylim([-2 10])
-% 
-% for xROI= 1:size(earlyROIs_traces,1)
-%     tempY = earlyROIs_traces{xROI,8};
-%     if length(tempY)>600
-%         tempY=tempY(1:592);
-%     end
-%     if earlyROIs_traces{xROI,17}>5
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
-%     earlyExtratraces= horzcat(earlyExtratraces, tempY);
-%     end
-% end
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-% plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
-% meanEarlyTrace = mean(earlyExtratraces,2);
-% plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
-% 
-% 
-% 
-% 
-% 
-% %%
-% 
-% figure('name', 'responding RCaMP + Early traces GCaMP')
-% hold on
-% axis off
-% ylim([-2 25])
-% for xROI= 1:size(earlyROIs_traces,1)
-%     tempY = earlyROIs_traces{xROI,8};
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),(tempY(1:stimwindow)')+15,'Color',grey,'LineWidth',0.1);
-% end
-% for xROI= 1:size(Resp_RCaMP_traces,2)
-%     tempY = Resp_RCaMP_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.1);
-% end
-% plot([5 5],[-1 100], 'k--','LineWidth', 0.5)
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-% %%
-% % early_early=earlyROIs_peaks{:,6}<5;
-% for iR=1:size(earlyROIs_peaks,1)
-%     test=find(earlyROIs_peaks{iR,6}<5);
-% end
+%% early based on time shifts
+% make new names
+for iROI=1:size(early,1)
+    early{iROI,14}=strcat(early{iROI,1},'_',early{iROI,7});
+end
+earlyROIs=unique(early(:,14));
+
+% find the index of ROIs at are in the early ROI group
+ind1=find(ismember(RespondingROIs(:,15),earlyROIs(:,1)));
+earlyROIs_traces=RespondingROIs(ind1,:);
+
+ind2=find(ismember(responders(:,26),earlyROIs(:,1)));
+earlyROIs_peaks=responders(ind2,:);
+
+%remove duplicate traces
+wd=earlyROIs_traces;
+[~,idx]=unique(wd(:,15));
+earlyROIs_traces=wd(idx,:);
+
+%separate out traces of neurons and astrocytes that are unique
+% [b, m, n]=unique(earlyROIs_traces(:,15));
+% dupindx=find(diff(sort(m))>1)+1 ;
+% dupvals=earlyROIs_traces(dupindx,15);
+
+%save names
+ earlyGCnames=earlyROIs_traces(:,15);
+ earlyGCnames2=vertcat('names',earlyGCnames);
+cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
+cell2csv('earlyGC_byTimeDiff.csv',earlyGCnames2)
+
+%%
+
+figure('name', 'Early Extra traces- unshifted 20')
+hold on
+axis off
+ylim([-2 10])
+
+for xROI= 1:size(earlyROIs_traces,1)
+    tempY = earlyROIs_traces{xROI,8};
+    if length(tempY)>600
+        tempY=tempY(1:592);
+    end
+    if earlyROIs_traces{xROI,17}>5
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+    earlyExtratraces= horzcat(earlyExtratraces, tempY);
+    end
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
+meanEarlyTrace = mean(earlyExtratraces,2);
+plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+
+
+
+
+%%
+
+figure('name', 'responding RCaMP + Early traces GCaMP')
+hold on
+axis off
+ylim([-2 25])
+for xROI= 1:size(earlyROIs_traces,1)
+    tempY = earlyROIs_traces{xROI,8};
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),(tempY(1:stimwindow)')+15,'Color',grey,'LineWidth',0.1);
+end
+for xROI= 1:size(Resp_RCaMP_traces,2)
+    tempY = Resp_RCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow)','Color',grey,'LineWidth',0.1);
+end
+plot([5 5],[-1 100], 'k--','LineWidth', 0.5)
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+%%
+% early_early=earlyROIs_peaks{:,6}<5;
+for iR=1:size(earlyROIs_peaks,1)
+    test=find(earlyROIs_peaks{iR,6}<5);
+end

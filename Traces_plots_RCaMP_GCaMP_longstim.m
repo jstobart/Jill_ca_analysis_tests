@@ -265,56 +265,56 @@ RespPmeanTrace = mean(Resp_processes_traces,2);
 RespPSDTrace = std(Resp_processes_traces');
 % 
 %% Plots
-% % RCaMP vs GCaMP
-% figure ('name', 'Overlaid traces: All RCaMP responding ROIs')
-% hold on
-% axis off
-% for xROI= 1:size(Resp_RCaMP_traces,2)
-%     tempY = Resp_RCaMP_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
-% end
+% RCaMP vs GCaMP
+figure ('name', 'Overlaid traces: All RCaMP responding ROIs')
+hold on
+axis off
+for xROI= 1:size(Resp_RCaMP_traces,2)
+    tempY = Resp_RCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX, RespRCmeanTrace, 'k', 'LineWidth',1)
+
+figure ('name', 'Overlaid traces: All GCaMP responding ROIs')
+hold on
+axis off
+for xROI= 1:size(Resp_GCaMP_traces,2)
+    tempY = Resp_GCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX, RespGCmeanTrace, 'k', 'LineWidth',1)
+
 % 
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-% plot(TimeX, RespRCmeanTrace, 'k', 'LineWidth',1)
-% 
-% figure ('name', 'Overlaid traces: All GCaMP responding ROIs')
-% hold on
-% axis off
-% for xROI= 1:size(Resp_GCaMP_traces,2)
-%     tempY = Resp_GCaMP_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
-% end
-% 
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-% plot(TimeX, RespGCmeanTrace, 'k', 'LineWidth',1)
-% 
-% 
-% figure ('name', 'Overlaid traces: All RCaMP responding ROIs- stim window')
-% hold on
-% axis off
-% for xROI= 1:size(Resp_RCaMP_traces,2)
-%     tempY = Resp_RCaMP_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-% end
-% 
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-% plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-% 
-% figure ('name', 'Overlaid traces: All GCaMP responding ROIs- stim window')
-% hold on
-% axis off
-% for xROI= 1:size(Resp_GCaMP_traces,2)
-%     tempY = Resp_GCaMP_traces(:,xROI);
-%     grey = [0.8,0.8,0.8];
-%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-% end
-% 
-% plot([5 13],[-2 -2], 'k','LineWidth', 2)
-% plot(TimeX(1:stimwindow), RespGCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-% 
+figure ('name', 'Overlaid traces: All RCaMP responding ROIs- stim window')
+hold on
+axis off
+for xROI= 1:size(Resp_RCaMP_traces,2)
+    tempY = Resp_RCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+figure ('name', 'Overlaid traces: All GCaMP responding ROIs- stim window')
+hold on
+axis off
+for xROI= 1:size(Resp_GCaMP_traces,2)
+    tempY = Resp_GCaMP_traces(:,xROI);
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+end
+
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot(TimeX(1:stimwindow), RespGCmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+
 % %% Mean RCaMP vs GCaMP
 % % GCaMP vs RCaMP
 % figure ('name', 'Mean traces with error bar: GCaMP vs RCaMP responding ROIs- stim window')
@@ -783,16 +783,16 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 
 %% Isolate the early traces from the shifted data
 
-for xROI= 1:size(timeDiffs,1)
-    earlyIdx(xROI)= timeDiffs{xROI,10}<=0;
-    LateIdx(xROI)= timeDiffs{xROI,10}>0;
-end
-early=timeDiffs(earlyIdx,:);
-late=timeDiffs(LateIdx,:);
-
-earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
-    'ROITypeY','ROI_Y','ROI_Y_peakTime','ROI_Y_onset',...
-    'peak_peak','peak_onset','onset_onset','onset_peak'};
+% for xROI= 1:size(timeDiffs,1)
+%     earlyIdx(xROI)= timeDiffs{xROI,10}<=0;
+%     LateIdx(xROI)= timeDiffs{xROI,10}>0;
+% end
+% early=timeDiffs(earlyIdx,:);
+% late=timeDiffs(LateIdx,:);
+% 
+% earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
+%     'ROITypeY','ROI_Y','ROI_Y_peakTime','ROI_Y_onset',...
+%     'peak_peak','peak_onset','onset_onset','onset_peak'};
 
 % AllTimeDiffs=vertcat(earlyNames,timeDiffs);
 % cd('D:\Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
@@ -817,19 +817,21 @@ for iROI=1:size(GCaMP_ROI,1)
     tempY=GCaMP_ROI{iROI,8};
     %first 3 sec after stim onset
     x1=round(FrameRate*5);
-    x2=round(FrameRate*7);
+    x2=round(FrameRate*6);
     GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
 end
 
 %%
 % find the ROIs that have a decent area under the curve for the first 3 sec
 % of window
-AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>30);
+AUC_idx=find(cell2mat(GCaMP_ROI(:,17))>5);
 earlyGC=GCaMP_ROI(AUC_idx,:);
+AUC_idx2=find(cell2mat(GCaMP_ROI(:,17))<=5);
+lateGC=GCaMP_ROI(AUC_idx2,:);
 
 allearlyGC=[];
 
-figure('name', 'AUC greater than 30 in first 2 sec')
+figure('name', 'AUC greater than 5 in first 1 sec')
 hold on
 axis off
 
@@ -847,47 +849,80 @@ plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 meanEarlyTrace = mean(allearlyGC,2);
 plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'k', 'LineWidth',1)
 
+
+alllateGC=[];
+
+figure('name', 'late traces')
+hold on
+axis off
+
+for xROI= 1:size(lateGC,1)
+    tempY = lateGC{xROI,8};
+    if length(tempY)>600
+        tempY=tempY(1:592);
+    end
+    grey = [0.8,0.8,0.8];
+    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.1);
+    alllateGC= horzcat(alllateGC, tempY);
+end
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
+meanlateTrace = mean(alllateGC,2);
+plot(TimeX(1:stimwindow), meanlateTrace(1:stimwindow), 'k', 'LineWidth',1)
+
+
+figure('name', 'Mean Early & late traces')
+hold on
+axis off
+plot([5 13],[-2 -2], 'k','LineWidth', 2)
+plot([5 5],[-1 2], 'k--','LineWidth', 0.5)
+plot(TimeX(1:stimwindow), smooth(meanEarlyTrace(1:stimwindow),3), 'b', 'LineWidth',1)
+plot(TimeX(1:stimwindow), smooth(meanlateTrace(1:stimwindow),3), 'g', 'LineWidth',1)
+% %RCaMP
+RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
+plot(TimeX(1:stimwindow), smooth(RespRCmeanTrace(1:stimwindow),3), 'r', 'LineWidth',1)
+
 %save names
  earlyGCnames=earlyGC(:,15);
  earlyGCnames2=vertcat('names',earlyGCnames);
 cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results');
-cell2csv('earlyGC_byAUC.csv',earlyGCnames2);
+%cell2csv('earlyGC_byAUC.csv',earlyGCnames2);
 
 
-%% early based on time shifts
-% make new names
-for iROI=1:size(early,1)
-    early{iROI,14}=strcat(early{iROI,1},'_',early{iROI,7});
-end
-earlyROIs=unique(early(:,14));
-
-% find the index of ROIs at are in the early ROI group
-ind1=find(ismember(GCaMP_ROI(:,15),earlyROIs(:,1)));
-ind2=find(~ismember(GCaMP_ROI(:,15),earlyROIs(:,1)));
-earlyROIs_traces=GCaMP_ROI(ind1,:);
-lateROIs_traces=GCaMP_ROI(ind2,:);
-
-ind2=find(ismember(responders(:,25),earlyROIs(:,1)));
-earlyROIs_peaks=responders(ind2,:);
-
-%remove duplicate traces
-wd=earlyROIs_traces;
-[~,idx]=unique(wd(:,15));
-earlyROIs_traces=wd(idx,:);
-
-%separate out traces of neurons and astrocytes that are unique
-% [b, m, n]=unique(earlyROIs_traces(:,15));
-% dupindx=find(diff(sort(m))>1)+1 ;
-% dupvals=earlyROIs_traces(dupindx,15);
-
-for iROI=1:size(earlyROIs_traces,1)
-    %area under the curve
-    tempY=earlyROIs_traces{iROI,8};
-    %first 3 sec after stim onset
-    x1=round(FrameRate*5);
-    x2=round(FrameRate*7);
-    earlyROIs_traces{iROI,17}=trapz(tempY(x1:x2));
-end
+% %% early based on time shifts
+% % make new names
+% for iROI=1:size(early,1)
+%     early{iROI,14}=strcat(early{iROI,1},'_',early{iROI,7});
+% end
+% earlyROIs=unique(early(:,14));
+% 
+% % find the index of ROIs at are in the early ROI group
+% ind1=find(ismember(GCaMP_ROI(:,15),earlyROIs(:,1)));
+% ind2=find(~ismember(GCaMP_ROI(:,15),earlyROIs(:,1)));
+% earlyROIs_traces=GCaMP_ROI(ind1,:);
+% lateROIs_traces=GCaMP_ROI(ind2,:);
+% 
+% ind2=find(ismember(responders(:,25),earlyROIs(:,1)));
+% earlyROIs_peaks=responders(ind2,:);
+% 
+% %remove duplicate traces
+% wd=earlyROIs_traces;
+% [~,idx]=unique(wd(:,15));
+% earlyROIs_traces=wd(idx,:);
+% 
+% %separate out traces of neurons and astrocytes that are unique
+% % [b, m, n]=unique(earlyROIs_traces(:,15));
+% % dupindx=find(diff(sort(m))>1)+1 ;
+% % dupvals=earlyROIs_traces(dupindx,15);
+% 
+% for iROI=1:size(earlyROIs_traces,1)
+%     %area under the curve
+%     tempY=earlyROIs_traces{iROI,8};
+%     %first 3 sec after stim onset
+%     x1=round(FrameRate*5);
+%     x2=round(FrameRate*7);
+%     earlyROIs_traces{iROI,17}=trapz(tempY(x1:x2));
+% end
 
 %%
 %remove giant ROIs
@@ -966,15 +1001,16 @@ RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
 plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'r', 'LineWidth',1)
 
 
-figure('name', 'Mean Early traces')
+figure('name', 'Mean Early & late traces')
 hold on
 axis off
 plot([5 13],[-2 -2], 'k','LineWidth', 2)
 plot([5 5],[-1 2], 'k--','LineWidth', 0.5)
-plot(TimeX(1:stimwindow), meanEarlyTrace(1:stimwindow), 'g', 'LineWidth',1)
+plot(TimeX(1:stimwindow), smooth(meanEarlyTrace(1:stimwindow),3), 'b', 'LineWidth',1)
+plot(TimeX(1:stimwindow), smooth(meanlateTraces(1:stimwindow),3), 'g', 'LineWidth',1)
 % %RCaMP
 RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
-plot(TimeX(1:stimwindow), RespRCmeanTrace(1:stimwindow), 'r', 'LineWidth',1)
+plot(TimeX(1:stimwindow), smooth(RespRCmeanTrace(1:stimwindow),3), 'r', 'LineWidth',1)
 
 %%
    earlytraces=[]; 

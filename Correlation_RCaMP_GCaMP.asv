@@ -761,118 +761,117 @@ for itrial= 1:length(trial_condition)
     end
     
     CurrentData=data_traces(TrialIdx,:);
-    if length(CurrentData{1,8})>200
+    if size(CurrentData(1,8
+    
+    for iROI=1:size(CurrentData,1)
+        CorrData(1,1:6)=CurrentData(iROI,2:7);
+        CorrData(1,7)=CurrentData(iROI,17);
         
-        for iROI=1:size(CurrentData,1)
-            CorrData(1,1:6)=CurrentData(iROI,2:7);
-            CorrData(1,7)=CurrentData(iROI,17);
-            
-            CorrData(1,8)= CurrentData(iROI,1);
-            CorrData(1,9)= CurrentData(iROI,13);
-            CorrData(1,10)= CurrentData(iROI,9);
-            CorrData(1,11)= CurrentData(iROI,10);
+        CorrData(1,8)= CurrentData(iROI,1);
+        CorrData(1,9)= CurrentData(iROI,13);
+        CorrData(1,10)= CurrentData(iROI,9);
+        CorrData(1,11)= CurrentData(iROI,10);
+        
+        %whole trace
+        TraceX= CurrentData{1,8};
+        % stim window
+        TraceX_short=TraceX(1:(25*FrameRate),:);
+        
+        for kROI = (iROI+1):size(CurrentData,1)
+            CorrData(1,12)= CurrentData(kROI,3);
+            CorrData(1,13)= CurrentData(kROI,1);
+            CorrData(1,14)= CurrentData(kROI,13);
+            CorrData(1,15)= CurrentData(kROI,9);
+            CorrData(1,16)= CurrentData(kROI,10);
             
             %whole trace
-            TraceX= CurrentData{1,8};
+            TraceY= CurrentData{kROI,8};
             % stim window
-            TraceX_short=TraceX(1:(25*FrameRate),:);
+            TraceY_short=TraceY(1:(25*FrameRate),:);
             
-            for kROI = (iROI+1):size(CurrentData,1)
-                CorrData(1,12)= CurrentData(kROI,3);
-                CorrData(1,13)= CurrentData(kROI,1);
-                CorrData(1,14)= CurrentData(kROI,13);
-                CorrData(1,15)= CurrentData(kROI,9);
-                CorrData(1,16)= CurrentData(kROI,10);
-                
-                %whole trace
-                TraceY= CurrentData{kROI,8};
-                % stim window
-                TraceY_short=TraceY(1:(25*FrameRate),:);
-                
-                % whole trial correlation
-                [R,Ps] = corrcoef(TraceX, TraceY);
-                CorrData{1,17}= R(1,2); % correlation coeff
-                CorrData{1,18}= Ps(1,2); % p value
-                
-                % stim window correlation
-                [R2,Ps2]= corrcoef(TraceX_short, TraceY_short);
-                CorrData{1,19}= R2(1,2); % correlation coeff
-                CorrData{1,20}= Ps2(1,2); % p value
-                
-                % stim window cross correlation
-                [Corr_Sequence,lag]  = xcorr(TraceX_short, TraceY_short,'coeff');
-                [~,I] = max(abs(Corr_Sequence));
-                CorrData{1,21}=  max(abs(Corr_Sequence)); % max of correlation sequence
-                CorrData{1,22}= (lag(I))/FrameRate; % lag time
-                
-                % correlation plots
-                %             subplot(3,1,1); plot(TraceX_short); title('s1');
-                %             subplot(3,1,2); plot(TraceY_short); title('s2');
-                %             subplot(3,1,3); plot(lag,Corr_Sequence);
-                %             title('Cross-correlation between s1 and s2')
-                
-                %% Distance Calculations
-                % find the minimium distance between the edges of the two ROIs
-                
-                %create a binary image with each pair of ROIs
-                % for the first ROI
-                if isnumeric(CorrData{1,11})
-                    Image1=zeros(128,128);
-                    Image1(CorrData{1,11})=1;
-                    %Image1=im2bw(Image1);
-                elseif islogical(CorrData{1,11})
-                    Image1= double(CorrData{1,11});
-                else
-                    Image1=[];
-                end
-                
-                % for the second ROI
-                if isnumeric(CorrData{1,16})
-                    Image2=zeros(128,128);
-                    Image2(CorrData{1,16})=1;
-                    Image2=im2bw(Image2);
-                elseif islogical(CorrData{1,16})
-                    Image2= double(CorrData{1,16});
-                else
-                    Image2=[];
-                end
-                
-                Mask=Image1+Image2;
-                Mask=im2bw(Mask);
-                
-                %Pythaogrean theorem method
-                
-                % Define object boundaries
-                boundaries = bwboundaries(Mask);
-                numberOfBoundaries = size(boundaries, 1);
-                if numberOfBoundaries==1
-                    CorrData{1,23} = 0;
-                elseif numberOfBoundaries>1
-                    boundary1 = boundaries{1};
-                    boundary2 = boundaries{2};
-                    boundary1x = boundary1(:, 2);
-                    boundary1y = boundary1(:, 1);
-                    for k = 1 : length(boundary2)
-                        boundary2x = boundary2(k, 2);
-                        boundary2y = boundary2(k, 1);
-                        % For this blob, compute distances from boundaries to edge.
-                        allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
-                        % Find closest point, min distance.
-                        [minDistance(k), indexOfMin] = min(allDistances);
-                    end
-                    % Find the overall min distance
-                    CorrData{1,23} = (min(minDistance)*cell2mat(CurrentData(kROI,11)));
-                else
-                    CorrData{1,23} = [];
-                end
-                CorrData{1,24} = numberOfBoundaries; % number of ROIs in the mask
-                
-                All_Corrs=vertcat(All_Corrs,CorrData); % concatenate all data into a big matrix
-                
-                clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin
+            % whole trial correlation
+            [R,Ps] = corrcoef(TraceX, TraceY);
+            CorrData{1,17}= R(1,2); % correlation coeff
+            CorrData{1,18}= Ps(1,2); % p value
+            
+            % stim window correlation
+            [R2,Ps2]= corrcoef(TraceX_short, TraceY_short);
+            CorrData{1,19}= R2(1,2); % correlation coeff
+            CorrData{1,20}= Ps2(1,2); % p value
+            
+            % stim window cross correlation
+            [Corr_Sequence,lag]  = xcorr(TraceX_short, TraceY_short,'coeff');
+            [~,I] = max(abs(Corr_Sequence));
+            CorrData{1,21}=  max(abs(Corr_Sequence)); % max of correlation sequence
+            CorrData{1,22}= (lag(I))/FrameRate; % lag time
+            
+            % correlation plots
+            %             subplot(3,1,1); plot(TraceX_short); title('s1');
+            %             subplot(3,1,2); plot(TraceY_short); title('s2');
+            %             subplot(3,1,3); plot(lag,Corr_Sequence);
+            %             title('Cross-correlation between s1 and s2')
+            
+            %% Distance Calculations
+            % find the minimium distance between the edges of the two ROIs
+            
+            %create a binary image with each pair of ROIs
+            % for the first ROI
+            if isnumeric(CorrData{1,11})
+                Image1=zeros(128,128);
+                Image1(CorrData{1,11})=1;
+                %Image1=im2bw(Image1);
+            elseif islogical(CorrData{1,11})
+                Image1= double(CorrData{1,11});
+            else
+                Image1=[];
             end
             
+            % for the second ROI
+            if isnumeric(CorrData{1,16})
+                Image2=zeros(128,128);
+                Image2(CorrData{1,16})=1;
+                Image2=im2bw(Image2);
+            elseif islogical(CorrData{1,16})
+                Image2= double(CorrData{1,16});
+            else
+                Image2=[];
+            end
+            
+            Mask=Image1+Image2;
+            Mask=im2bw(Mask);
+            
+            %Pythaogrean theorem method
+            
+            % Define object boundaries
+            boundaries = bwboundaries(Mask);
+            numberOfBoundaries = size(boundaries, 1);
+            if numberOfBoundaries==1
+                CorrData{1,23} = 0;
+            elseif numberOfBoundaries>1
+                boundary1 = boundaries{1};
+                boundary2 = boundaries{2};
+                boundary1x = boundary1(:, 2);
+                boundary1y = boundary1(:, 1);
+                for k = 1 : length(boundary2)
+                    boundary2x = boundary2(k, 2);
+                    boundary2y = boundary2(k, 1);
+                    % For this blob, compute distances from boundaries to edge.
+                    allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
+                    % Find closest point, min distance.
+                    [minDistance(k), indexOfMin] = min(allDistances);
+                end
+                % Find the overall min distance
+                CorrData{1,23} = (min(minDistance)*cell2mat(CurrentData(kROI,11)));
+            else
+                CorrData{1,23} = [];
+            end
+            CorrData{1,24} = numberOfBoundaries; % number of ROIs in the mask
+            
+            All_Corrs=vertcat(All_Corrs,CorrData); % concatenate all data into a big matrix
+            
+            clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin
         end
+        
     end
     
 end
