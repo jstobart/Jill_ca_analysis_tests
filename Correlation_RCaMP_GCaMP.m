@@ -82,7 +82,7 @@ for itrial= 1:length(trial_condition)
     
     for iROI=1:size(CurrentData,1)
         CorrData(1,1:6)=CurrentData(iROI,2:7);
-        CorrData(1,7)=CurrentData(iROI,17);
+        CorrData(1,7)=CurrentData(iROI,17); 
         
         CorrData(1,8)= CurrentData(iROI,1);
         CorrData(1,9)= CurrentData(iROI,13);

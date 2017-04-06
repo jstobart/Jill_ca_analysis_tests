@@ -32,77 +32,93 @@ max.theme <- theme_classic() +
 
 ###########
 # NOTES
-
+# data sets from nostim, shortstim (90Hz,1s), longstim (90Hz,8s)
+# with hand selected somata and FLIKA activities for neurons AND astrocytes
 
 ########################
-# relative "active ROI" between groups based on peak auc and frequency
+# load data
 
-# whole frame and automatic RCaMP ROI selection:
-#stim.all <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_14_02_2017.csv", header=TRUE, sep = ",")
-#peaks.control1 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
-#peaks.control2 <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
-
-peaks.control1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/S&LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
-peaks.control2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LStim_LckGC&RC_17_02_2017.csv", header=TRUE, sep = ",")
+nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_05_04_2017.csv", header=TRUE, sep = ",")
+short <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_05_04_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
-# treatment
-peaks.control1$treatment<-"Control"
-peaks.control2$treatment<-"Control"
+# exclude the neuropil ROIs, because they were hand selected and not necessary
+nostim<-nostim[!(nostim$ROIname=="np"),]
+short<-short[!(short$ROIname=="np"),]
+long<-long[!(long$ROIname=="np"),]
 
+###### 
+# no stim
 
-stim.all<-rbind(peaks.control1, peaks.control2)
-
-
-# stim onset at 5 sec
-stim.all$peakTime<-stim.all$peakTime-5
-stim.all$peakStart<-stim.all$peakStart-5
-stim.all$peakStartHalf<-stim.all$peakStartHalf-5
-
-#duration
-stim.all$Duration<-stim.all$halfWidth*2
+nostim$ROIType= 0
+nostimA<- subset(nostim, Channel=="GCaMP")
+nostimB<- subset(nostim, Channel=="RCaMP")
 
 # ROITypes
-stim.all$ROIType= 0
-stim.all$ROIType[grepl("r",stim.all$ROIname)]="Process"
-stim.all$ROIType[grepl("E",stim.all$ROIname)]="Endfoot"
-stim.all$ROIType[grepl("D",stim.all$ROIname)]="Dendrite"
-stim.all$ROIType[grepl("N",stim.all$ROIname)]="Neuron"
-stim.all$ROIType[grepl("np",stim.all$ROIname)]="Neuropil"
+nostimA$ROIType[grepl("r",nostimA$ROIname)]="Process"
+nostimA$ROIType[grepl("E",nostimA$ROIname)]="Endfoot"
+nostimB$ROIType[grepl("r",nostimB$ROIname)]="Dendrite"
+nostimB$ROIType[grepl("D",nostimB$ROIname)]="Dendrite"
+nostimB$ROIType[grepl("N",nostimB$ROIname)]="Neuron"
 
-stim.all$ROIType<- as.factor(stim.all$ROIType)
-
+nostim<-rbind(nostimA, nostimB)
+nostim$ROIType<- as.factor(nostim$ROIType)
 
 #unique ROI names
-stim.all$ROIs_trial<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial,stim.all$ROIname, sep= "_")
+nostim$ROIs_trial<-paste(nostim$Animal, nostim$Spot, nostim$Trial,nostim$ROIname, sep= "_")
 
-stim.all$ROIs<-paste(stim.all$Animal, stim.all$Spot, stim.all$ROIname, sep= "_")
-
-stim.all$trials<-paste(stim.all$Animal, stim.all$Spot, stim.all$Trial, sep= "_")
-
-
-# exclude RG10 cause it moves too much
-#stim.all<- subset(stim.all, Animal!="RG10")
-
+nostim$trials<-paste(nostim$Animal, nostim$Spot, nostim$Trial, sep= "_")
 
 
 # remove matching astrocyte process and soma ROIs
-Overlap= stim.all$overlap!=0
+Overlap= nostim$overlap!=0
+nostim2<-nostim[!Overlap,]
+#OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
-OverlapROIs<-unique(stim.all$ROIs_trial[Overlap])
 
-stim.all2<-stim.all[!Overlap,]
 
+#####
+# short stim
+
+short$ROIType= 0
+shortA<- subset(short, Channel=="GCaMP")
+shortB<- subset(short, Channel=="RCaMP")
+
+# ROITypes
+shortA$ROIType[grepl("r",shortA$ROIname)]="Process"
+shortA$ROIType[grepl("E",shortA$ROIname)]="Endfoot"
+shortB$ROIType[grepl("r",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("D",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("N",shortB$ROIname)]="Neuron"
+
+short<-rbind(shortA, shortB)
+short$ROIType<- as.factor(short$ROIType)
+
+#unique ROI names
+short$ROIs_trial<-paste(short$Animal, short$Spot, short$Trial,short$ROIname, sep= "_")
+
+short$trials<-paste(short$Animal, short$Spot, short$Trial, sep= "_")
+
+
+# remove matching astrocyte process and soma ROIs
+Overlap= short$overlap!=0
+short2<-short[!Overlap,]
+
+# stim onset at 5 sec
+short2$peakTime<-short2$peakTime-5
+short2$peakStart<-short2$peakStart-5
+short2$peakStartHalf<-short2$peakStartHalf-5
+
+#duration
+short2$Duration<-short2$halfWidth*2
 
 #######
 # histogram of peak times for stim
-longstim<-subset(stim.all2, Condition=="Stim")
-ggplot(longstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+ggplot(long2, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("long stim")
 
-shortstim<-subset(stim.all2, Condition=="shortstim")
-ggplot(shortstim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+ggplot(short2, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("short stim")
 
 nostim<-subset(stim.all2, Condition=="Nostim")
@@ -117,23 +133,7 @@ GCaMP<- subset(stim.all2, Channel=="GCaMP")
 ggplot(GCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, position="dodge") +
   ggtitle("GCaMP")
 
-#considering treatment
-RCaMP.longstim<- subset(RCaMP, Condition=="Stim")
-ggplot(RCaMP.longstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
-  ggtitle("RCaMP long stim")
 
-RCaMP.shortstim<- subset(RCaMP, Condition=="shortstim")
-ggplot(RCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
-  ggtitle("RCaMP short stim")
-
-#considering treatment
-GCaMP.longstim<- subset(GCaMP, Condition=="Stim")
-ggplot(GCaMP.longstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
-  ggtitle("GCaMP long stim")
-
-GCaMP.shortstim<- subset(GCaMP, Condition=="shortstim")
-ggplot(GCaMP.shortstim, aes(x=peakTime, fill=treatment)) + geom_histogram(binwidth=1, position="dodge") +
-  ggtitle("GCaMP short stim")
 ########
 # consider only the trials where the neurons responded to stimulation
 
@@ -829,61 +829,6 @@ summary(dur.pv.ROIType)
 
 
 #######
-# peak features
-
-# amplitude
-df2A <- summarySE(longstim.stimwindow, measurevar="amplitude", groupvars=c("ROIType","treatment"),na.rm=TRUE)
+# no stim peaks
 
 
-ggplot(data=df2A, aes(x=ROIType, y=amplitude, fill=treatment)) +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("amplitude") +
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-
-# prominence
-
-df3A <- summarySE(longstim.stimwindow, measurevar="prominence", groupvars=c("ROIType","treatment"))
-
-ggplot(data=df3A, aes(x=treatment, y=prominence, fill=ROIType)) +
-  geom_errorbar(aes(ymin=prominence-se, ymax=prominence+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("prominence") +
-  max.theme
-
-# duration
-df4A <- summarySE(longstim.stimwindow, measurevar="Duration", groupvars=c("ROIType","treatment"))
-
-ggplot(data=df4A, aes(x=treatment, y=Duration, fill=ROIType)) +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("Duration") +
-  max.theme
-
-
-
-#frequency (within the same trial)
-
-# nostim frequency
-#aggregate data by trial
-nostim.trials<- ddply(nostim, c("Animal", "Spot", "trials","Channel","ROIType","treatment","ROIs_trial"), summarise, 
-                               PA_mean = mean(peakAUC), nEvents = length(peakAUC),
-                               Dur_mean = mean(Duration), Prom_mean = mean(prominence),
-                               amp_mean = mean(amplitude), HalfDur = mean(halfWidth),
-                              freq = sum(numPeaks), area_mean= mean(area))
-nostim.trials$peaks_min=nostim.trials$freq/1.5
-nostim.trials$signals_min=nostim.trials$nEvents/1.5
-
-df5A <- summarySE(nostim.trials, measurevar="peaks_min", groupvars=c("Channel"), na.rm = T)
-df5B <- summarySE(nostim.trials, measurevar="signals_min", groupvars=c("Channel"),na.rm = T)
-
-ggplot(data=df4A, aes(x=treatment, y=Duration, fill=Condition)) +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.5, size= 1, position=position_dodge(1.0)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("Duration") +
-  scale_fill_manual(
-    values=c("black", "red", "blue")) + 
-  max.theme
-######################
