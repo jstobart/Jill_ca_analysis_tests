@@ -1,85 +1,356 @@
-%% LONG STIM (8sec)
+
 clearvars
 close all
 
-%load data traces
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_17_02_2017.mat');
-%load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_17_02_2017.mat');
+%% Load data
 
-Long_Short=All_traces;
+%peak data
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
+NostimPeaks=AllData2(2:end,:);
 
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LStim_LckGC&RC_traces_17_02_2017.mat');
-%load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2p5D_23_02_2017.mat');
-%load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LStim_LckGC&RC_traces_17_02_2017.mat');
+% Load trace data
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
+%load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_shortstim_05_04_2017.mat');
+%load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat');
 
-Long=All_traces;
-
-All_traces=vertcat(Long_Short,Long);
+Nostim=All_traces;
+%%
+% get info for plotting
 FrameRate=11.84;
-stimwindow=round(FrameRate*30);
+nframes=592;
+TimeX(1:nframes) = (1:nframes)/FrameRate;
 
-searchString='Stim';
-
-for iROI=1:length(All_traces)
-    Stim_str{iROI} = strfind(All_traces{iROI,6},searchString);
-    str_idx(iROI)=~isempty(Stim_str{iROI});
-    
+for iROI=1:length(Nostim)
     %find ROITypes
-    N_str= strfind(All_traces{iROI, 1},'N');
-    S_str= strfind(All_traces{iROI, 1},'D');
-    EF_str= strfind(All_traces{iROI, 1},'E');
-    P_str= strfind(All_traces{iROI, 1},'r');
-    NP_str= strfind(All_traces{iROI, 1},'np');
+    N_str= strfind(Nostim{iROI, 1},'N');
+    D_str= strfind(Nostim{iROI, 1},'D'); %hand selected dendrite
+    r_str= strfind(Nostim{iROI, 1},'r'); %FLIKA ROIs
+    EF_str= strfind(Nostim{iROI, 1},'E');
     
     if ~isempty(N_str)
-        All_traces{iROI,13}='Neuron';
-    elseif ~isempty(S_str)
-        All_traces{iROI,13}='Dendrite';
+        Nostim{iROI,13}='Neuron';
+    elseif ~isempty(D_str)
+        Nostim{iROI,13}='Dendrite';
+    elseif ~isempty(r_str)
+        P_str= strfind(Nostim{iROI, 3},'GCaMP');
+        if ~isempty(P_str)
+            Nostim{iROI,13}='Process';
+        else
+            Nostim{iROI,13}='Dendrite';
+        end
     elseif ~isempty(EF_str)
-        All_traces{iROI,13}='Endfeet';
-    elseif ~isempty(P_str)
-        All_traces{iROI,13}='Process';
-    elseif ~isempty(NP_str)
-        All_traces{iROI,13}='Neuropil';
+        Nostim{iROI,13}='Endfeet';
     end
     
-    % make new names
-    All_traces{iROI,14}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2});
-    All_traces{iROI,15}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,1});
-    All_traces{iROI,16}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,2}, '_',All_traces{iROI,1},'_',All_traces{iROI,6});
-    
-    
+    % make new unique trial names
+    Nostim{iROI,14}=strcat(Nostim{iROI,5},'_',Nostim{iROI,4},'_',Nostim{iROI,2});
+    % unique ROI names
+    Nostim{iROI,15}=strcat(Nostim{iROI,5},'_',Nostim{iROI,4},'_',Nostim{iROI,2}, '_',Nostim{iROI,1});
 end
 
-data_traces = All_traces(str_idx',:);
-
-for iROI=1:length(data_traces)
+for iROI=1:length(Nostim)
     %if a process ROI is overlapping with a soma or process, exclude it
     %from data
-    %All_traces{iROI,11}=0;
-    nonOverlapIdx(iROI)=~ischar(data_traces{iROI,12});
-    
+    nonOverlapIdx(iROI)=~ischar(Nostim{iROI,12});
 end
 
 % remove overlapping processes
-data_traces = data_traces(nonOverlapIdx',:);
+Nostim = Nostim(nonOverlapIdx',:);
 
-% get rid of astrocyte neuropil traces
-for xROI=1:size(data_traces,1)
-    GCNP2(xROI)=(strcmp(data_traces{xROI,3},'GCaMP')&& strcmp(data_traces{xROI,13},'Neuropil'));
+%%
+
+for iROI=1:length(NostimPeaks)
+    %find ROITypes
+    N_str= strfind(NostimPeaks{iROI, 1},'N');
+    D_str= strfind(NostimPeaks{iROI, 1},'D'); %hand selected dendrite
+    r_str= strfind(NostimPeaks{iROI, 1},'r'); %FLIKA ROIs
+    EF_str= strfind(NostimPeaks{iROI, 1},'E');
+    
+    if ~isempty(N_str)
+        NostimPeaks{iROI,21}='Neuron';
+    elseif ~isempty(D_str)
+        NostimPeaks{iROI,21}='Dendrite';
+    elseif ~isempty(r_str)
+        P_str= strfind(NostimPeaks{iROI, 3},'GCaMP');
+        if ~isempty(P_str)
+            NostimPeaks{iROI,21}='Process';
+        else
+            NostimPeaks{iROI,21}='Dendrite';
+        end
+    elseif ~isempty(EF_str)
+        NostimPeaks{iROI,21}='Endfeet';
+    end
+    
+    % make new unique trial names
+    NostimPeaks{iROI,22}=strcat(NostimPeaks{iROI,13},'_',NostimPeaks{iROI,15},'_',NostimPeaks{iROI,12});
+    % unique ROI names
+    NostimPeaks{iROI,23}=strcat(NostimPeaks{iROI,13},'_',NostimPeaks{iROI,15},'_',NostimPeaks{iROI,12}, '_',NostimPeaks{iROI,10});
 end
 
-data_traces=data_traces(~GCNP2',:);
+for iROI=1:length(NostimPeaks)
+    %if a process ROI is overlapping with a soma or process, exclude it
+    %from data
+    nonOverlapIdx(iROI)=~ischar(NostimPeaks{iROI,19});
+end
 
-% get info for plotting
-nROIs=length(data_traces);
-
-nframes=592;
-
-TimeX(1:nframes) = (1:nframes)/FrameRate;
+% remove overlapping processes
+NostimPeaks = NostimPeaks(nonOverlapIdx',:);
 
 
-%% Plot all traces for the entire trial
+%% Find astrocyte peaks that occur around spontaneous neuronal peaks
+baselineCorrectedTime=TimeX-5;
+
+% % % find peak onsets for each ROI
+% for iROI= 1:length(Nostim)
+%     trace=Nostim{iROI,8};
+%     Onsets=find_multiple_onset_times(baselineCorrectedTime(10:end), trace(10:592,:),2.5,1,1);
+%     if isempty(Onsets)
+%         Onsets=nan(1,1);
+%     end
+%     Nostim{iROI, 16}= Onsets;
+% end
+
+%% compare peak onsets for each RCaMP and GCaMP ROI
+
+tic
+TimeComparisons=[];
+Trials= unique(Nostim(:,14));
+
+% histograms of onset times
+for itrial=1:length(Trials)
+    CurrentTrial=Trials(itrial);
+    
+    % Find the idx of paths matching trial
+    matchingTrialIdx = find(~cellfun(@isempty, regexp(Nostim(:,14), CurrentTrial)));
+    TrialData = Nostim(matchingTrialIdx,:);
+    % find neuronal onset times in this trial
+    NeuronalIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'RCaMP')));
+    NeuronalData=TrialData(NeuronalIdx,:);
+    
+    
+    % find similar astrocyte peak times
+    AstroIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'GCaMP')));
+    AstroData=TrialData(AstroIdx,:);
+    
+    
+    parfor nNeuro=1:size(NeuronalData,1)
+        for nAstro= 1:size(AstroData,1)
+            Ntrace=NeuronalData{nNeuro,8};
+            NOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2.5,1);
+            Atrace=AstroData{nAstro,8};
+            AOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Atrace(10:592,:),2.5,1);
+            
+            if ~isempty(NOnset)
+                if ~isempty(AOnset)
+                    
+                    % masks for ROI distance calculations
+                    %create a binary image with each pair of ROIs
+                    % for the first ROI
+                    if isnumeric(NeuronalData{nNeuro,10})
+                        Image1=zeros(128,128);
+                        Image1(NeuronalData{nNeuro,10})=1;
+                        %Image1=im2bw(Image1);
+                    elseif islogical(NeuronalData{nNeuro,10})
+                        Image1= double(NeuronalData{nNeuro,10});
+                    else
+                        Image1=[];
+                    end
+                    
+                    % for the second ROI
+                    if isnumeric(AstroData{nAstro,10})
+                        Image2=zeros(128,128);
+                        Image2(AstroData{nAstro,10})=1;
+                        Image2=im2bw(Image2);
+                    elseif islogical(AstroData{nAstro,10})
+                        Image2= double(AstroData{nAstro,10});
+                    else
+                        Image2=[];
+                    end
+                    
+                    Mask=Image1+Image2;
+                    Mask=im2bw(Mask);
+                    
+                    % find the minimium distance between the edges of the two ROIs
+                    %Pythaogrean theorem method
+                    
+                    % Define object boundaries
+                    boundaries = bwboundaries(Mask);
+                    numberOfBoundaries = size(boundaries, 1);
+                    if numberOfBoundaries==1
+                        distance = 0;
+                    elseif numberOfBoundaries>1
+                        boundary1 = boundaries{1};
+                        boundary2 = boundaries{2};
+                        boundary1x = boundary1(:, 2);
+                        boundary1y = boundary1(:, 1);
+                        minDistance= zeros(length(boundary2),1);
+                        for k = 1 : length(boundary2)
+                            boundary2x = boundary2(k, 2);
+                            boundary2y = boundary2(k, 1);
+                            % For this blob, compute distances from boundaries to edge.
+                            allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
+                            % Find closest point, min distance.
+                            [minDistance(k), indexOfMin] = min(allDistances);
+                        end
+                        % Find the overall min distance
+                        distance = (min(minDistance)*cell2mat(AstroData(nAstro,11)));
+                    else
+                        distance = [];
+                    end
+                    
+                    for iN=1:length(NOnset)
+                        OnsetTimeComparisons=cell(length(AOnset),14);
+                        for iA=1:length(AOnset)
+                            NeuronalOnset=NOnset(1,iN); % neuronal peak onset
+                            AstrocyteOnset=AOnset(1,iA); % astrocyte peak onset
+                            TimeDiff= AstrocyteOnset-NeuronalOnset;
+                            %if TimeDiff>=-10 && TimeDiff<=10
+                            
+                            % generate data table with onset comparisons
+                            OnsetTimeComparisons(iA,1)=NeuronalData(nNeuro,5); % animal
+                            OnsetTimeComparisons(iA,2)=NeuronalData(nNeuro,4); % spot
+                            OnsetTimeComparisons(iA,3)=NeuronalData(nNeuro,2); % trial
+                            OnsetTimeComparisons(iA,4)=NeuronalData(nNeuro,15); % unique neuronal ROI name
+                            OnsetTimeComparisons(iA,5)=NeuronalData(nNeuro,13); % neuron ROI type
+                            OnsetTimeComparisons(iA,6)=AstroData(nAstro,15); % unique astrocyte ROI name
+                            OnsetTimeComparisons(iA,7)=AstroData(nAstro,13); % astrocyte ROI type
+                            OnsetTimeComparisons{iA,8} =distance;
+                            OnsetTimeComparisons{iA,9} = numberOfBoundaries; % number of ROIs in the mask
+                            
+                            
+                            % Onset times
+                            OnsetTimeComparisons{iA,10}=strcat('NPeak',num2str(iN,'%02d')); % neuronal peak number
+                            OnsetTimeComparisons{iA,11}=NeuronalOnset; % neuronal onset time
+                            OnsetTimeComparisons{iA,12}=strcat('APeak',num2str(iA,'%02d')); % neuronal peak number
+                            OnsetTimeComparisons{iA,13}=AstrocyteOnset; % astrocyte onset time
+                            
+                            % difference between astrocyte onset and neuronal onset
+                            OnsetTimeComparisons{iA,14}=TimeDiff;
+                            OnsetTimeComparisons{iA,15}=strcat(OnsetTimeComparisons{iA,6},OnsetTimeComparisons{iA,12}); % astrocyte peak name
+                        end
+                        
+                        TimeComparisons=vertcat(TimeComparisons,OnsetTimeComparisons); % concatenate all data into a big matrix
+                        
+                        %clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin OnsetTimeComparisons
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+
+toc
+% % histograms
+figure('name', 'histogram: OnsetTime (A)- OnsetTime (N)')
+histogram(cell2mat(TimeComparisons(:,14)))
+
+%% Isolate the early traces from the shifted data
+
+for xComp= 1:size(TimeComparisons,1)
+    mixedIdx(xComp)= TimeComparisons{xComp,14}>=-5 && TimeComparisons{xComp,14}<=5;
+end
+mixedOnset=TimeComparisons(mixedIdx,:);
+
+figure('name','astrocyte peaks around neurons');histogram(cell2mat(mixedOnset(:,14)),'BinWidth',0.0845);
+
+
+%% percent distributions
+
+% before, after, zero
+for xComp=1:length(mixedOnset)
+   zeroIdx(xComp)= mixedOnset{xComp,14}==0;
+    
+   beforeNIdx(xComp)= mixedOnset{xComp,14}>=-1 && TimeComparisons{xComp,14}<0;
+   
+   afterNIdx(xComp)= mixedOnset{xComp,14}>0 && TimeComparisons{xComp,14}<=1;
+end
+zerodata=mixedOnset(zeroIdx,:);
+beforedata=mixedOnset(beforeNIdx,:);
+afterdata=mixedOnset(afterNIdx,:);
+
+
+% ALL Astrocyte Peaks
+% percentage of ALL astrocyte peaks that come before, after, or zero
+Total_APeak_Num=length(unique(TimeComparisons(:,15)));
+
+NumZeroPeaks=length(unique(zerodata(:,15)));
+% number of astrocyte peaks that appear in 1 sec before neurons
+NumBeforePeaks=length(unique(beforedata(:,15)));
+% number of astrocyte peaks that appear 1 sec after neurons
+NumAfterPeaks=length(unique(afterdata(:,15)));
+
+Percent_All_zero=(NumZeroPeaks/Total_APeak_Num)*100;
+Percent_All_before=(NumBeforePeaks/Total_APeak_Num)*100;
+Percent_All_after=(NumAfterPeaks/Total_APeak_Num)*100;
+
+
+% ALL Unique neuron-astrocyte peak comparisons
+% percentage of unique comparisons that come before, after or zero
+Total_Comp_Num=length(TimeComparisons(:,15));
+
+NumZeroComp=length(zerodata(:,15));
+% number of astrocyte peaks that appear in 1 sec before neurons
+NumBeforeComp=length(beforedata(:,15));
+% number of astrocyte peaks that appear 1 sec after neurons
+NumAfterComp=length(afterdata(:,15));
+
+Percent_Comp_zero=(NumZeroComp/Total_Comp_Num)*100;
+Percent_Comp_before=(NumBeforeComp/Total_Comp_Num)*100;
+Percent_Comp_after=(NumAfterComp/Total_Comp_Num)*100;
+
+
+% percent astrocyte ROIs per field of view with at least one comparison
+
+
+%% total number of peaks per trial
+
+%% Distance between ROIs
+
+figure('name', 'astrocyte onset time diff vs ROI distance');
+onsets=cell2mat(mixedOnset(:,14));
+distances=cell2mat(mixedOnset(:,8));
+scatter(onsets, distances, 10, 'filled');
+
+%% Astrocytes shortly after neurons
+
+for xComp= 1:size(mixedOnset,1)
+    shortIdx(xComp)= mixedOnset{xComp,14}>=0 && mixedOnset{xComp,14}<=0.1;
+end
+shortOnset=mixedOnset(shortIdx,:);
+
+
+%%
+Trials= unique(NostimPeaks(:,22));
+
+for itrial=1:10
+    CurrentTrial=Trials(itrial);
+    
+    % Find the idx of paths matching trial
+    matchingTrialIdx = find(~cellfun(@isempty, regexp(NostimPeaks(:,22), CurrentTrial)));
+    TrialData = NostimPeaks(matchingTrialIdx,:);
+    % find neuronal peak times in this trial
+    NeuronalIdx = find(~cellfun(@isempty, regexp(TrialData(:,14), 'RCaMP')));
+    NeuronalpT= TrialData(NeuronalIdx,5);
+    
+    % find similar astrocyte peak times
+    AstroIdx = find(~cellfun(@isempty, regexp(TrialData(:,14), 'GCaMP')));
+    AstropT = TrialData(AstroIdx,5);
+    
+    figure('name','neuron');histogram(cell2mat(NeuronalpT),'BinWidth',1);
+    figure('name','astro');histogram(cell2mat(AstropT),'BinWidth',1);
+end
+
+for iTime=1:length(NeuronalpT)
+    CurrentNeuronalTime=NeuronalpT(iTime);
+    AstroIdx=find(AstropT>(CurrentNeuronalTime-2) && AstropT<(CurrentNeuronalTime+2));
+end
+%end
+
+
+
+%% Plot all traces for each Condition and Channel
 
 % individual traces in grey, mean in red
 
@@ -238,8 +509,8 @@ for xROI= 1:size(Resp_GCaMP_traces,2)
     tempY = Resp_GCaMP_traces(:,xROI);
     if length(tempY)>590
         tempY=tempY(1:nframes);
-    grey = [0.8,0.8,0.8];
-    plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+        grey = [0.8,0.8,0.8];
+        plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
     end
 end
 
@@ -423,30 +694,30 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 %% Histogram of peak time differences between neurons and astrocytes
 % compare peak times of responding neurons to responding astrocytes in a field of view
 % shift traces of each responding ROI by neuronal peak times
-% 
+%
 % timeDiffs=[];
 % ShiftedTraces=[];
-% 
+%
 % uniqueTrials=unique(responders(:,27));
-% 
+%
 % for iTrial=1:size(uniqueTrials,1)
-%     
+%
 %     %find matching trials
 %     for xTrial= 1:size(responders,1)
 %         Trial_str(xTrial)= strcmp(responders{xTrial, 27},uniqueTrials{iTrial});
 %     end
 %     trialData=responders(Trial_str,:);
-%     
+%
 %     for xxTrial= 1:size(RespondingROIs,1)
 %         Trial_str2(xxTrial)= strcmp(RespondingROIs{xxTrial, 14},uniqueTrials{iTrial});
 %     end
 %     trialTraces=RespondingROIs(Trial_str2,:);
-%     
+%
 %     %find neuron and neuropil ROIs
 %     for iROI=1:size(trialData,1)
 %         Nstr{iROI}= regexp(trialData{iROI,15},'R*');
 %     end
-%     
+%
 %     NIndx= ~cellfun(@isempty, Nstr);
 %     NeuronData=trialData(NIndx,:);
 %     NData=[];
@@ -472,7 +743,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 %             clear singleNeurons singleNeurons2
 %         end
 %     end
-%     
+%
 %     AstrocyteData=trialData(~NIndx,:);
 %     if ~isempty(AstrocyteData)
 %         %compare neuronal and astrocyte peaks times
@@ -514,29 +785,29 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 %     end
 %     clear Nstr NIndx NData trialData trialTraces Trial_str2 Trial_str
 % end
-% 
+%
 % for iROI=1:size(timeDiffs,1)
 %     peakT_peakT(iROI)=timeDiffs{iROI,10};
 %     peakT_onset(iROI)=timeDiffs{iROI,11};
 %     onset_onset(iROI)=timeDiffs{iROI,12};
 %     onset_peakT(iROI)=timeDiffs{iROI,13};
 % end
-% 
+%
 % % histograms
 % figure('name', 'histogram: peakTime (A)- peakTime (N)')
 % histogram(peakT_peakT)
-% 
+%
 % figure('name', 'histogram: peakTime(A)-peakOnset(N)')
 % histogram(peakT_onset)
-% 
+%
 % figure('name', 'histogram: peakOnset(A)-peakOnset(N)')
 % histogram(onset_onset)
-% 
+%
 % figure('name', 'histogram: peakOnset(A)-peakTime(N)')
 % histogram(onset_peakT)
-% 
+%
 % %% ROITypes Shifted Traces- All Astrocyte traces shifted by neuronal peak times
-% 
+%
 % stimwindow2=round(FrameRate*30);
 % figure ('name', 'Shifted traces- All trials by Neuron peak time')
 % hold on
@@ -552,8 +823,8 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % end
 % plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
 % %plot([0 8],[-2 -2], 'k','LineWidth', 2)
-% 
-% 
+%
+%
 % figure ('name', 'Shifted traces- RCaMP vs GCaMP by Neuron peak time')
 % hold on
 % axis off
@@ -572,7 +843,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % end
 % plot([0 0],[-1 100], 'k--','LineWidth', 0.5)
 % %plot([0 8],[-2 -2], 'k','LineWidth', 2)
-% 
+%
 % x1 = -20;
 % y1 = 5;
 % y2 = 50;
@@ -582,11 +853,11 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % text(x1,y2,txt2,'HorizontalAlignment','right')
 % %% example traces algining astrocytes and neurons ROITypes
 % figure ('name', 'Shifted traces- ROITypes by Neuron peak time')
-% 
+%
 % subplot(1,5,1)
 % hold on
 % axis off
-% 
+%
 % for xROI= 1:size(ShiftedTraces,1)
 %     tempY = ShiftedTraces{xROI,8};
 %     if length(tempY)>600
@@ -605,8 +876,8 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % y1 = 5;
 % txt1 = 'Neuron';
 % text(x1,y1,txt1,'HorizontalAlignment','right')
-% 
-% 
+%
+%
 % subplot(1,5,2)
 % hold on
 % axis off
@@ -627,7 +898,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % y1 = 5;
 % txt1 = 'Neuropil';
 % text(x1,y1,txt1,'HorizontalAlignment','right')
-% 
+%
 % subplot(1,5,3)
 % hold on
 % axis off
@@ -648,7 +919,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % y1 = 5;
 % txt1 = 'Endfeet';
 % text(x1,y1,txt1,'HorizontalAlignment','right')
-% 
+%
 % subplot(1,5,4)
 % hold on
 % axis off
@@ -669,7 +940,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % y1 = 5;
 % txt1 = 'Somata';
 % text(x1,y1,txt1,'HorizontalAlignment','right')
-% 
+%
 % subplot(1,5,5)
 % hold on
 % axis off
@@ -680,7 +951,7 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 %     end
 %     tempX = ShiftedTraces{xROI,9};
 %     if strcmp(ShiftedTraces{xROI,6},'Process')
-%         
+%
 %         plot(tempX(1:stimwindow),tempY(1:stimwindow)','Color',grey,...
 %             'LineWidth',0.01);
 %         ylim([-5 30]);
@@ -691,20 +962,20 @@ text(x1,y1,txt1,'HorizontalAlignment','right')
 % y1 = 5;
 % txt1 = 'Processes';
 % text(x1,y1,txt1,'HorizontalAlignment','right')
-% 
-% 
-% 
-% 
-% 
-% 
+%
+%
+%
+%
+%
+%
 % %% Isolate the early traces from the shifted data
-% 
+%
 % for xROI= 1:size(timeDiffs,1)
 %     earlyIdx(xROI)= timeDiffs{xROI,10}<=0;
 % end
 % early=timeDiffs(earlyIdx,:);
 % late=timeDiffs(~earlyIdx,:);
-% 
+%
 % earlyNames={'TrialName','ROITypeX','ROI_X','ROI_X_peakTime','ROI_X_onset',...
 %     'ROITypeY','ROI_Y','ROI_Y_peakTime','ROI_Y_onset',...
 %     'peak_peak','peak_onset','onset_onset','onset_peak'};
@@ -733,7 +1004,7 @@ for iROI=1:size(GCaMP_ROI,1)
     x1=round(FrameRate*5);
     x2=round(FrameRate*6);
     GCaMP_ROI{iROI,17}=trapz(tempY(x1:x2));
-end 
+end
 
 %%
 % find the ROIs that have a decent area under the curve for the first 1 sec
@@ -744,8 +1015,8 @@ earlyGC=GCaMP_ROI(AUC_idx,:);
 lateGC=GCaMP_ROI(AUC_idx2,:);
 
 earlyNames=earlyGC(:,15);
- %cd('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
- %cell2csv('Early_LckGCaMPROIs.csv',earlyNames);
+%cd('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
+%cell2csv('Early_LckGCaMPROIs.csv',earlyNames);
 
 
 allearlyGC=[];
@@ -844,8 +1115,8 @@ HeatMap(earlywindow','colormap',h);
 
 
 %save names
- earlyGCnames=earlyGC(:,15);
- earlyGCnames2=vertcat('names',earlyGCnames);
+earlyGCnames=earlyGC(:,15);
+earlyGCnames2=vertcat('names',earlyGCnames);
 cd('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results');
 cell2csv('earlyGC_byAUC.csv',earlyGCnames2)
 
@@ -893,7 +1164,7 @@ plot([5 13],[-2 -2], 'k','LineWidth', 2)
 
 baselineCorrectedTime=TimeX-5;
 for x=1:size(Resp_GCaMP_traces,2)
-normGCTrace2(:,x) = find_zscore(Resp_GCaMP_traces(:,x), 1, 10, 5);
+    normGCTrace2(:,x) = find_zscore(Resp_GCaMP_traces(:,x), 1, 10, 5);
 end
 
 GC_Onset3 = find_onset_time(baselineCorrectedTime, normGCTrace2, 2, 1,[]); %time vector, trace matrix, # of SDs, # of points for moving average, #ROI

@@ -20,6 +20,15 @@ FrameRate=11.84;
 nframes=592;
 TimeX(1:nframes) = (1:nframes)/FrameRate;
 
+% get rid of handclicked neuropil ROIs because they are not relevant if
+% FLIKA ROIs are included for the neuron channel
+
+% get rid of astrocyte neuropil traces
+for xROI=1:size(Nostim,1)
+    GCNP2(xROI)= strcmp(Nostim{xROI,1},'np');
+end
+Nostim=Nostim(~GCNP2',:);
+
 for iROI=1:length(Nostim)
     %find ROITypes
     N_str= strfind(Nostim{iROI, 1},'N');
@@ -100,15 +109,15 @@ NostimPeaks = NostimPeaks(nonOverlapIdx',:);
 %% Find astrocyte peaks that occur around spontaneous neuronal peaks
 baselineCorrectedTime=TimeX-5;
 
-% % find peak onsets for each ROI
-for iROI= 1:length(Nostim)
-    trace=Nostim{iROI,8};
-    Onsets=find_multiple_onset_times(baselineCorrectedTime(10:end), trace(10:592,:),2.5,1,1);
-    if isempty(Onsets)
-        Onsets=nan(1,1);
-    end
-    Nostim{iROI, 16}= Onsets;
-end
+% % % find peak onsets for each ROI
+% for iROI= 1:length(Nostim)
+%     trace=Nostim{iROI,8};
+%     Onsets=find_multiple_onset_times(baselineCorrectedTime(10:end), trace(10:592,:),2.5,1,1);
+%     if isempty(Onsets)
+%         Onsets=nan(1,1);
+%     end
+%     Nostim{iROI, 16}= Onsets;
+% end
 
 %% compare peak onsets for each RCaMP and GCaMP ROI
 
@@ -116,7 +125,7 @@ tic
 TimeComparisons=[];
 Trials= unique(Nostim(:,14));
 
-% histograms of onset times
+% onset times comparisons
 for itrial=1:length(Trials)
     CurrentTrial=Trials(itrial);
     
@@ -136,9 +145,9 @@ for itrial=1:length(Trials)
     parfor nNeuro=1:size(NeuronalData,1)
         for nAstro= 1:size(AstroData,1)
             Ntrace=NeuronalData{nNeuro,8};
-            NOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2,1);
+            NOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2.5,1);
             Atrace=AstroData{nAstro,8};
-            AOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Atrace(10:592,:),2,1);
+            AOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Atrace(10:592,:),2.5,1);
             
             if ~isempty(NOnset)
                 if ~isempty(AOnset)
@@ -226,6 +235,8 @@ for itrial=1:length(Trials)
                             
                             % difference between astrocyte onset and neuronal onset
                             OnsetTimeComparisons{iA,14}=TimeDiff;
+                            OnsetTimeComparisons{iA,15}=strcat(OnsetTimeComparisons{iA,6},OnsetTimeComparisons{iA,12}); % astrocyte peak name
+                            %OnsetTimeComparisons{iA,15}=strcat(OnsetTimeComparisons{iA,6},OnsetTimeComparisons{iA,12}); % astrocyte peak name
                         end
                         
                         TimeComparisons=vertcat(TimeComparisons,OnsetTimeComparisons); % concatenate all data into a big matrix
@@ -248,54 +259,74 @@ histogram(cell2mat(TimeComparisons(:,14)))
 %% Isolate the early traces from the shifted data
 
 for xComp= 1:size(TimeComparisons,1)
-    earlyIdx(xComp)= TimeComparisons{xComp,14}<=0 && TimeComparisons{xComp,14}>=-1;
-    lateIdx(xComp)= TimeComparisons{xComp,14}>=0 && TimeComparisons{xComp,14}<=1;
-    mixedIdx(xComp)= TimeComparisons{xComp,14}>=-1 && TimeComparisons{xComp,14}<=1;
+    mixedIdx(xComp)= TimeComparisons{xComp,14}>=-5 && TimeComparisons{xComp,14}<=5;
 end
-earlyOnset=TimeComparisons(earlyIdx,:);
-lateOnset=TimeComparisons(lateIdx,:);
 mixedOnset=TimeComparisons(mixedIdx,:);
 
-
-figure('name','astrocyte before');histogram(cell2mat(earlyOnset(:,14)),'BinWidth',0.0845);
-figure('name','astrocyte after');histogram(cell2mat(lateOnset(:,14)),'BinWidth',0.0845);
 figure('name','astrocyte peaks around neurons');histogram(cell2mat(mixedOnset(:,14)),'BinWidth',0.0845);
 
 
-%% Astrocytes shortly after neurons
+%% percent distributions
 
-for xComp= 1:size(mixedOnset,1)
-    shortIdx(xComp)= mixedOnset{xComp,14}>=0 && mixedOnset{xComp,14}<=0.1;
-end
-shortOnset=mixedOnset(shortIdx,:);
-
-
-%%
-Trials= unique(NostimPeaks(:,22));
-
-for itrial=1:10
-    CurrentTrial=Trials(itrial);
+% before, after, zero
+for xComp=1:length(mixedOnset)
+   zeroIdx(xComp)= mixedOnset{xComp,14}==0;
     
-    % Find the idx of paths matching trial
-    matchingTrialIdx = find(~cellfun(@isempty, regexp(NostimPeaks(:,22), CurrentTrial)));
-    TrialData = NostimPeaks(matchingTrialIdx,:);
-    % find neuronal peak times in this trial
-    NeuronalIdx = find(~cellfun(@isempty, regexp(TrialData(:,14), 'RCaMP')));
-    NeuronalpT= TrialData(NeuronalIdx,5);
-    
-    % find similar astrocyte peak times
-    AstroIdx = find(~cellfun(@isempty, regexp(TrialData(:,14), 'GCaMP')));
-    AstropT = TrialData(AstroIdx,5);
-    
-    figure('name','neuron');histogram(cell2mat(NeuronalpT),'BinWidth',1);
-    figure('name','astro');histogram(cell2mat(AstropT),'BinWidth',1);
+   beforeNIdx(xComp)= mixedOnset{xComp,14}>=-1 && TimeComparisons{xComp,14}<0;
+   
+   afterNIdx(xComp)= mixedOnset{xComp,14}>0 && TimeComparisons{xComp,14}<=1;
 end
+zerodata=mixedOnset(zeroIdx,:);
+beforedata=mixedOnset(beforeNIdx,:);
+afterdata=mixedOnset(afterNIdx,:);
 
-for iTime=1:length(NeuronalpT)
-    CurrentNeuronalTime=NeuronalpT(iTime);
-    AstroIdx=find(AstropT>(CurrentNeuronalTime-2) && AstropT<(CurrentNeuronalTime+2));
-end
-%end
+
+% ALL Astrocyte Peaks
+% percentage of ALL astrocyte peaks that come before, after, or zero
+Total_APeak_Num=length(unique(TimeComparisons(:,15)));
+
+NumZeroPeaks=length(unique(zerodata(:,15)));
+% number of astrocyte peaks that appear in 1 sec before neurons
+NumBeforePeaks=length(unique(beforedata(:,15)));
+% number of astrocyte peaks that appear 1 sec after neurons
+NumAfterPeaks=length(unique(afterdata(:,15)));
+
+Percent_All_zero=(NumZeroPeaks/Total_APeak_Num)*100;
+Percent_All_before=(NumBeforePeaks/Total_APeak_Num)*100;
+Percent_All_after=(NumAfterPeaks/Total_APeak_Num)*100;
+
+
+% ALL Unique neuron-astrocyte peak comparisons
+% percentage of unique comparisons that come before, after or zero
+Total_Comp_Num=length(TimeComparisons(:,15));
+
+NumZeroComp=length(zerodata(:,15));
+% number of astrocyte peaks that appear in 1 sec before neurons
+NumBeforeComp=length(beforedata(:,15));
+% number of astrocyte peaks that appear 1 sec after neurons
+NumAfterComp=length(afterdata(:,15));
+
+Percent_Comp_zero=(NumZeroComp/Total_Comp_Num)*100;
+Percent_Comp_before=(NumBeforeComp/Total_Comp_Num)*100;
+Percent_Comp_after=(NumAfterComp/Total_Comp_Num)*100;
+
+
+%% percent astrocyte ROIs per field of view with at least one comparison
+
+% do this in R
+
+
+%% Distance between ROIs that are compared
+
+figure('name', 'astrocyte onset time diff vs ROI distance');
+onsets=cell2mat(mixedOnset(:,14));
+distances=cell2mat(mixedOnset(:,8));
+scatter(onsets, distances, 10, 'filled');
+
+
+%% Area under the curve for each ROI with an onset time near the neuron?
+% only area in second before or second after?
+% based on astrocyte onset time
 
 
 
@@ -322,34 +353,6 @@ meanTrace = mean(traces,2);
 plot(TimeX, meanTrace, 'k', 'LineWidth',1)
 % plot([0 0],[18.5 19.5], 'k','LineWidth', 2)
 
-
-%%  Plot only the responding neurons and astrocytes from the same field of view
-
-
-%XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_shortstim.xlsx';
-XLfile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_longstim.xlsx';
-
-%XLfile = 'D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\respondingROIs_longstim.xlsx';
-
-[~, ~, data] = xlsread(XLfile); %,'Sheet1'); %reads the scoresheet and saves all data in a cell array
-responders=data(2:end,:);
-
-for xROI=1:length(responders)
-    GCNP(xROI)=(strcmp(responders{xROI,15},'GCaMP')&& strcmp(responders{xROI,23},'Neuropil'));
-end
-
-responders=responders(~GCNP',:);
-
-RespondingROIs=[];
-for xROI=1:length(responders)
-    currentROI=responders{xROI, 25};
-    for iROI = 1:size(data_traces,1)
-        ROIIndex=strcmp(data_traces{iROI,15},currentROI);
-        if ROIIndex
-            RespondingROIs=vertcat(RespondingROIs,data_traces(iROI,1:end));
-        end
-    end
-end
 
 
 
@@ -1109,22 +1112,3 @@ plot([5 13],[-2 -2], 'k','LineWidth', 2)
 
 
 
-%% Find onset times
-
-baselineCorrectedTime=TimeX-5;
-for x=1:size(Resp_GCaMP_traces,2)
-    normGCTrace2(:,x) = find_zscore(Resp_GCaMP_traces(:,x), 1, 10, 5);
-end
-
-GC_Onset3 = find_onset_time(baselineCorrectedTime, normGCTrace2, 2, 1,[]); %time vector, trace matrix, # of SDs, # of points for moving average, #ROI
-GC_Onset = find_onset_time(baselineCorrectedTime, Resp_GCaMP_traces, 2, 1,[]); %time vector, trace matrix, # of SDs, # of points for moving average, #ROI
-
-RC_Onset = find_onset_time(baselineCorrectedTime, Resp_RCaMP_traces, 2, 1,[]);
-
-
-% shorten the traces for a shorter baseline
-GC_Onset_short = find_onset_time(baselineCorrectedTime(48:end), Resp_GCaMP_traces(48:end,:), 2, 1,[]);
-RC_Onset_short = find_onset_time(baselineCorrectedTime(48:end), Resp_RCaMP_traces(48:end,:), 2, 1,[]);
-
-
-%mean_GCOnset=mean(GC_Onset);
