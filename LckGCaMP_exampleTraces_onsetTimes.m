@@ -10,9 +10,6 @@ LongPeaks=AllData2;
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_shortstim_05_04_2017.mat');
 ShortPeaks=AllData2;
 
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
-NostimPeaks=AllData2;
-
 %long stim responding neurons
 for xROI=1:size(LongPeaks,1) 
 RespN_Idx(xROI)= (LongPeaks(:,5)>0 && LongPeaks(:,5)<9 && (LongPeaks(:,3)*2)<11 && strcmp(LongPeaks(:,14),'RCaMP'));
@@ -55,10 +52,7 @@ Long=All_Cond;
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_shortstim_05_04_2017.mat');
 Short=All_Cond;
 
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
-Nostim=All_Cond;
-
-All_Cond= vertcat(Long, Short, Nostim);
+All_Cond= vertcat(Long, Short);
 
 % get rid of astrocyte neuropil traces
 for xROI=1:size(All_Cond,1)
@@ -70,24 +64,27 @@ All_Cond=All_Cond(~GCNP2',:);
 
 for iROI=1:length(All_Cond)   
     
-    %find ROITypes
+  %find ROITypes
     N_str= strfind(All_Cond{iROI, 1},'N');
     D_str= strfind(All_Cond{iROI, 1},'D'); %hand selected dendrite
-    D_str2= strfind(All_Cond{iROI, 1},'r') && strcmp(All_Cond{iROI,3},'RCaMP'); %automated dendrite
-    P_str= strfind(All_Cond{iROI, 1},'r') && strcmp(All_Cond{iROI,3},'GCaMP');
+    r_str= strfind(All_Cond{iROI, 1},'r'); %FLIKA ROIs 
     EF_str= strfind(All_Cond{iROI, 1},'E');
     
     if ~isempty(N_str)
         All_Cond{iROI,13}='Neuron';
     elseif ~isempty(D_str)
         All_Cond{iROI,13}='Dendrite';
-    elseif ~isempty(D_str2)
-        All_Cond{iROI,13}='Dendrite';
+    elseif ~isempty(r_str)
+        P_str= strfind(All_Cond{iROI, 3},'GCaMP');
+        if ~isempty(P_str)
+        All_Cond{iROI,13}='Process';
+        else
+         All_Cond{iROI,13}='Dendrite';   
+        end
     elseif ~isempty(EF_str)
         All_Cond{iROI,13}='Endfeet';
-    elseif ~isempty(P_str)
-        All_Cond{iROI,13}='Process';
     end
+    
     
     % make new unique trial names
     All_Cond{iROI,14}=strcat(All_Cond{iROI,5},'_',All_Cond{iROI,4},'_',All_Cond{iROI,2});
