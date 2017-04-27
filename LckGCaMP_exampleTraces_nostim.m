@@ -8,12 +8,33 @@ close all
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
 NostimPeaks=AllData2(2:end,:);
 
+% fix single digit trial names
+for x=1:length(NostimPeaks)
+ number_pos=regexp(NostimPeaks{x,12},'[0-9]');  
+ if length(number_pos)<2
+     trialname=NostimPeaks{x,12};
+     number=str2double(trialname(number_pos));
+     NostimPeaks{x,12}=strcat('trial',num2str(number,'%02d'));
+ end
+end
+
 % Load trace data
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_shortstim_05_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat');
 
 Nostim=All_traces;
+
+for x=1:length(Nostim)
+ number_pos=regexp(Nostim{x,2},'[0-9]');  
+ if length(number_pos)<2
+     trialname=Nostim{x,2};
+     number=str2double(trialname(number_pos));
+     Nostim{x,2}=strcat('trial',num2str(number,'%02d'));
+ end
+end
+
+
 %%
 % get info for plotting
 FrameRate=11.84;
@@ -145,7 +166,8 @@ for itrial=1:length(Trials)
     parfor nNeuro=1:size(NeuronalData,1)
         for nAstro= 1:size(AstroData,1)
             Ntrace=NeuronalData{nNeuro,8};
-            NOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2.5,1);
+            NOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2.5,2,1);
+            
             Atrace=AstroData{nAstro,8};
             AOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Atrace(10:592,:),2.5,1);
             
@@ -249,7 +271,8 @@ for itrial=1:length(Trials)
     end
 end
 
-
+saveFiles='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\nostim_onset_comparisons.mat';
+save(saveFiles, 'AllData2','-v7.3');
 
 toc
 % % histograms
@@ -259,9 +282,28 @@ histogram(cell2mat(TimeComparisons(:,14)))
 %% Isolate the early traces from the shifted data
 
 for xComp= 1:size(TimeComparisons,1)
-    mixedIdx(xComp)= TimeComparisons{xComp,14}>=-5 && TimeComparisons{xComp,14}<=5;
+    mixedIdx(xComp)= TimeComparisons{xComp,14}>=-10 && TimeComparisons{xComp,14}<=10;
+    stimIdx(xComp)= TimeComparisons{xComp,11}>0 && TimeComparisons{xComp,11}<=0.4;
 end
 mixedOnset=TimeComparisons(mixedIdx,:);
+stimOnset=TimeComparisons(stimIdx,:);
+
+% NOTE: a lot of peaks are identified in the final two seconds of the trial
+% are these real peaks??
+% exclude...
+for iROI=1:length(mixedOnset)
+    %exclude comparisons where peak onset is near the end of the trial
+    %because this might not be accurate (>43s)
+    peaksNearEndIdx(iROI)= mixedOnset{iROI,11}>=43;
+end
+mixedOnset=mixedOnset(~peaksNearEndIdx,:);
+
+for iROI=1:length(mixedOnset)
+    %exclude comparisons where peak onset is near the end of the trial
+    %because this might not be accurate (>43s)
+    peaksNearEndIdx2(iROI)= mixedOnset{iROI,13}>=43;
+end
+mixedOnset=mixedOnset(~peaksNearEndIdx2,:);
 
 figure('name','astrocyte peaks around neurons');histogram(cell2mat(mixedOnset(:,14)),'BinWidth',0.0845);
 
@@ -272,13 +314,14 @@ figure('name','astrocyte peaks around neurons');histogram(cell2mat(mixedOnset(:,
 for xComp=1:length(mixedOnset)
    zeroIdx(xComp)= mixedOnset{xComp,14}==0;
     
-   beforeNIdx(xComp)= mixedOnset{xComp,14}>=-1 && TimeComparisons{xComp,14}<0;
+   beforeNIdx(xComp)= mixedOnset{xComp,14}>=-1 && mixedOnset{xComp,14}<0;
    
-   afterNIdx(xComp)= mixedOnset{xComp,14}>0 && TimeComparisons{xComp,14}<=1;
+   afterNIdx(xComp)= mixedOnset{xComp,14}>0 && mixedOnset{xComp,14}<=1;
 end
 zerodata=mixedOnset(zeroIdx,:);
 beforedata=mixedOnset(beforeNIdx,:);
 afterdata=mixedOnset(afterNIdx,:);
+
 
 
 % ALL Astrocyte Peaks

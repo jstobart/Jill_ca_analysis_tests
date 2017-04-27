@@ -259,7 +259,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'GCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -337,7 +337,7 @@ for iAnimal = 1:numAnimals
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                        Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                         Trace_data{iROI,3}= 'GCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
@@ -412,7 +412,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'GCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -440,7 +440,7 @@ for iAnimal = 1:numAnimals
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                     Trace_data{iROI,3}= 'GCaMP';
                     Trace_data{iROI,4}= spotId;
                     Trace_data{iROI,5}= CurrentAnimal;
@@ -482,7 +482,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'RCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -548,7 +548,7 @@ for iAnimal = 1:numAnimals
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch2_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                        Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                         Trace_data{iROI,3}= 'RCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
@@ -624,7 +624,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'RCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -652,7 +652,7 @@ for iAnimal = 1:numAnimals
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                     Trace_data{iROI,3}= 'RCaMP';
                     Trace_data{iROI,4}= spotId;
                     Trace_data{iROI,5}= CurrentAnimal;
@@ -959,7 +959,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'GCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1037,7 +1037,7 @@ for iAnimal = 1:numAnimals
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                        Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                         Trace_data{iROI,3}= 'GCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
@@ -1112,7 +1112,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'GCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1140,7 +1140,7 @@ for iAnimal = 1:numAnimals
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                     Trace_data{iROI,3}= 'GCaMP';
                     Trace_data{iROI,4}= spotId;
                     Trace_data{iROI,5}= CurrentAnimal;
@@ -1182,7 +1182,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'RCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1248,7 +1248,7 @@ for iAnimal = 1:numAnimals
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch2_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                        Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                         Trace_data{iROI,3}= 'RCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
@@ -1324,7 +1324,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'RCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1352,7 +1352,7 @@ for iAnimal = 1:numAnimals
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                     Trace_data{iROI,3}= 'RCaMP';
                     Trace_data{iROI,4}= spotId;
                     Trace_data{iROI,5}= CurrentAnimal;
@@ -1653,7 +1653,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'GCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1731,7 +1731,7 @@ for iAnimal = 1:numAnimals
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                        Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                         Trace_data{iROI,3}= 'GCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
@@ -1806,7 +1806,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'GCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1834,7 +1834,7 @@ for iAnimal = 1:numAnimals
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                     Trace_data{iROI,3}= 'GCaMP';
                     Trace_data{iROI,4}= spotId;
                     Trace_data{iROI,5}= CurrentAnimal;
@@ -1876,7 +1876,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'RCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -1942,7 +1942,7 @@ for iAnimal = 1:numAnimals
                     Trace_data=cell(size(traces,2),10);
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch2_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                        Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                        Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                         Trace_data{iROI,3}= 'RCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
@@ -2018,7 +2018,7 @@ for iAnimal = 1:numAnimals
                 
                 % create fields for trial, animal, spot, condition, etc.
                 for iPeak = 1:length(temp.amplitude)
-                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial));
+                    temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
                     temp2.channel{iPeak,1}= 'RCaMP';
                     temp2.Spot{iPeak,1}= spotId;
                     temp2.animalname{iPeak,1}= CurrentAnimal;
@@ -2046,7 +2046,7 @@ for iAnimal = 1:numAnimals
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CSArray_Ch2_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial));
+                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
                     Trace_data{iROI,3}= 'RCaMP';
                     Trace_data{iROI,4}= spotId;
                     Trace_data{iROI,5}= CurrentAnimal;
