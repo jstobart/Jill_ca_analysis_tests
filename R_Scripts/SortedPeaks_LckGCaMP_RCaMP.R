@@ -14,6 +14,7 @@ library("data.table")
 library("Hmisc")
 library("stringr")
 library("spatstat")
+library('hexbin')
 
 ########################
 
@@ -38,18 +39,25 @@ max.theme <- theme_classic() +
 ########################
 # load data
 
-nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_05_04_2017.csv", header=TRUE, sep = ",")
-short <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_05_04_2017.csv", header=TRUE, sep = ",")
+#nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_05_04_2017.csv", header=TRUE, sep = ",")
+#short <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_05_04_2017.csv", header=TRUE, sep = ",")
+
+nostim <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_05_04_2017.csv", header=TRUE, sep = ",")
+short <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_05_04_2017.csv", header=TRUE, sep = ",")
+long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_05_04_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
+
+# onset time comparisons for nostim data
+nostim.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset_comparisons.csv", header=TRUE, sep = ",")
+
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
 nostim<-nostim[!(nostim$ROIname=="np"),]
 short<-short[!(short$ROIname=="np"),]
 long<-long[!(long$ROIname=="np"),]
 
-###### 
-# no stim
+# no stim peak data
 
 nostim$ROIType= 0
 nostimA<- subset(nostim, Channel=="GCaMP")
@@ -75,6 +83,108 @@ nostim$trials<-paste(nostim$Animal, nostim$Spot, nostim$Trial, sep= "_")
 Overlap= nostim$overlap!=0
 nostim2<-nostim[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
+
+
+######
+# No stim onset time comparisons
+nostim.OT$compType<-paste(nostim.OT$N_ROIType, nostim.OT$A_ROIType, sep= "_")
+
+
+# get rid of onsets from the last few seconds of the trial (probably not a complete peak and we can't measure it)
+
+nostim.OT=nostim.OT[nostim.OT$N_Onset<43,]
+nostim.OT=nostim.OT[nostim.OT$A_Onset<43,]
+
+# subset data to 3 sec on either side (so AC peaks 3 sec before or after neuronal peaks)
+nostim.OT.small<-subset(nostim.OT, TimeDiff<3 & TimeDiff>-3)
+
+nostim.OT.close<-subset(nostim.OT.small, distance<5)
+
+# histograms of time differences
+ggplot(nostim.OT, aes(x=TimeDiff)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("onset time differences- all peaks") +
+  max.theme
+
+ggplot(nostim.OT, aes(x=TimeDiff, fill=compType)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("onset time differences- all peaks") +
+  max.theme
+
+# histograms of time differences
+ggplot(nostim.OT.small, aes(x=TimeDiff)) + geom_histogram(binwidth=0.0845, position="dodge") +
+  ggtitle("onset time differences- peaks close to zero time difference") + 
+  max.theme
+
+library('scales')
+ggplot(nostim.OT.small, aes(x=TimeDiff, fill=compType)) + 
+  geom_bar(aes(y = (..count..)/sum(..count..))) + 
+  ## scale_y_continuous(labels = percent_format()) #version 3.0.9
+  scale_y_continuous(labels = percent_format())+
+  ggtitle("percent distribution- onset time differences")+ 
+  max.theme  
+  
+
+# density of time differences
+ggplot(nostim.OT.small, aes(x=TimeDiff)) + geom_density(aes(group=A_ROIType, colour=A_ROIType), size=1) +
+  max.theme
+
+ggplot(nostim.OT.small, aes(x=TimeDiff, y=..density.., fill=A_ROIType)) + geom_histogram(binwidth = 0.0845) +
+  ggtitle("onset time differences- peaks close to zero time difference") + 
+  max.theme
+
+
+# histograms of ROI distances
+ggplot(nostim.OT.small, aes(x=distance)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("distance between ROIs- close peaks") + max.theme
+
+ggplot(nostim.OT.small, aes(x=distance, fill=compType)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("distance between ROIs- close peaks") + max.theme
+
+
+#Distance between ROIs that are compared
+
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff, colour=compType)) +
+  geom_point()+ max.theme
+
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff)) +
+  geom_point(alpha=1/20)+ max.theme
+
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff)) +
+  geom_count()+ max.theme
+
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff)) +
+  geom_hex(bins=20)+ max.theme
+
+
+# mean time diffs and mean distances\
+df1A1<-summarySE(nostim.OT.small, measurevar="TimeDiff", groupvars=c("compType"))
+df1A2<-summarySE(nostim.OT.small, measurevar="distance", groupvars=c("compType"))
+
+
+
+#percent astrocyte ROIs per field of view with at least one comparison
+
+# find total number of ROIs per trial
+# the find total number of ROIs after neurons, or before neurons
+gcamp.nostim<- subset(nostim, Channel=="GCaMP")
+
+ACROI_trial<- "ddply(gcamp.nostim, c("Animal","Spot","Trial"), summarise, AC_ROInum= length(unique(gcamp.nostim$))
+
+# consider all peaks with a time near 10 s
+neurons_longstim.mean<- ddply(responding.neurons_long, c("Animal", "Spot", "treatment", "ROIs"), summarise, 
+                              PA_mean = mean(peakAUC), nEvents = length(peakAUC),
+                              Dur_mean = mean(Duration), Prom_mean = mean(prominence),
+                              amp_mean = mean(amplitude), HalfDur = mean(halfWidth),
+                              peakT_mean = mean(peakTime),peakHalf_mean= mean(peakStartHalf))
+
+
+
+#Area under the curve for each ROI with an onset time near the neuron?
+# only area in second before or second after?
+# based on astrocyte onset time
+
+
+
+###### 
 
 
 

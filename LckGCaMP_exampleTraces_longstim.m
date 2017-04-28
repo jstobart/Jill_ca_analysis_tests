@@ -5,12 +5,12 @@ close all
 %% Load data
 
 % save files names
-saveFiles1='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\nostim_onset_comparisons.mat';
-saveFiles2='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\nostim_onset_comparisons.csv';
+saveFiles1='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\longstim_firstonset_comparisons.mat';
+saveFiles2='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\longstim_firstonset_comparisons.csv';
 
 %peak data
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
-load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_05_04_2017.mat');
 
 NostimPeaks=AllData2(2:end,:);
 
@@ -26,7 +26,7 @@ end
 
 % Load trace data
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
-load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_shortstim_05_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat');
 
@@ -173,10 +173,10 @@ for itrial=1:length(Trials)
     parfor nNeuro=1:size(NeuronalData,1)
         for nAstro= 1:size(AstroData,1)
             Ntrace=NeuronalData{nNeuro,8};
-            NOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2.5,2);
+            NOnset=find_first_onset_times(baselineCorrectedTime(10:end), Ntrace(10:592,:),2.5,2);
             
             Atrace=AstroData{nAstro,8};
-            AOnset=find_multiple_onset_times(baselineCorrectedTime(10:end), Atrace(10:592,:),2.5,2);
+            AOnset=find_first_onset_times(baselineCorrectedTime(10:end), Atrace(10:592,:),2.5,2);
             
             if ~isempty(NOnset)
                 if ~isempty(AOnset)
