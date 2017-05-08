@@ -13,6 +13,7 @@ library("reshape2")
 library("data.table")
 library("Hmisc")
 library("stringr")
+library("spatstat")
 library('hexbin')
 
 ########################
@@ -32,29 +33,72 @@ max.theme <- theme_classic() +
 
 ###########
 # NOTES
-# data sets from long, shortstim (90Hz,1s), longstim (90Hz,8s)
+# data sets from nostim, shortstim (90Hz,1s), longstim (90Hz,8s)
 # with hand selected somata and FLIKA activities for neurons AND astrocytes
 
 ########################
 # load data
 
-#long <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_long_05_04_2017.csv", header=TRUE, sep = ",")
-#short <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_05_04_2017.csv", header=TRUE, sep = ",")
+long <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
 
 lsm.options(pbkrtest.limit = 100000)
 
-# onset time comparisons for long data
-long.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+# onset time comparisons for nostim data
+#longstim.OT.comp <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset_comparisons.csv", header=TRUE, sep = ",")
+longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 
+longstim.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+
+##########
+# no stim peak data
+
+# exclude the neuropil ROIs, because they were hand selected and not necessary
+nostim<-nostim[!(nostim$ROIname=="np"),]
+nostim<-nostim[!(nostim$ROIname=="none"),]
+
+# no stim peak data
+nostim$ROIType= 0
+nostimA<- subset(nostim, Channel=="GCaMP")
+nostimB<- subset(nostim, Channel=="RCaMP")
+
+# ROITypes
+nostimA$ROIType[grepl("r",nostimA$ROIname)]="Process"
+nostimA$ROIType[grepl("E",nostimA$ROIname)]="Endfoot"
+nostimB$ROIType[grepl("r",nostimB$ROIname)]="Dendrite"
+nostimB$ROIType[grepl("D",nostimB$ROIname)]="Dendrite"
+nostimB$ROIType[grepl("N",nostimB$ROIname)]="Neuron"
+
+nostim<-rbind(nostimA, nostimB)
+nostim$ROIType<- as.factor(nostim$ROIType)
+
+#unique ROI names
+nostim$ROIs_trial<-paste(nostim$Animal, nostim$Spot, nostim$Trial,nostim$ROIname, sep= "_")
+nostim$trials<-paste(nostim$Animal, nostim$Spot, nostim$Trial, sep= "_")
+
+
+# remove matching astrocyte process and soma ROIs
+Overlap= nostim$overlap!=0
+nostim<-nostim[!Overlap,]
+#OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
+
+##### 
+# long stim data
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
 long<-long[!(long$ROIname=="np"),]
 long<-long[!(long$ROIname=="none"),]
 
-# long stim peak data
 
+# long peak data
 long$ROIType= 0
 longA<- subset(long, Channel=="GCaMP")
 longB<- subset(long, Channel=="RCaMP")
@@ -71,52 +115,107 @@ long$ROIType<- as.factor(long$ROIType)
 
 #unique ROI names
 long$ROIs_trial<-paste(long$Animal, long$Spot, long$Trial,long$ROIname, sep= "_")
-
 long$trials<-paste(long$Animal, long$Spot, long$Trial, sep= "_")
 
-
-# remove matching astrocyte process and soma ROIs or neuron dendrite and soma
+# remove matching astrocyte process and soma ROIs
 Overlap= long$overlap!=0
 long<-long[!Overlap,]
-OverlapROIs<-unique(long$ROIs_trial[Overlap])
+#OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
+########
+# short stim peak data
+
+short<-short[!(short$ROIname=="np"),]
+short<-short[!(short$ROIname=="none"),]
+
+short$ROIType= 0
+shortA<- subset(short, Channel=="GCaMP")
+shortB<- subset(short, Channel=="RCaMP")
+
+# ROITypes
+shortA$ROIType[grepl("r",shortA$ROIname)]="Process"
+shortA$ROIType[grepl("E",shortA$ROIname)]="Endfoot"
+shortB$ROIType[grepl("r",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("D",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("N",shortB$ROIname)]="Neuron"
+
+short<-rbind(shortA, shortB)
+short$ROIType<- as.factor(short$ROIType)
+
+#unique ROI names
+short$ROIs_trial<-paste(short$Animal, short$Spot, short$Trial,short$ROIname, sep= "_")
+short$trials<-paste(short$Animal, short$Spot, short$Trial, sep= "_")
+
+# remove matching astrocyte process and soma ROIs
+Overlap= short$overlap!=0
+short<-short[!Overlap,]
+#OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
 ######
-# No stim onset time comparisons
-long.OT$compType<-paste(long.OT$N_ROIType, long.OT$A_ROIType, sep= "_")
+# onset time distributions
 
-# get rid of overlaping ROIs (likely the same region?)
-long.OT<-subset(long.OT, !(N_ROI %in% OverlapROIs))
-long.OT<-subset(long.OT, !(A_ROI %in% OverlapROIs))
+shortstim.OT$Condition="shortstim"
+longstim.OT$Condition="longstim"
+nostim.OT$Condition="nostim"
 
-# get rid of NaN onsets
-long.OT<-long.OT[!is.na(long.OT$TimeDiff),]
+all.onsets<-rbind(shortstim.OT, longstim.OT, nostim.OT)
+all.onsets$Condition=as.factor(all.onsets$Condition)
+
+all.onsets.AC<-subset(all.onsets, Channel=="GCaMP" & OnsetTime<25)
+all.onsets.N<-subset(all.onsets, Channel=="RCaMP" & OnsetTime<25)
+
+# histograms of all onsets
+ggplot(all.onsets.AC[all.onsets.AC$Condition!="shortstim",], aes(x=OnsetTime, colour=Condition, fill=Condition)) + geom_histogram(binwidth=(0.0845*10), position="dodge") +
+  ggtitle("astrocyte onset times- all peaks") +
+  max.theme
+
+ggplot(all.onsets.AC[all.onsets.AC$Condition!="longstim",], aes(x=OnsetTime, colour=Condition, fill=Condition)) + geom_histogram(binwidth=(0.0845*10), position="dodge") +
+  ggtitle("astrocyte onset times- all peaks") +
+  max.theme
+
+ggplot(all.onsets.N[all.onsets.N$Condition!="shortstim",], aes(x=OnsetTime, colour=Condition, fill=Condition)) + geom_histogram(binwidth=(0.0845*10), position="dodge") +
+  ggtitle("neuronal onset times- all peaks") +
+  max.theme
+
+ggplot(all.onsets.N[all.onsets.N$Condition!="longstim",], aes(x=OnsetTime, colour=Condition, fill=Condition)) + geom_histogram(binwidth=(0.0845*10), position="dodge") +
+  ggtitle("neuronal onset times- all peaks") +
+  max.theme
+
+########
+# onset time comparisons- neurons vs. astrocytes
+longstim.OT.comp$compType<-paste(longstim.OT$N_ROIType, longstim.OT$A_ROIType, sep= "_")
+shortstim.OT.comp$compType<-paste(shortstim.OT$N_ROIType, shortstim.OT$A_ROIType, sep= "_")
+nostim.OT.comp$compType<-paste(nostim.OT$N_ROIType, nostim.OT$A_ROIType, sep= "_")
 
 
+# get rid of onsets from the last few seconds of the trial (probably not a complete peak and we can't measure it)
+
+nostim.OT=nostim.OT[nostim.OT$N_Onset<43,]
+nostim.OT=nostim.OT[nostim.OT$A_Onset<43,]
 
 # subset data to 3 sec on either side (so AC peaks 3 sec before or after neuronal peaks)
-long.OT.small<-subset(long.OT, TimeDiff<10 & TimeDiff>-10)
+nostim.OT.small<-subset(nostim.OT, TimeDiff<3 & TimeDiff>-3)
 
-long.OT.close<-subset(long.OT.small, distance<5)
+nostim.OT.close<-subset(nostim.OT.small, distance<5)
 
 
 ######
-# histograms of time differences
-ggplot(long.OT, aes(x=TimeDiff)) + geom_histogram(binwidth=0.0845, position="dodge") +
+# histograms of neuron-astrocyte time differences
+ggplot(nostim.OT, aes(x=TimeDiff)) + geom_histogram(binwidth=0.0845, position="dodge") +
   ggtitle("onset time differences- all peaks") +
   max.theme
 
-ggplot(long.OT, aes(x=TimeDiff, fill=A_ROIType)) + geom_histogram(binwidth=0.0845, position="dodge") +
+ggplot(nostim.OT, aes(x=TimeDiff, fill=A_ROIType)) + geom_histogram(binwidth=0.0845, position="dodge") +
   ggtitle("onset time differences- all peaks") +
   max.theme
 
 # histograms of time differences
-ggplot(long.OT.small, aes(x=TimeDiff)) + geom_histogram(binwidth=0.0845, position="dodge") +
+ggplot(nostim.OT.small, aes(x=TimeDiff)) + geom_histogram(binwidth=0.0845, position="dodge") +
   ggtitle("onset time differences- peaks close to zero time difference") + 
   max.theme
 
 library('scales')
-ggplot(long.OT.small, aes(x=TimeDiff, fill=A_ROIType)) + 
+ggplot(nostim.OT.small, aes(x=TimeDiff, fill=A_ROIType)) + 
   geom_bar(aes(y = (..count..)/sum(..count..))) + 
   ## scale_y_continuous(labels = percent_format()) #version 3.0.9
   scale_y_continuous(labels = percent_format())+
@@ -125,68 +224,64 @@ ggplot(long.OT.small, aes(x=TimeDiff, fill=A_ROIType)) +
   
 
 # density of time differences
-ggplot(long.OT.small, aes(x=TimeDiff)) + geom_density(aes(group=A_ROIType, colour=A_ROIType, fill=A_ROIType), alpha=0.3, adjust=1/3,size=1) +
+ggplot(nostim.OT.small, aes(x=TimeDiff)) + geom_density(aes(group=A_ROIType, colour=A_ROIType, fill=A_ROIType), alpha=0.3, adjust=1/3,size=1) +
   max.theme
 
-ggplot(long.OT, aes(x=TimeDiff)) + geom_density(aes(group=A_ROIType, colour=A_ROIType, fill=A_ROIType), alpha=0.3, adjust=1/5,size=1) +
+ggplot(nostim.OT, aes(x=TimeDiff)) + geom_density(aes(group=A_ROIType, colour=A_ROIType, fill=A_ROIType), alpha=0.3, adjust=1/5,size=1) +
   max.theme
 
-ggplot(long.OT.small, aes(x=TimeDiff)) + geom_density(aes(group=compType, colour=compType, fill=compType), alpha=0.3, adjust=1/5,size=1) +
+ggplot(nostim.OT.small, aes(x=TimeDiff)) + geom_density(aes(group=compType, colour=compType, fill=compType), alpha=0.3, adjust=1/5,size=1) +
   max.theme
 
-ggplot(long.OT.small, aes(x=TimeDiff)) + geom_histogram(binwidth = 0.0845,aes( y=..density..,fill=A_ROIType)) +
+ggplot(nostim.OT.small, aes(x=TimeDiff)) + geom_histogram(binwidth = 0.0845,aes( y=..density..,fill=A_ROIType)) +
   #geom_density(aes(group=A_ROIType), size=1) +
   ggtitle("onset time differences- peaks close to zero time difference") + 
   max.theme
 
-ggplot(long.OT.small, aes(x=TimeDiff, fill=A_ROIType)) + 
+ggplot(nostim.OT.small, aes(x=TimeDiff, fill=A_ROIType)) + 
   geom_histogram(aes(y = ..density..),binwidth=0.0845, alpha = 0.7) + 
   geom_density(aes(fill = A_ROIType), alpha = 0.5) 
 
 
-ggplot(long.OT.small, aes(x=TimeDiff, y=..density..,colour=A_ROIType)) + stat_bin(geom="step", binwidth=(0.0845*2))+max.theme
+ggplot(nostim.OT.small, aes(x=TimeDiff, y=..density..,colour=A_ROIType)) + stat_bin(geom="step", binwidth=(0.0845*2))+max.theme
 
 
 #aes(y=..count../sum(..count..))
 
 # histograms of ROI distances
-ggplot(long.OT.small, aes(x=distance)) + geom_histogram(binwidth=2, position="dodge") +
+ggplot(nostim.OT.small, aes(x=distance)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("distance between ROIs- close peaks") + max.theme
 
-ggplot(long.OT.small, aes(x=distance, fill=A_ROIType)) + geom_histogram(binwidth=2, position="dodge") +
+ggplot(nostim.OT.small, aes(x=distance, fill=A_ROIType)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("distance between ROIs- close peaks") + max.theme
 
 
 #Distance between ROIs that are compared
 
-ggplot(long.OT.small, aes(x=distance, y=TimeDiff, colour=A_ROIType)) +
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff, colour=compType)) +
   geom_point()+ max.theme
 
-ggplot(long.OT.small, aes(x=distance, y=TimeDiff)) +
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff)) +
   geom_point(alpha=1/20)+ max.theme
 
-ggplot(long.OT.small, aes(x=distance, y=TimeDiff)) +
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff)) +
   geom_count()+ max.theme
 
-ggplot(long.OT.small, aes(x=distance, y=TimeDiff)) +
+ggplot(nostim.OT.small, aes(x=distance, y=TimeDiff)) +
   geom_hex(bins=20)+ max.theme
 
 
 # mean time diffs and mean distances
-df1A1<-summarySE(long.OT.small, measurevar="TimeDiff", groupvars=c("compType"))
-df1A2<-summarySE(long.OT.small, measurevar="TimeDiff", groupvars=c("A_ROIType"))
+df1A1<-summarySE(nostim.OT.small, measurevar="TimeDiff", groupvars=c("compType"))
+df1A2<-summarySE(nostim.OT.small, measurevar="TimeDiff", groupvars=c("A_ROIType"))
 
-df2A1<-summarySE(long.OT.small, measurevar="distance", groupvars=c("compType"))
-df2A2<-summarySE(long.OT.small, measurevar="distance", groupvars=c("A_ROIType"))
+df2A1<-summarySE(nostim.OT.small, measurevar="distance", groupvars=c("compType"))
+df2A2<-summarySE(nostim.OT.small, measurevar="distance", groupvars=c("A_ROIType"))
 
 ######
-gcamp.long<- subset(long, Channel=="GCaMP")
-long.OT.small$trials<- paste(long.OT.small$Animal, long.OT.small$Spot, long.OT.small$Trial, sep="_")
-long.OT.small$ROIType<-long.OT.small$A_ROIType
-
-Before<- subset(long.OT.small, TimeDiff<=0)
-After <- subset(long.OT.small, TimeDiff>=0)
-Zero <- subset(long.OT.small, TimeDiff==0)
+Before<- subset(nostim.OT.small, TimeDiff<=0)
+After <- subset(nostim.OT.small, TimeDiff>=0)
+Zero <- subset(nostim.OT.small, TimeDiff==0)
 
 
 df1A3<-summarySE(Before, measurevar="TimeDiff", groupvars=c("A_ROIType"))
@@ -203,13 +298,13 @@ ggplot(After, aes(x=TimeDiff)) + geom_density(aes(group=A_ROIType, colour=A_ROIT
 
 # stats for after group
 # endfeet delayed compared to processes
-OT.null = lmer(TimeDiff ~ (1|Animal) + (1|Spot) + (1|trials), After,REML=FALSE)
-OT.model1 = lmer(TimeDiff ~ A_ROIType + (1|Animal) + (1|Spot) + (1|trials), After,REML=FALSE)
+OT.null = lmer(TimeDiff ~ (1|Animal) + (1|Spot) + (1|trials) + (1|N_ROI) + (1|A_ROI), After,REML=FALSE)
+OT.model1 = lmer(TimeDiff ~ A_ROIType + (1|Animal) + (1|Spot) + (1|trials) +(1|N_ROI) + (1|A_ROI), After,REML=FALSE)
 OT.anova <- anova(OT.null, OT.model1)
 print(OT.anova)
 
-OT.after.long<- glht(OT.model1, mcp(A_ROIType= "Tukey"))
-summary(OT.after.long)
+OT.after.nostim<- glht(OT.model1, mcp(A_ROIType= "Tukey"))
+summary(OT.after.nostim)
 
 
 
@@ -219,18 +314,20 @@ summary(OT.after.long)
 
 # find total number of ROIs per trial
 # the find total number of ROIs after neurons, or before neurons
-
+gcamp.nostim<- subset(nostim, Channel=="GCaMP")
+nostim.OT.small$trials<- paste(nostim.OT.small$Animal, nostim.OT.small$Spot, nostim.OT.small$Trial, sep="_")
+nostim.OT.small$ROIType<-nostim.OT.small$A_ROIType
 # astrocyte ROIs per trial- total
-ACROI_trial<- ddply(gcamp.long, c("Animal","Spot","trials"), summarise, AC_ROInum= length(unique(ROIs_trial)))
+ACROI_trial<- ddply(gcamp.nostim, c("Animal","Spot","trials"), summarise, AC_ROInum= length(unique(ROIs_trial)))
 
 # astrocyte ROIs per trial- ROI type
-ACROI_type_trial<- ddply(gcamp.long, c("Animal","Spot","trials","ROIType"), summarise, AC_ROInum= length(unique(ROIs_trial)))
+ACROI_type_trial<- ddply(gcamp.nostim, c("Animal","Spot","trials","ROIType"), summarise, AC_ROInum= length(unique(ROIs_trial)))
 
 # astrocyte ROIs with time differences around zero- total
-ACROI_trial.OT.small<-ddply(long.OT.small, c("Animal","Spot","trials"), summarise, AC_ROInum= length(unique(A_ROI)))
+ACROI_trial.OT.small<-ddply(nostim.OT.small, c("Animal","Spot","trials"), summarise, AC_ROInum= length(unique(A_ROI)))
 
 # astrocyte ROIs with time differences around zero- ROI type
-ACROI_type_trial.OT.small<- ddply(long.OT.small, c("Animal","Spot","trials","ROIType"), summarise, AC_ROInum= length(unique(A_ROI)))
+ACROI_type_trial.OT.small<- ddply(nostim.OT.small, c("Animal","Spot","trials","ROIType"), summarise, AC_ROInum= length(unique(A_ROI)))
 
 # group data together for proportion calculation
 numBefore<-ddply(Before, c("Animal","Spot","trials"), summarise, AC_ROInum= length(unique(A_ROI)))
@@ -306,7 +403,75 @@ df.numZero <- summarySE(data=zero.ACnum.small, measurevar = "numTimeDiffROIs")
 
 
 
+
+
+
+
+
+#Area under the curve for each ROI with an onset time near the neuron?
+# only area in second before or second after?
+# based on astrocyte onset time
+
+
+
 ###### 
+
+
+
+#####
+# short stim
+
+short$ROIType= 0
+shortA<- subset(short, Channel=="GCaMP")
+shortB<- subset(short, Channel=="RCaMP")
+
+# ROITypes
+shortA$ROIType[grepl("r",shortA$ROIname)]="Process"
+shortA$ROIType[grepl("E",shortA$ROIname)]="Endfoot"
+shortB$ROIType[grepl("r",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("D",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("N",shortB$ROIname)]="Neuron"
+
+short<-rbind(shortA, shortB)
+short$ROIType<- as.factor(short$ROIType)
+
+#unique ROI names
+short$ROIs_trial<-paste(short$Animal, short$Spot, short$Trial,short$ROIname, sep= "_")
+
+short$trials<-paste(short$Animal, short$Spot, short$Trial, sep= "_")
+
+
+# remove matching astrocyte process and soma ROIs
+Overlap= short$overlap!=0
+short2<-short[!Overlap,]
+
+# stim onset at 5 sec
+short2$peakTime<-short2$peakTime-5
+short2$peakStart<-short2$peakStart-5
+short2$peakStartHalf<-short2$peakStartHalf-5
+
+#duration
+short2$Duration<-short2$halfWidth*2
+
+#######
+# histogram of peak times for stim
+ggplot(long2, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("long stim")
+
+ggplot(short2, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("short stim")
+
+nostim<-subset(stim.all2, Condition=="Nostim")
+ggplot(nostim, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=2, position="dodge") +
+  ggtitle("No stim")
+
+RCaMP<- subset(stim.all2, Channel=="RCaMP")
+ggplot(RCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("RCaMP")
+
+GCaMP<- subset(stim.all2, Channel=="GCaMP")
+ggplot(GCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("GCaMP")
 
 
 ########
