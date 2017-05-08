@@ -49,58 +49,54 @@ long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim
 lsm.options(pbkrtest.limit = 100000)
 
 # onset time comparisons for nostim data
-nostim.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset_comparisons.csv", header=TRUE, sep = ",")
+short.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset_comparisons.csv", header=TRUE, sep = ",")
 
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-nostim<-nostim[!(nostim$ROIname=="np"),]
-nostim<-nostim[!(nostim$ROIname=="none"),]
-
 short<-short[!(short$ROIname=="np"),]
-long<-long[!(long$ROIname=="np"),]
+short<-short[!(short$ROIname=="none"),]
 
 # no stim peak data
 
-nostim$ROIType= 0
-nostimA<- subset(nostim, Channel=="GCaMP")
-nostimB<- subset(nostim, Channel=="RCaMP")
+short$ROIType= 0
+shortA<- subset(short, Channel=="GCaMP")
+shortB<- subset(short, Channel=="RCaMP")
 
 # ROITypes
-nostimA$ROIType[grepl("r",nostimA$ROIname)]="Process"
-nostimA$ROIType[grepl("E",nostimA$ROIname)]="Endfoot"
-nostimB$ROIType[grepl("r",nostimB$ROIname)]="Dendrite"
-nostimB$ROIType[grepl("D",nostimB$ROIname)]="Dendrite"
-nostimB$ROIType[grepl("N",nostimB$ROIname)]="Neuron"
+shortA$ROIType[grepl("r",shortA$ROIname)]="Process"
+shortA$ROIType[grepl("E",shortA$ROIname)]="Endfoot"
+shortB$ROIType[grepl("r",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("D",shortB$ROIname)]="Dendrite"
+shortB$ROIType[grepl("N",shortB$ROIname)]="Neuron"
 
-nostim<-rbind(nostimA, nostimB)
-nostim$ROIType<- as.factor(nostim$ROIType)
+short<-rbind(shortA, shortB)
+short$ROIType<- as.factor(short$ROIType)
 
 #unique ROI names
-nostim$ROIs_trial<-paste(nostim$Animal, nostim$Spot, nostim$Trial,nostim$ROIname, sep= "_")
+short$ROIs_trial<-paste(short$Animal, short$Spot, short$Trial,short$ROIname, sep= "_")
 
-nostim$trials<-paste(nostim$Animal, nostim$Spot, nostim$Trial, sep= "_")
+short$trials<-paste(short$Animal, short$Spot, short$Trial, sep= "_")
 
 
 # remove matching astrocyte process and soma ROIs
-Overlap= nostim$overlap!=0
-nostim2<-nostim[!Overlap,]
-#OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
+Overlap= short$overlap!=0
+short2<-short[!Overlap,]
+#OverlapROIs<-unique(short$ROIs_trial[Overlap])
 
 
 ######
 # No stim onset time comparisons
-nostim.OT$compType<-paste(nostim.OT$N_ROIType, nostim.OT$A_ROIType, sep= "_")
+short.OT$compType<-paste(short.OT$N_ROIType, short.OT$A_ROIType, sep= "_")
 
 
 # get rid of onsets from the last few seconds of the trial (probably not a complete peak and we can't measure it)
 
-nostim.OT=nostim.OT[nostim.OT$N_Onset<43,]
-nostim.OT=nostim.OT[nostim.OT$A_Onset<43,]
+
 
 # subset data to 3 sec on either side (so AC peaks 3 sec before or after neuronal peaks)
-nostim.OT.small<-subset(nostim.OT, TimeDiff<3 & TimeDiff>-3)
+short.OT.small<-subset(short.OT, TimeDiff<3 & TimeDiff>-3)
 
-nostim.OT.close<-subset(nostim.OT.small, distance<5)
+short.OT.close<-subset(short.OT.small, distance<5)
 
 
 ######

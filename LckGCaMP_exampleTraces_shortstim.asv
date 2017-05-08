@@ -5,24 +5,24 @@ close all
 %% Load data
 
 % time windows based on stimulation
-NOnsetWindow= 8; %1 for short stim % neuronal onset times
-AOnsetWindow= 10; % 5 for short stim % astrocyte onset times
+NOnsetWindow= 1; %1 for short stim % neuronal onset times
+AOnsetWindow= 5; % 5 for short stim % astrocyte onset times
 Fast_AOnsetWindow=1;
 NPTWindow= 2; % one second longer than stimulation for peak times
 APTWindow= 10; % astrocyte longer than stimulation for peak times
 
 % save files names
-saveFiles1='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\longstim_firstonset_comparisons.mat';
-saveFiles2='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\longstim_firstonset_comparisons.csv';
-saveFiles3= 'D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\longstim_onset&AUC.csv';
+saveFiles1='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_firstonset_comparisons.mat';
+saveFiles2='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_firstonset_comparisons.csv';
+saveFiles3= 'D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_onset&AUC.csv';
 
 %peak data
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
-load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_shortstim_28_04_2017.mat');
 
 % Load trace data
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
-load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_28_04_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_shortstim_28_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_Shortstim_05_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_Shortstim_05_04_2017.mat');
 
@@ -582,6 +582,10 @@ for iROI=1:length(RrespOT)
 end
 fastN=RrespOT(fastIdx2',:);
 MeanNeuronOnset=mean(cell2mat(fastN(:,16)));
+
+% is there a similar onset elsewhere in the trial?
+% is there a similar trace elsewhere in the tr
+
 
 % IdxAUC= find(Shortstim(:,17)>5);
 % fastAUC=Shortstim(IdxAUC,:);

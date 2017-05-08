@@ -574,14 +574,15 @@ slowAC_mean= mean(slowAC_traces');
 plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
 
 % mean onsets
-MeanfastACOnset=mean(cell2mat(fastAC(:,16)));
+fastACOnset=mean(cell2mat(fastAC(:,16)));
 
 % neurons with onset in first 1 sec of stim
 for iROI=1:length(RrespOT)
     fastIdx2(iROI)=~isempty(find(RrespOT{iROI,16}>0 && RrespOT{iROI,16}<=1));
 end
 fastN=RrespOT(fastIdx2',:);
-MeanNeuronOnset=mean(cell2mat(fastN(:,16)));
+
+NeuronOnset=mean(cell2mat(RrespOT(:,16)));
 
 % IdxAUC= find(Shortstim(:,17)>5);
 % fastAUC=Shortstim(IdxAUC,:);
