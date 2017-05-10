@@ -85,20 +85,20 @@ data_traces = Shortstim;
 % CONSIDER WHOLE TRIAL and 25 sec stim window
 
 % only compare ROIs from the same trial together
-trial_condition=unique(data_traces(:,17));
+trial_condition=unique(data_traces(:,16));
 All_Corrs=[];
 for itrial= 1:length(trial_condition)
     CurrentTrial=trial_condition{itrial};
     
     for iTrace= 1:size(data_traces,1)
-        TrialIdx(iTrace)=strcmp(data_traces{iTrace,17}, CurrentTrial);
+        TrialIdx(iTrace)=strcmp(data_traces{iTrace,16}, CurrentTrial);
     end
     
     CurrentData=data_traces(TrialIdx,:);
     
     for iROI=1:size(CurrentData,1)
         CorrData(1,1:6)=CurrentData(iROI,2:7);
-        CorrData(1,7)=CurrentData(iROI,17); 
+        CorrData(1,7)=CurrentData(iROI,16); 
         
         CorrData(1,8)= CurrentData(iROI,1);
         CorrData(1,9)= CurrentData(iROI,13);
