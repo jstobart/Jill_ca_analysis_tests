@@ -39,9 +39,17 @@ max.theme <- theme_classic() +
 ########################
 # load data
 
-long <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+long.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+
+long.cyto<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+
+long.cyto.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
 #short <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
 #long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
@@ -50,121 +58,289 @@ lsm.options(pbkrtest.limit = 100000)
 
 # onset time comparisons for nostim data
 #longstim.OT.comp <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset_comparisons.csv", header=TRUE, sep = ",")
-longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
-shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
-nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+#longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+#shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+#nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 
-longstim.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
-shortstim.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-nostim.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+
+longstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+
+longstim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+shortstim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+nostim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
 ##########
-# no stim peak data
+all.lck.peaks<-rbind(nostim.lck,long.lck,short.lck)
+all.lck.OT<-rbind(nostim.lck.OT,longstim.lck.OT,shortstim.lck.OT)
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-nostim<-nostim[!(nostim$ROIname=="np"),]
-nostim<-nostim[!(nostim$ROIname=="none"),]
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="np"),]
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="none"),]
 
 # no stim peak data
-nostim$ROIType= 0
-nostimA<- subset(nostim, Channel=="GCaMP")
-nostimB<- subset(nostim, Channel=="RCaMP")
+all.lck.peaks$ROIType= 0
+all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
+all.lck.peaksB<- subset(all.lck.peaks, Channel=="RCaMP")
 
 # ROITypes
-nostimA$ROIType[grepl("r",nostimA$ROIname)]="Process"
-nostimA$ROIType[grepl("E",nostimA$ROIname)]="Endfoot"
-nostimB$ROIType[grepl("r",nostimB$ROIname)]="Dendrite"
-nostimB$ROIType[grepl("D",nostimB$ROIname)]="Dendrite"
-nostimB$ROIType[grepl("N",nostimB$ROIname)]="Neuron"
+all.lck.peaksA$ROIType[grepl("r",all.lck.peaksA$ROIname)]="Process"
+all.lck.peaksA$ROIType[grepl("E",all.lck.peaksA$ROIname)]="Endfoot"
+all.lck.peaksB$ROIType[grepl("r",all.lck.peaksB$ROIname)]="Dendrite"
+all.lck.peaksB$ROIType[grepl("D",all.lck.peaksB$ROIname)]="Dendrite"
+all.lck.peaksB$ROIType[grepl("N",all.lck.peaksB$ROIname)]="Neuron"
 
-nostim<-rbind(nostimA, nostimB)
-nostim$ROIType<- as.factor(nostim$ROIType)
+all.lck.peaks<-rbind(all.lck.peaksA, all.lck.peaksB)
+all.lck.peaks$ROIType<- as.factor(all.lck.peaks$ROIType)
 
 #unique ROI names
-nostim$ROIs_trial<-paste(nostim$Animal, nostim$Spot, nostim$Trial,nostim$ROIname, sep= "_")
-nostim$trials<-paste(nostim$Animal, nostim$Spot, nostim$Trial, sep= "_")
+all.lck.peaks$ROIs_trial<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, all.lck.peaks$Trial,all.lck.peaks$ROIname, sep= "_")
+all.lck.peaks$trials<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, all.lck.peaks$Trial, sep= "_")
 
 
 # remove matching astrocyte process and soma ROIs
-Overlap= nostim$overlap!=0
-nostim<-nostim[!Overlap,]
+Overlap= all.lck.peaks$overlap!=0
+all.lck.peaks<-all.lck.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
 ##### 
-# long stim data
+# cytoGCaMP6s data
+
+all.cyto.peaks<-rbind(nostim.cyto,long.cyto,short.cyto)
+all.cyto.OT<-rbind(nostim.cyto.OT,longstim.cyto.OT,shortstim.cyto.OT)
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-long<-long[!(long$ROIname=="np"),]
-long<-long[!(long$ROIname=="none"),]
+all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$ROIname=="np"),]
+all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$ROIname=="none"),]
 
-
-# long peak data
-long$ROIType= 0
-longA<- subset(long, Channel=="GCaMP")
-longB<- subset(long, Channel=="RCaMP")
+# no stim peak data
+all.cyto.peaks$ROIType= 0
+all.cyto.peaksA<- subset(all.cyto.peaks, Channel=="GCaMP")
+all.cyto.peaksB<- subset(all.cyto.peaks, Channel=="RCaMP")
 
 # ROITypes
-longA$ROIType[grepl("r",longA$ROIname)]="Process"
-longA$ROIType[grepl("E",longA$ROIname)]="Endfoot"
-longB$ROIType[grepl("r",longB$ROIname)]="Dendrite"
-longB$ROIType[grepl("D",longB$ROIname)]="Dendrite"
-longB$ROIType[grepl("N",longB$ROIname)]="Neuron"
+all.cyto.peaksA$ROIType[grepl("r",all.cyto.peaksA$ROIname)]="Process"
+all.cyto.peaksA$ROIType[grepl("E",all.cyto.peaksA$ROIname)]="Endfoot"
+all.cyto.peaksB$ROIType[grepl("r",all.cyto.peaksB$ROIname)]="Dendrite"
+all.cyto.peaksB$ROIType[grepl("D",all.cyto.peaksB$ROIname)]="Dendrite"
+all.cyto.peaksB$ROIType[grepl("N",all.cyto.peaksB$ROIname)]="Neuron"
 
-long<-rbind(longA, longB)
-long$ROIType<- as.factor(long$ROIType)
+all.cyto.peaks<-rbind(all.cyto.peaksA, all.cyto.peaksB)
+all.cyto.peaks$ROIType<- as.factor(all.cyto.peaks$ROIType)
 
 #unique ROI names
-long$ROIs_trial<-paste(long$Animal, long$Spot, long$Trial,long$ROIname, sep= "_")
-long$trials<-paste(long$Animal, long$Spot, long$Trial, sep= "_")
+all.cyto.peaks$ROIs_trial<-paste(all.cyto.peaks$Animal, all.cyto.peaks$Spot, all.cyto.peaks$Trial,all.cyto.peaks$ROIname, sep= "_")
+all.cyto.peaks$trials<-paste(all.cyto.peaks$Animal, all.cyto.peaks$Spot, all.cyto.peaks$Trial, sep= "_")
+
 
 # remove matching astrocyte process and soma ROIs
-Overlap= long$overlap!=0
-long<-long[!Overlap,]
+Overlap= all.cyto.peaks$overlap!=0
+all.cyto.peaks<-all.cyto.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
 ########
-# short stim peak data
+# cytoGCaMP6s DSP4 data
 
-short<-short[!(short$ROIname=="np"),]
-short<-short[!(short$ROIname=="none"),]
+all.cyto.DSP4.peaks<-rbind(nostim.cyto.DSP4,long.cyto.DSP4,short.cyto.DSP4)
+all.cyto.DSP4.OT<-rbind(nostim.cyto.DSP4.OT,longstim.cyto.DSP4.OT,shortstim.cyto.DSP4.OT)
 
-short$ROIType= 0
-shortA<- subset(short, Channel=="GCaMP")
-shortB<- subset(short, Channel=="RCaMP")
+# exclude the neuropil ROIs, because they were hand selected and not necessary
+all.cyto.DSP4.peaks<-all.cyto.DSP4.peaks[!(all.cyto.DSP4.peaks$ROIname=="np"),]
+all.cyto.DSP4.peaks<-all.cyto.DSP4.peaks[!(all.cyto.DSP4.peaks$ROIname=="none"),]
+
+# no stim peak data
+all.cyto.DSP4.peaks$ROIType= 0
+all.cyto.DSP4.peaksA<- subset(all.cyto.DSP4.peaks, Channel=="GCaMP")
+all.cyto.DSP4.peaksB<- subset(all.cyto.DSP4.peaks, Channel=="RCaMP")
 
 # ROITypes
-shortA$ROIType[grepl("r",shortA$ROIname)]="Process"
-shortA$ROIType[grepl("E",shortA$ROIname)]="Endfoot"
-shortB$ROIType[grepl("r",shortB$ROIname)]="Dendrite"
-shortB$ROIType[grepl("D",shortB$ROIname)]="Dendrite"
-shortB$ROIType[grepl("N",shortB$ROIname)]="Neuron"
+all.cyto.DSP4.peaksA$ROIType[grepl("r",all.cyto.DSP4.peaksA$ROIname)]="Process"
+all.cyto.DSP4.peaksA$ROIType[grepl("E",all.cyto.DSP4.peaksA$ROIname)]="Endfoot"
+all.cyto.DSP4.peaksB$ROIType[grepl("r",all.cyto.DSP4.peaksB$ROIname)]="Dendrite"
+all.cyto.DSP4.peaksB$ROIType[grepl("D",all.cyto.DSP4.peaksB$ROIname)]="Dendrite"
+all.cyto.DSP4.peaksB$ROIType[grepl("N",all.cyto.DSP4.peaksB$ROIname)]="Neuron"
 
-short<-rbind(shortA, shortB)
-short$ROIType<- as.factor(short$ROIType)
+all.cyto.DSP4.peaks<-rbind(all.cyto.DSP4.peaksA, all.cyto.DSP4.peaksB)
+all.cyto.DSP4.peaks$ROIType<- as.factor(all.cyto.DSP4.peaks$ROIType)
 
 #unique ROI names
-short$ROIs_trial<-paste(short$Animal, short$Spot, short$Trial,short$ROIname, sep= "_")
-short$trials<-paste(short$Animal, short$Spot, short$Trial, sep= "_")
+all.cyto.DSP4.peaks$ROIs_trial<-paste(all.cyto.DSP4.peaks$Animal, all.cyto.DSP4.peaks$Spot, all.cyto.DSP4.peaks$Trial,all.cyto.DSP4.peaks$ROIname, sep= "_")
+all.cyto.DSP4.peaks$trials<-paste(all.cyto.DSP4.peaks$Animal, all.cyto.DSP4.peaks$Spot, all.cyto.DSP4.peaks$Trial, sep= "_")
+
 
 # remove matching astrocyte process and soma ROIs
-Overlap= short$overlap!=0
-short<-short[!Overlap,]
+Overlap= all.cyto.DSP4.peaks$overlap!=0
+all.cyto.DSP4.peaks<-all.cyto.DSP4.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
+
 
 ######
 # onset time distributions
+all.lck.OT<-subset(all.lck.OT,OnsetTime<10)
+all.cyto.OT<-subset(all.cyto.OT,OnsetTime<10)
+all.cyto.DSP4.OT<-subset(all.cyto.DSP4.OT,OnsetTime<10)
 
-shortstim.OT$Condition="shortstim"
-longstim.OT$Condition="longstim"
-nostim.OT$Condition="nostim"
+ntrials.lck.OT<- ddply(all.lck.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 
-all.onsets<-rbind(shortstim.OT, longstim.OT, nostim.OT)
-all.onsets$Condition=as.factor(all.onsets$Condition)
+breaks = 40 # number of histogram bins
 
-all.onsets.AC<-subset(all.onsets, Channel=="GCaMP" & OnsetTime<25)
-all.onsets.N<-subset(all.onsets, Channel=="RCaMP" & OnsetTime<25)
+# counts for each condition in the histogram
+D1=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Stim")], breaks=breaks, plot=FALSE)$counts
+D2=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Nostim")], breaks=breaks, plot=FALSE)$counts
+D3=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=breaks, plot=FALSE)$counts
 
-                                                                                                                                                                                  
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+D1=D1/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Stim")]
+D2=D2/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Nostim")]
+D3=D3/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+                     
+Neuron.lck.LSvsNS<- rbind(D1, D2)
+colnames(Neuron.lck.LSvsNS) <- (1:breaks)
+## Plot it
+df.bar<-barplot(Neuron.lck.LSvsNS, beside=TRUE, space=c(0, 0.1), las=2,        
+        main="Neurons-normalized- lck data- Long stim vs nostim",
+        xlab="OnsetTime",
+        ylab="") #+ max.theme
+
+lines(x=df.bar, y= Neuron.lck.LSvsNS,         
+        main="Neurons-normalized- lck data- Long stim vs nostim",
+        xlab="OnsetTime",
+        ylab="") #+ max.theme
+
+
+# Define 2 vectors
+cars <- c(1, 3, 6, 4, 9)
+trucks <- c(2, 5, 4, 5, 12)
+
+# Calculate range from 0 to max value of cars and trucks
+g_range <- range(0, cars, trucks)
+
+# Graph autos using y axis that ranges from 0 to max 
+# value in cars or trucks vector.  Turn off axes and 
+# annotations (axis labels) so we can specify them ourself
+plot(cars, type="o", col="blue", ylim=g_range, 
+     axes=FALSE, ann=FALSE)
+
+# Make x axis using Mon-Fri labels
+axis(1, at=1:5, lab=c("Mon","Tue","Wed","Thu","Fri"))
+
+# Make y axis with horizontal labels that display ticks at 
+# every 4 marks. 4*0:g_range[2] is equivalent to c(0,4,8,12).
+axis(2, las=1, at=4*0:g_range[2])
+
+# Create box around plot
+box()
+
+# Graph trucks with red dashed line and square points
+lines(trucks, type="o", pch=22, lty=2, col="red")
+
+# Create a title with a red, bold/italic font
+title(main="Autos", col.main="red", font.main=4)
+
+# Label the x and y axes with dark green text
+title(xlab="Days", col.lab=rgb(0,0.5,0))
+title(ylab="Total", col.lab=rgb(0,0.5,0))
+
+# Create a legend at (1, g_range[2]) that is slightly smaller 
+# (cex) and uses the same line colors and points used by 
+# the actual plots 
+legend(1, g_range[2], c("cars","trucks"), cex=0.8, 
+       col=c("blue","red"), pch=21:22, lty=1:2);
+
+
+
+
+
+
+
+
+# Lck data
+ggplot(all.lck.OT[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- neurons-lck data") + 
+  max.theme
+
+ggplot(all.lck.OT[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Long stim vs No stim- neurons-lck data") + 
+  max.theme
+
+ggplot(all.lck.OT[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- astrocytes-lck data") + 
+  max.theme
+
+ggplot(all.lck.OT[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Long stim vs No stim- astrocytes-lck data") + 
+  max.theme
+
+
+# cyto data
+ggplot(all.cyto.OT[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- neurons-cyto data") + 
+  max.theme
+
+ggplot(all.cyto.OT[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Long stim vs No stim- neurons-cyto data") + 
+  max.theme
+
+ggplot(all.cyto.OT[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- astrocytes-cyto data") + 
+  max.theme
+
+ggplot(all.cyto.OT[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Long stim vs No stim- astrocytes-cyto data") + 
+  max.theme
+
+
+# DSP4 cyto data
+ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- neurons-cyto.DSP4 data") + 
+  max.theme
+
+ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Long stim vs No stim- neurons-cyto.DSP4 data") + 
+  max.theme
+
+ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- astrocytes-cyto.DSP4 data") + 
+  max.theme
+
+ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Long stim vs No stim- astrocytes-cyto.DSP4 data") + 
+  max.theme
+
+######
+# astrocytes with a similar onset to neurons?
+
+
+
+
 ########
 # onset time comparisons- neurons vs. astrocytes
 longstim.OT.comp$compType<-paste(longstim.OT$N_ROIType, longstim.OT$A_ROIType, sep= "_")
