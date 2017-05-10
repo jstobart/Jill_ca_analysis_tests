@@ -11,42 +11,74 @@ FileSave{1,2}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LongStim_Correlations.csv
 
 
 % load data traces
-load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_cGC&RC_traces_17_02_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_28_04_2017.mat');
 
-Long_Short=All_traces;
+Shortstim=All_traces;
 
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LStim_cGC&RC_traces_17_02_2017.mat');
+for x=1:length(Shortstim)
+    number_pos=regexp(Shortstim{x,2},'[0-9]');
+    if length(number_pos)<2
+        trialname=Shortstim{x,2};
+        number=str2double(trialname(number_pos));
+        Shortstim{x,2}=strcat('trial',num2str(number,'%02d'));
+    end
+end
 
-Long=All_traces;
 
-All_traces=vertcat(Long_Short,Long);
-
+%% trace info- ROIType etc.
+% get info for plotting
 FrameRate=11.84;
+nframes=592;
+TimeX(1:nframes) = (1:nframes)/FrameRate;
 
-searchString='Stim';
+% get rid of handclicked neuropil ROIs because they are not relevant if
+% FLIKA ROIs are included for the neuron channel
 
-for iROI=1:length(All_traces)
-    Stim_str{iROI} = strfind(All_traces{iROI,6},searchString);
-    str_idx(iROI)=~isempty(Stim_str{iROI});
-    
+% get rid of astrocyte neuropil traces
+for xROI=1:size(Shortstim,1)
+    GCNP2(xROI)= strcmp(Shortstim{xROI,1},'np');
+end
+Shortstim=Shortstim(~GCNP2',:);
+
+for iROI=1:length(Shortstim)
     %find ROITypes
-    N_str= strfind(All_traces{iROI, 1},'N');
-    S_str= strfind(All_traces{iROI, 1},'S');
-    EF_str= strfind(All_traces{iROI, 1},'E');
-    P_str= strfind(All_traces{iROI, 1},'r');
-    NP_str= strfind(All_traces{iROI, 1},'np');
+    N_str= strfind(Shortstim{iROI, 1},'N');
+    D_str= strfind(Shortstim{iROI, 1},'D'); %hand selected dendrite
+    r_str= strfind(Shortstim{iROI, 1},'r'); %FLIKA ROIs
+    EF_str= strfind(Shortstim{iROI, 1},'E');
     
     if ~isempty(N_str)
-        All_traces{iROI,13}='Neuron';
-    elseif ~isempty(S_str)
-        All_traces{iROI,13}='Soma';
+        Shortstim{iROI,13}='Neuron';
+    elseif ~isempty(D_str)
+        Shortstim{iROI,13}='Dendrite';
+    elseif ~isempty(r_str)
+        P_str= strfind(Shortstim{iROI, 3},'GCaMP');
+        if ~isempty(P_str)
+            Shortstim{iROI,13}='Process';
+        else
+            Shortstim{iROI,13}='Dendrite';
+        end
     elseif ~isempty(EF_str)
-        All_traces{iROI,13}='Endfeet';
-    elseif ~isempty(P_str)
-        All_traces{iROI,13}='Process';
-    elseif ~isempty(NP_str)
-        All_traces{iROI,13}='Neuropil';
+        Shortstim{iROI,13}='Endfeet';
     end
+    
+    % make new unique trial names
+    Shortstim{iROI,14}=strcat(Shortstim{iROI,5},'_',Shortstim{iROI,4},'_',Shortstim{iROI,2});
+    % unique ROI names
+    Shortstim{iROI,15}=strcat(Shortstim{iROI,5},'_',Shortstim{iROI,4},'_',Shortstim{iROI,2}, '_',Shortstim{iROI,1});
+end
+
+for iROI=1:length(Shortstim)
+    %if a process ROI is overlapping with a soma or process, exclude it
+    %from data
+    nonOverlapIdx2(iROI)=~ischar(Shortstim{iROI,12});
+end
+
+% remove overlapping processes
+Shortstim = Shortstim(nonOverlapIdx2',:);
+
+
+
     
     % make new names
     All_traces{iROI,14}=strcat(All_traces{iROI,5},'_',All_traces{iROI,4},'_',All_traces{iROI,1});
@@ -56,15 +88,7 @@ for iROI=1:length(All_traces)
     
 end
 
-data_traces = All_traces(str_idx',:);
 
-for iROI=1:length(data_traces)
-    %if a process ROI is overlapping with a soma or process, exclude it
-    %from data
-    %All_traces{iROI,11}=0;
-    nonOverlapIdx(iROI)=~ischar(data_traces{iROI,12});
-    
-end
 
 % remove overlapping processes
 data_traces = data_traces(nonOverlapIdx',:);

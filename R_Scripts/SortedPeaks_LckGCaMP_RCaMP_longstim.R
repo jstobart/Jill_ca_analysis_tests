@@ -46,6 +46,8 @@ nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lc
 #short <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
 #long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
 
+long.onset <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_peaks_onset&AUC.csv", header=TRUE, sep = ",")
+
 lsm.options(pbkrtest.limit = 100000)
 
 # onset time comparisons for nostim data
