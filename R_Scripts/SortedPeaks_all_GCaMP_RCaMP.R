@@ -30,6 +30,10 @@ max.theme <- theme_classic() +
     axis.line.x = element_line(colour = 'black', size=1, linetype='solid'),
     axis.line.y = element_line(colour = 'black', size=1, linetype='solid'))
 
+# COLOUR BLIND FRIENDLY PALETTE FOR PLOTS
+# The palette with black:
+cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0E442")
+
 
 ###########
 # NOTES
@@ -39,68 +43,66 @@ max.theme <- theme_classic() +
 ########################
 # load data
 
-#long.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-#short.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#nostim.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+long.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-#long.cyto<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-#short.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#nostim.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+long.cyto<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-#long.cyto.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-#short.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#nostim.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
-
-#short <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#long <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-
-long.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
-
-long.cyto<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
-
-long.cyto.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
-
-lsm.options(pbkrtest.limit = 100000)
+long.cyto.DSP4 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
 # onset time comparisons for nostim data
-#longstim.OT.comp <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset_comparisons.csv", header=TRUE, sep = ",")
-#longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
-#shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
-#nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 
-#longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
-#shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-#nostim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
 
-#longstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
-#shortstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-#nostim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+longstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
-#longstim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
-#shortstim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
-#nostim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+longstim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+shortstim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+nostim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
+##### 
+#home files
+#long.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#nostim.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-longstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
-shortstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-nostim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+#long.cyto<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#nostim.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-longstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
-shortstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-nostim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+#long.cyto.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#nostim.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-longstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
-shortstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
-nostim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+#longstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+#shortstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+#nostim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+
+#longstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
+#shortstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+#nostim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+
+#longstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+#shortstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+#nostim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
 
 ##########
+
+lsm.options(pbkrtest.limit = 100000)
+
 all.lck.peaks<-rbind(nostim.lck,long.lck,short.lck)
 all.lck.OT<-rbind(nostim.lck.OT,longstim.lck.OT,shortstim.lck.OT)
 
@@ -132,6 +134,10 @@ all.lck.peaks$trials<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, all.lck.pe
 Overlap= all.lck.peaks$overlap!=0
 all.lck.peaks<-all.lck.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
+
+# adjust peak time and duration
+all.lck.peaks$peakTime<- all.lck.peaks$peakTime-5
+all.lck.peaks$Duration<- all.lck.peaks$halfWidth*2
 
 ##### 
 # cytoGCaMP6s data
@@ -168,6 +174,9 @@ Overlap= all.cyto.peaks$overlap!=0
 all.cyto.peaks<-all.cyto.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
+# adjust peak time and duration
+all.cyto.peaks$peakTime<- all.cyto.peaks$peakTime-5
+all.cyto.peaks$Duration<- all.cyto.peaks$halfWidth*2
 ########
 # cytoGCaMP6s DSP4 data
 
@@ -203,149 +212,569 @@ Overlap= all.cyto.DSP4.peaks$overlap!=0
 all.cyto.DSP4.peaks<-all.cyto.DSP4.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
+# adjust peak time and duration
+all.cyto.DSP4.peaks$peakTime<- all.cyto.DSP4.peaks$peakTime-5
+all.cyto.DSP4.peaks$Duration<- all.cyto.DSP4.peaks$halfWidth*2
 
 ######
 # onset time distributions
-all.lck.OT<-subset(all.lck.OT,OnsetTime<10)
-all.cyto.OT<-subset(all.cyto.OT,OnsetTime<10)
-all.cyto.DSP4.OT<-subset(all.cyto.DSP4.OT,OnsetTime<10)
+all.lck.OT<-subset(all.lck.OT,OnsetTime<12)
+all.cyto.OT<-subset(all.cyto.OT,OnsetTime<12)
+all.cyto.DSP4.OT<-subset(all.cyto.DSP4.OT,OnsetTime<12)
 
 ntrials.lck.OT<- ddply(all.lck.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.OT<- ddply(all.cyto.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.DSP4.OT<- ddply(all.cyto.DSP4.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 
 #histogram bins
-histseq= seq(0,10, (0.0845*2))
+histseq= seq(0,12,1)
 
+# neuronal lck onset histogram
 # counts for each condition in the histogram
-D1=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-D2=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-D3=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+Nostim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
 
 # normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-D1=D1/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Nostim")]
-D2=D2/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Stim")]
-D3=D3/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+Nostim=Nostim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Nostim")]
+Stim=Stim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
                      
-Neuron.lck.LSvsNS<- cbind(D1, D2, D3)
-Neuron.lck.LSvsNS <- data.frame(cbind(D1, D2, D3))
-Neuron.lck.LSvsNS$time<-histseq[2:length(histseq)]
+#make a data frame for plotting
+Neuron.lck.histo <- data.frame(cbind(Nostim, Stim, Shortstim))
+Neuron.lck.histo$time<-histseq[2:length(histseq)]
+Neuron.lck.histo2<-melt(Neuron.lck.histo,id="time")
 
+ggplot(data=Neuron.lck.histo2, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Onset time (s)") +
+  ylab("number of ROIs per trial")+
+  ggtitle("Neurons- onset time- ROIs per trial- lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
 
-require(reshape2)
-df <- data.frame(x=1:nrow(cars), cumsum(data.frame(cars)))
-df.melted <- melt(df, id="x")
+# astrocyte lck onset histogram
+#histogram bins
+histseq2= seq(0,12, 1)
 
-require(ggplot2)
-qplot(x=x, y=value, color=variable, data=df.melted, geom="line")
-
-ggplot(all.lck.OT[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- neurons-lck data") + 
+# counts for each condition in the histogram
+Nostim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition=="Nostim")], breaks=histseq2, plot=FALSE)$counts
+Stim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq2, plot=FALSE)$counts
+Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq2, plot=FALSE)$counts
+  
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Nostim")]
+Stim=Stim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+  
+#make a data frame for plotting
+AC.lck.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.lck.histo$time<-histseq2[2:length(histseq2)]
+AC.lck.histo2<-melt(AC.lck.histo,id="time")
+  
+ggplot(data=AC.lck.histo2, aes(x=time, y= value, colour=variable)) + 
+    geom_line(size=1)+
+    xlab("Onset time (s)") +
+    ylab("number of ROIs per trial")+
+    ggtitle("Astrocytes- onset time- ROIs per trial- lck data") + 
+    scale_colour_manual(values=cbbPalette)+
   max.theme
 
 
-matplot(Neuron.lck.LSvsNS, type = "l", lty=1,lwd=2,xlab="Onset Time", ylab="Num of ROIs per trial" )
-
-head(Neuron.lck.LSvsNS) <- (histseq)
-## Plot it
-barplot(Neuron.lck.LSvsNS, beside=TRUE, space=c(0, 0.1), las=2,        
-        main="Neurons-normalized- lck data- Long stim vs nostim",
-        xlab="OnsetTime",
-        ylab="") #+ max.theme
-
-lines(x=df.bar, y= Neuron.lck.LSvsNS,         
-        main="Neurons-normalized- lck data- Long stim vs nostim",
-        xlab="OnsetTime",
-        ylab="") #+ max.theme
-
-lines(x=(1:length(D1)), y=(Neuron.lck.LSvsNS,),         
-      main="Neurons-normalized- lck data- Long stim vs nostim",
-      xlab="OnsetTime",
-      ylab="") #+ max.theme)
+# neurons and astrocytes together by density to account for different number of ROIs
+histseq2= seq(0,12, 1)
 
 
-
-
-
-
-# Lck data
-ggplot(all.lck.OT[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) +
+  geom_histogram(aes(y=..density..), breaks=histseq2,  
                  position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- neurons-lck data") + 
-  max.theme
-
-ggplot(all.lck.OT[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim vs No stim- neurons-lck data") + 
-  max.theme
-
-ggplot(all.lck.OT[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- astrocytes-lck data") + 
-  max.theme
-
-ggplot(all.lck.OT[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim vs No stim- astrocytes-lck data") + 
+  ggtitle("Long stim- neurons vs astrocytes-lck data") + 
+  scale_fill_manual(values=cbbPalette)+
   max.theme
 
 
-# cyto data
-ggplot(all.cyto.OT[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- neurons-cyto data") + 
-  max.theme
-
-ggplot(all.cyto.OT[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim vs No stim- neurons-cyto data") + 
-  max.theme
-
-ggplot(all.cyto.OT[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- astrocytes-cyto data") + 
-  max.theme
-
-ggplot(all.cyto.OT[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim vs No stim- astrocytes-cyto data") + 
+ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) + 
+  geom_density(aes(group=Channel, Colour=Channel, fill=Channel), alpha=0.7, adjust=1/5,size=1) +
+  scale_fill_manual(values=cbbPalette[2:3])+
   max.theme
 
 
-# DSP4 cyto data
-ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- neurons-cyto.DSP4 data") + 
+
+
+###### 
+#cyto data
+# neuronal onset histogram
+#histogram bins
+histseq= seq(0,12,0.25)
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+Neuron.cyto.histo <- data.frame(cbind(Nostim, Stim, Shortstim))
+Neuron.cyto.histo$time<-histseq[2:length(histseq)]
+Neuron.cyto.histo<-melt(Neuron.cyto.histo,id="time")
+
+ggplot(data=Neuron.cyto.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Onset time (s)") +
+  ylab("number of ROIs per trial")+
+  ggtitle("Neurons- onset time- ROIs per trial- cyto data") + 
+  scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim vs No stim- neurons-cyto.DSP4 data") + 
+# astrocyte lck onset histogram
+#histogram bins
+histseq= seq(0,12,1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.cyto.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.cyto.histo$time<-histseq[2:length(histseq)]
+AC.cyto.histo<-melt(AC.cyto.histo,id="time")
+
+ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1.0)+
+  xlab("Onset time (s)") +
+  ylab("number of ROIs per trial")+
+  ggtitle("Astrocytes- onset time- ROIs per trial- cyto data") + 
+  scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Short stim vs No stim- astrocytes-cyto.DSP4 data") + 
+
+######
+# cyto DSP4 data
+
+#cyto data
+# neuronal onset histogram
+#histogram bins
+histseq= seq(0,12,0.25)
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.DSP4.OT$ntrials[(ntrials.cyto.DSP4.OT$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.DSP4.OT$ntrials[(ntrials.cyto.DSP4.OT$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.DSP4.OT$ntrials[(ntrials.cyto.DSP4.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+Neuron.cyto.DSP4.histo <- data.frame(cbind(Nostim, Stim, Shortstim))
+Neuron.cyto.DSP4.histo$time<-histseq[2:length(histseq)]
+Neuron.cyto.DSP4.histo<-melt(Neuron.cyto.DSP4.histo,id="time")
+
+ggplot(data=Neuron.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Onset time (s)") +
+  ylab("number of ROIs per trial")+
+  ggtitle("Neurons- onset time- ROIs per trial- cyto.DSP4 data") + 
+  scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition!="shortstim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
-  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim vs No stim- astrocytes-cyto.DSP4 data") + 
+# astrocyte lck onset histogram
+#histogram bins
+histseq= seq(0,12,1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.DSP4.OT$ntrials[(ntrials.cyto.DSP4.OT$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.DSP4.OT$ntrials[(ntrials.cyto.DSP4.OT$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.DSP4.OT$ntrials[(ntrials.cyto.DSP4.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.cyto.DSP4.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.cyto.DSP4.histo$time<-histseq[2:length(histseq)]
+AC.cyto.DSP4.histo<-melt(AC.cyto.DSP4.histo,id="time")
+
+ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Onset time (s)") +
+  ylab("number of ROIs per trial")+
+  ggtitle("Astrocytes- onset time- ROIs per trial- cyto.DSP4 data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+#######
+# peak time histograms
+
+# NOTE: sometimes a peak is detected for the whole trial so exclude peaks with really long durations!
+
+all.lck.peaks<-subset(all.lck.peaks,peakTime<15 & peakTime>0 & Duration<45)
+all.cyto.peaks<-subset(all.cyto.peaks,peakTime<20 & peakTime>0 & Duration<80)
+all.cyto.DSP4.peaks<-subset(all.cyto.DSP4.peaks,peakTime<20 & peakTime>0 & Duration<80)
+
+# consider ONLY the first peak for each ROI after the start of stimulation
+#ROInames=unique(all.lck.peaks$ROIs_trial)
+#all.lck.firstpeaks=data.frame()
+#for (ii in 1:length(ROInames))
+#{
+ # CurrentROI=ROInames[ii]
+#  CurrentPeaks=subset(all.lck.peaks, ROIs_trial %in% CurrentROI)
+ # if (nrow(CurrentPeaks)>1)
+  #  { 
+   # FirstIdx= min(CurrentPeaks$peakTime)
+  #  FirstPeak=CurrentPeaks[FirstIdx,]
+  #}
+  #  else
+   # {
+    #  FirstPeak=CurrentPeaks
+    #}
+  #all.lck.firstpeaks<-rbind(all.lck.firstpeaks,FirstPeak)
+#}
+                  
+ntrials.lck.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.DSP4.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+
+
+# lck peak time data
+
+#histogram bins
+histseq= seq(0,15, 0.25)
+
+# neuronal peak time histogram
+# counts for each condition in the histogram
+Nostim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="RCaMP" & all.lck.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="RCaMP" & all.lck.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="RCaMP" & all.lck.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+Neuron.lck.histo <- data.frame(cbind(Nostim, Stim, Shortstim))
+Neuron.lck.histo$time<-histseq[2:length(histseq)]
+Neuron.lck.histo<-melt(Neuron.lck.histo,id="time")
+
+ggplot(data=Neuron.lck.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Time to Peak Max (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Neurons- peak time- ROIs per trial- lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+# astrocyte lck onset histogram
+#histogram bins
+histseq= seq(0,15, 1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.lck.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.lck.histo$time<-histseq[2:length(histseq)]
+AC.lck.histo<-melt(AC.lck.histo,id="time")
+
+ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Time to Peak Max (s)") +
+  xlim(0,15) +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- peak time- ROIs per trial- lck data") + 
+  scale_colour_manual(values=cbbPalette)+
   max.theme
 
 ######
+# cyto peak time data
+
+#histogram bins
+histseq= seq(0,20, 0.25)
+
+# neuronal peak time histogram
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="RCaMP" & all.cyto.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="RCaMP" & all.cyto.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="RCaMP" & all.cyto.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+Neuron.cyto.histo <- data.frame(cbind(Nostim, Stim, Shortstim))
+Neuron.cyto.histo$time<-histseq[2:length(histseq)]
+Neuron.cyto.histo<-melt(Neuron.cyto.histo,id="time")
+
+ggplot(data=Neuron.cyto.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Time to Peak Max (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Neurons- peak time- ROIs per trial- cyto data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+# astrocyte lck onset histogram
+#histogram bins
+histseq= seq(-2,20, 0.5)
+
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.cyto.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.cyto.histo$time<-histseq[2:length(histseq)]
+AC.cyto.histo<-melt(AC.cyto.histo,id="time")
+
+ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Peak time (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- peak time- ROIs per trial- cyto data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+#####
+# cyto DSP4 peak time data
+
+#histogram bins
+histseq= seq(0,20, 0.25)
+
+# neuronal peak time histogram
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="RCaMP" & all.cyto.DSP4.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="RCaMP" & all.cyto.DSP4.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="RCaMP" & all.cyto.DSP4.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+Neuron.cyto.DSP4.histo <- data.frame(cbind(Nostim, Stim, Shortstim))
+Neuron.cyto.DSP4.histo$time<-histseq[2:length(histseq)]
+Neuron.cyto.DSP4.histo<-melt(Neuron.cyto.DSP4.histo,id="time")
+
+ggplot(data=Neuron.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Time to peak max (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Neurons- duration- ROIs per trial- cyto.DSP4 data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+# astrocyte lck onset histogram
+#histogram bins
+histseq= seq(0,20, 0.5)
+
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.cyto.DSP4.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.cyto.DSP4.histo$time<-histseq[2:length(histseq)]
+AC.cyto.DSP4.histo<-melt(AC.cyto.DSP4.histo,id="time")
+
+ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Time to peak max (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- duration- ROIs per trial- cyto.DSP4 data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+
+######
+# Duration histograms
+
+# lck data
+
+# astrocyte lck duration histogram
+#histogram bins
+histseq= seq(0,45, 1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.lck.peaks$Duration[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.lck.peaks$Duration[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.lck.peaks$Duration[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.lck.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.lck.histo$time<-histseq[2:length(histseq)]
+AC.lck.histo<-melt(AC.lck.histo,id="time")
+
+ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Duration (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- duration- ROIs per trial- lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(data=all.lck.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+  geom_boxplot(size=1)+
+  ylab("Duration (s)")+
+  ggtitle("Astrocytes- duration - lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+
+
+######
+# astrocyte cyto duration
+
+#histogram bins
+histseq= seq(0,80, 1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.peaks$Duration[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.peaks$Duration[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.peaks$Duration[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.peaks$ntrials[(ntrials.cyto.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.cyto.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.cyto.histo$time<-histseq[2:length(histseq)]
+AC.cyto.histo<-melt(AC.cyto.histo,id="time")
+
+ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Duration (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- duration- ROIs per trial- cyto data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(data=all.cyto.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+  geom_boxplot(size=1)+
+  ylab("Duration (s)")+
+  ggtitle("Astrocytes- duration - cyto data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+######
+# astrocyte cyto DSP4 duration
+
+#histogram bins
+histseq= seq(0,80, 1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.cyto.DSP4.peaks$Duration[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.cyto.DSP4.peaks$Duration[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.cyto.DSP4.peaks$Duration[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.cyto.DSP4.peaks$ntrials[(ntrials.cyto.DSP4.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.cyto.DSP4.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.cyto.DSP4.histo$time<-histseq[2:length(histseq)]
+AC.cyto.DSP4.histo<-melt(AC.cyto.DSP4.histo,id="time")
+
+ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Duration (s)") +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- duration- ROIs per trial- cyto DSP4 data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(data=all.cyto.DSP4.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+  geom_boxplot(size=1)+
+  ylab("Duration (s)")+
+  ggtitle("Astrocytes- duration - DSP4 data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+######
+
+# amplitude histograms
+
+# lck data
+
+# astrocyte lck duration histogram
+#histogram bins
+histseq= seq(-1,15, 0.1)
+
+# counts for each condition in the histogram
+Nostim=hist(all.lck.peaks$amplitude[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim=hist(all.lck.peaks$amplitude[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+Shortstim=hist(all.lck.peaks$amplitude[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim=Nostim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Nostim")]
+Stim=Stim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="Stim")]
+Shortstim=Shortstim/ntrials.lck.peaks$ntrials[(ntrials.lck.peaks$Condition=="shortstim")]
+
+#make a data frame for plotting
+AC.lck.histo<- data.frame(cbind(Nostim, Stim, Shortstim))
+AC.lck.histo$time<-histseq[2:length(histseq)]
+AC.lck.histo<-melt(AC.lck.histo,id="time")
+
+ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("amplitude dF/F") +
+  ylab("number of peaks per trial")+
+  ggtitle("Astrocytes- peak time- ROIs per trial- lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(data=all.lck.peaks, aes(x=Condition, y= amplitude, colour=Condition)) + 
+  geom_boxplot(size=1)+
+  ylab("amplitude dF/F")+
+  ggtitle("Astrocytes- amplitude- - lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+######
+
+
 # astrocytes with a similar onset to neurons?
 
 
@@ -751,12 +1180,12 @@ longstim.active<- subset(longstim.responding, ActivePeak==1)
 
 ggplot(longstim.stimwindow, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
   scale_fill_manual(
-    values=c("green", "red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(longstim.active, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
   scale_fill_manual(
-    values=c("green", "red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 longstim.after<- subset(longstim.responding, peakTime>20 & peakTime<80)
@@ -825,14 +1254,14 @@ shortstim.stimwindow<- subset(shortstim.responding, peakTime>=0 & peakTime<=10)
 
 ggplot(shortstim.stimwindow, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
   scale_fill_manual(
-    values=c("green", "red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 shortstim.active<- subset(shortstim.responding, ActivePeak==1)
 
 ggplot(shortstim.active, aes(x=peakTime, fill=Channel)) + geom_histogram(binwidth=0.5, position="dodge") +
   scale_fill_manual(
-    values=c("green", "red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 shortstim.after<- subset(shortstim.responding, peakTime>10 & peakTime<80)
@@ -1059,7 +1488,7 @@ ggplot(data=df3A, aes(x=TimeGroup, y=amplitude, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("amplitude") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df3B, aes(x=ROIType, y=amplitude, fill=TimeGroup)) +
@@ -1068,7 +1497,7 @@ ggplot(data=df3B, aes(x=ROIType, y=amplitude, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("amplitude") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 #stats
@@ -1098,7 +1527,7 @@ ggplot(data=df4A, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakTime") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df4B, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
@@ -1107,7 +1536,7 @@ ggplot(data=df4B, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakStartHalf") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df4C, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
@@ -1116,7 +1545,7 @@ ggplot(data=df4C, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakTime") +
   scale_fill_manual(
-    values=c("red", "blue","green")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df4D, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
@@ -1125,7 +1554,7 @@ ggplot(data=df4D, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakStartHalf") +
   scale_fill_manual(
-    values=c("red", "blue","green")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df4E, aes(x=TimeGroup, y=peakStart, fill=TimeGroup)) +
@@ -1134,7 +1563,7 @@ ggplot(data=df4E, aes(x=TimeGroup, y=peakStart, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakStart") +
   scale_fill_manual(
-    values=c("red", "blue","green")) + 
+    values=cbbPalette) + 
   max.theme
 
 
@@ -1164,7 +1593,7 @@ ggplot(data=df5A, aes(x=TimeGroup, y=Duration, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("Duration") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 #stats
@@ -1219,7 +1648,7 @@ ggplot(data=df3A, aes(x=TimeGroup, y=amplitude, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("amplitude") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df3B, aes(x=ROIType, y=amplitude, fill=TimeGroup)) +
@@ -1228,7 +1657,7 @@ ggplot(data=df3B, aes(x=ROIType, y=amplitude, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("amplitude") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 #stats
@@ -1258,7 +1687,7 @@ ggplot(data=df4A, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakTime") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df4B, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
@@ -1267,7 +1696,7 @@ ggplot(data=df4B, aes(x=TimeGroup, y=peakStartHalf, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("peakStartHalf") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 ggplot(data=df4C, aes(x=TimeGroup, y=peakTime, fill=TimeGroup)) +
@@ -1324,7 +1753,7 @@ ggplot(data=df5A, aes(x=TimeGroup, y=Duration, fill=TimeGroup)) +
   xlab("TimeGroup") +
   ylab("Duration") +
   scale_fill_manual(
-    values=c("red", "blue")) + 
+    values=cbbPalette) + 
   max.theme
 
 #stats
