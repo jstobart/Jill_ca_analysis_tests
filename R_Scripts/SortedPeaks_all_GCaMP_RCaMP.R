@@ -74,29 +74,29 @@ nostim.cyto.DSP4.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaM
 
 ##### 
 #home files
-#long.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-#short.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#nostim.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+long.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-#long.cyto<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-#short.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#nostim.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+long.cyto<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-#long.cyto.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-#short.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-#nostim.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+long.cyto.DSP4 <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+short.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+nostim.cyto.DSP4<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-#longstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
-#shortstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-#nostim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+longstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
 
-#longstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
-#shortstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-#nostim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+longstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
+shortstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
-#longstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
-#shortstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
-#nostim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+longstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_longstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+shortstim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_shortstim_firstonset&AUC.csv", header=TRUE, sep = ",")
+nostim.cyto.DSP4.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
 
 ##########
@@ -282,24 +282,36 @@ ggplot(data=AC.lck.histo2, aes(x=time, y= value, colour=variable)) +
 
 
 # neurons and astrocytes together by density to account for different number of ROIs
-histseq2= seq(0,12, 1)
+histseq2= seq(0,12, 0.5)
 
+GC.stim<-hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq2, plot=FALSE)$density
+RC.stim<-hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq2, plot=FALSE)$density
 
-ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) +
-  geom_histogram(aes(y=..density..), breaks=histseq2,  
-                 position="dodge", lwd=0.2) +
-  ggtitle("Long stim- neurons vs astrocytes-lck data") + 
-  scale_fill_manual(values=cbbPalette)+
+lck.longstim.histo<-data.frame(cbind(GC.stim, RC.stim))
+lck.longstim.histo$time<-histseq2[2:length(histseq2)]
+lck.longstim.histo2<-melt(lck.longstim.histo,id="time")
+
+ggplot(data=lck.longstim.histo2, aes(x=time, y= value, colour=variable)) + 
+  geom_line(size=1)+
+  xlab("Onset time (s)") +
+  ylab("Density")+
+  ggtitle("Astrocytes vs neurons- long onset time- lck data") + 
+  scale_colour_manual(values=cbbPalette)+
   max.theme
 
 
 ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) + 
-  geom_density(aes(group=Channel, Colour=Channel, fill=Channel), alpha=0.7, adjust=1/5,size=1) +
+  geom_density(aes(y=..scaled.., Colour=Channel, fill=Channel), alpha=0.7, adjust=1/5,size=1) +
   scale_fill_manual(values=cbbPalette[2:3])+
   max.theme
 
-
-
+library("scales")
+ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) + 
+  geom_bar(aes(y = (..count..)/sum(..count..))) + 
+  ## scale_y_continuous(labels = percent_format()) #version 3.0.9
+  #scale_y_continuous(labels = percent_format())+
+  ggtitle("astrocytes vs neurons- onset time- long stim")+ 
+  max.theme  
 
 ###### 
 #cyto data
@@ -651,7 +663,8 @@ ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.lck.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+levels(all.lck.peaks$Condition) <- c("Nostim","shortstim","Stim")
+ggplot(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], aes(x=Condition, y= Duration, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("Duration (s)")+
   ggtitle("Astrocytes- duration - lck data") + 
@@ -689,7 +702,7 @@ ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.cyto.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+ggplot(data=all.cyto.peaks[all.cyto.peaks$Channel=="GCaMP",], aes(x=Condition, y= Duration, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("Duration (s)")+
   ggtitle("Astrocytes- duration - cyto data") + 
@@ -725,7 +738,7 @@ ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.cyto.DSP4.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+ggplot(data=all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="GCaMP",], aes(x=Condition, y= Duration, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("Duration (s)")+
   ggtitle("Astrocytes- duration - DSP4 data") + 
@@ -765,7 +778,8 @@ ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.lck.peaks, aes(x=Condition, y= amplitude, colour=Condition)) + 
+levels(all.lck.peaks$Condition) <- c("Nostim","shortstim","Stim")
+ggplot(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], aes(x=Condition, y= amplitude, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("amplitude dF/F")+
   ggtitle("Astrocytes- amplitude- - lck data") + 
@@ -773,6 +787,18 @@ ggplot(data=all.lck.peaks, aes(x=Condition, y= amplitude, colour=Condition)) +
   max.theme
 
 ######
+# ROI area
+levels(all.lck.peaks$Condition) <- c("Nostim","shortstim","Stim")
+ggplot(data=all.lck.peaks, aes(x=Condition, y= area, colour=Condition)) + 
+  geom_boxplot(size=1)+
+  ylab("area (sq m)")+
+  ggtitle("Astrocytes- roi area- - lck data") + 
+  scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+
+df1A<- summarySE(all.lck.peaks, measurevar="area", groupvars=c("Condition","Channel"))
+df1B<- summarySE(all.lck.peaks, measurevar="area", groupvars=c("Condition","Channel","ROIType"))
 
 
 # astrocytes with a similar onset to neurons?
