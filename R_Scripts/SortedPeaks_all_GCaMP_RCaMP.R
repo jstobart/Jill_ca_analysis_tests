@@ -213,22 +213,38 @@ all.cyto.DSP4.OT<-subset(all.cyto.DSP4.OT,OnsetTime<10)
 ntrials.lck.OT<- ddply(all.lck.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 
 #histogram bins
-histseq= seq(0,10, 0.0845)
+histseq= seq(0,10, (0.0845*2))
 
 # counts for each condition in the histogram
-D1=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-D2=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+D1=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+D2=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
 D3=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
 
 # normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-D1=D1/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Stim")]
-D2=D2/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Nostim")]
+D1=D1/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Nostim")]
+D2=D2/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="Stim")]
 D3=D3/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
                      
-Neuron.lck.LSvsNS<- cbind(D1, D2)
-Neuron.lck.LSvsNS <- data.frame(rbind(D1, D2))
+Neuron.lck.LSvsNS<- cbind(D1, D2, D3)
+Neuron.lck.LSvsNS <- data.frame(cbind(D1, D2, D3))
+Neuron.lck.LSvsNS$time<-histseq[2:length(histseq)]
 
-matplot(Neuron.lck.LSvsNS, type = "l", xlab="Onset Time", ylab="Num of ROIs per trial" )
+
+require(reshape2)
+df <- data.frame(x=1:nrow(cars), cumsum(data.frame(cars)))
+df.melted <- melt(df, id="x")
+
+require(ggplot2)
+qplot(x=x, y=value, color=variable, data=df.melted, geom="line")
+
+ggplot(all.lck.OT[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition!="Stim"),], aes(x=OnsetTime, fill=Condition, colour=Condition)) +
+  geom_histogram(aes(y=..density..), breaks=seq(0,20,1),  
+                 position="dodge", lwd=0.2) +
+  ggtitle("Short stim vs No stim- neurons-lck data") + 
+  max.theme
+
+
+matplot(Neuron.lck.LSvsNS, type = "l", lty=1,lwd=2,xlab="Onset Time", ylab="Num of ROIs per trial" )
 
 head(Neuron.lck.LSvsNS) <- (histseq)
 ## Plot it
