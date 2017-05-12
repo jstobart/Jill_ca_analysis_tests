@@ -285,13 +285,19 @@ ggplot(data=AC.lck.histo2, aes(x=time, y= value, colour=variable)) +
 histseq2= seq(0,12, 1)
 
 
-ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) +
+ggplot(all.lck.OT[(all.lck.OT$Condition=="shortstim"),], aes(x=OnsetTime, fill=Channel)) +
   geom_histogram(aes(y=..density..), breaks=histseq2,  
                  position="dodge", lwd=0.2) +
-  ggtitle("Long stim- neurons vs astrocytes-lck data") + 
+  ggtitle("short stim- neurons vs astrocytes-lck data") + 
   scale_fill_manual(values=cbbPalette)+
   max.theme
 
+
+ggplot(all.lck.OT[(all.lck.OT$Condition!="Nostim"),], aes(x=OnsetTime, y=..density.., colour = Channel, linetype=Condition)) +
+  geom_freqpoly(binwidth = 0.5, lwd=1)+
+  ggtitle("short stim- neurons vs astrocytes-lck data") + 
+  scale_colour_manual(values=cbbPalette[2:3])+
+  max.theme
 
 ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) + 
   geom_density(aes(group=Channel, Colour=Channel, fill=Channel), alpha=0.7, adjust=1/5,size=1) +
