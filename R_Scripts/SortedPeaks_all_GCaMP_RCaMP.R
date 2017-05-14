@@ -157,6 +157,7 @@ all.cyto.peaksB<- subset(all.cyto.peaks, Channel=="RCaMP")
 # ROITypes
 all.cyto.peaksA$ROIType[grepl("r",all.cyto.peaksA$ROIname)]="Process"
 all.cyto.peaksA$ROIType[grepl("E",all.cyto.peaksA$ROIname)]="Endfoot"
+all.cyto.peaksA$ROIType[grepl("S",all.cyto.peaksA$ROIname)]="Soma"
 all.cyto.peaksB$ROIType[grepl("r",all.cyto.peaksB$ROIname)]="Dendrite"
 all.cyto.peaksB$ROIType[grepl("D",all.cyto.peaksB$ROIname)]="Dendrite"
 all.cyto.peaksB$ROIType[grepl("N",all.cyto.peaksB$ROIname)]="Neuron"
@@ -195,6 +196,7 @@ all.cyto.DSP4.peaksB<- subset(all.cyto.DSP4.peaks, Channel=="RCaMP")
 # ROITypes
 all.cyto.DSP4.peaksA$ROIType[grepl("r",all.cyto.DSP4.peaksA$ROIname)]="Process"
 all.cyto.DSP4.peaksA$ROIType[grepl("E",all.cyto.DSP4.peaksA$ROIname)]="Endfoot"
+all.cyto.DSP4.peaksA$ROIType[grepl("S",all.cyto.DSP4.peaksA$ROIname)]="Soma"
 all.cyto.DSP4.peaksB$ROIType[grepl("r",all.cyto.DSP4.peaksB$ROIname)]="Dendrite"
 all.cyto.DSP4.peaksB$ROIType[grepl("D",all.cyto.DSP4.peaksB$ROIname)]="Dendrite"
 all.cyto.DSP4.peaksB$ROIType[grepl("N",all.cyto.DSP4.peaksB$ROIname)]="Neuron"
@@ -217,17 +219,23 @@ all.cyto.DSP4.peaks$peakTime<- all.cyto.DSP4.peaks$peakTime-5
 all.cyto.DSP4.peaks$Duration<- all.cyto.DSP4.peaks$halfWidth*2
 
 ######
+
+## NOTE: define a stimulation window: 30 s after stim for both sensors
+
+stimwindow=30
+
+
 # onset time distributions
-all.lck.OT<-subset(all.lck.OT,OnsetTime<12)
-all.cyto.OT<-subset(all.cyto.OT,OnsetTime<12)
-all.cyto.DSP4.OT<-subset(all.cyto.DSP4.OT,OnsetTime<12)
+all.lck.OT<-subset(all.lck.OT,OnsetTime<stimwindow)
+all.cyto.OT<-subset(all.cyto.OT,OnsetTime<stimwindow)
+all.cyto.DSP4.OT<-subset(all.cyto.DSP4.OT,OnsetTime<stimwindow)
 
 ntrials.lck.OT<- ddply(all.lck.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 ntrials.cyto.OT<- ddply(all.cyto.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 ntrials.cyto.DSP4.OT<- ddply(all.cyto.DSP4.OT, c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 
 #histogram bins
-histseq= seq(0,12,1)
+histseq= seq(0,stimwindow,1)
 
 # neuronal lck onset histogram
 # counts for each condition in the histogram
@@ -255,7 +263,7 @@ ggplot(data=Neuron.lck.histo2, aes(x=time, y= value, colour=variable)) +
 
 # astrocyte lck onset histogram
 #histogram bins
-histseq2= seq(0,12, 1)
+histseq2= seq(0,stimwindow, 1)
 
 # counts for each condition in the histogram
 Nostim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="GCaMP" & all.lck.OT$Condition=="Nostim")], breaks=histseq2, plot=FALSE)$counts
@@ -282,36 +290,81 @@ ggplot(data=AC.lck.histo2, aes(x=time, y= value, colour=variable)) +
 
 
 # neurons and astrocytes together by density to account for different number of ROIs
-histseq2= seq(0,12, 1)
-
-
-ggplot(all.lck.OT[(all.lck.OT$Condition=="shortstim"),], aes(x=OnsetTime, fill=Channel)) +
-  geom_histogram(aes(y=..density..), breaks=histseq2,  
-                 position="dodge", lwd=0.2) +
-  ggtitle("short stim- neurons vs astrocytes-lck data") + 
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
 
 
 ggplot(all.lck.OT[(all.lck.OT$Condition!="Nostim"),], aes(x=OnsetTime, y=..density.., colour = Channel, linetype=Condition)) +
   geom_freqpoly(binwidth = 0.5, lwd=1)+
-  ggtitle("short stim- neurons vs astrocytes-lck data") + 
-  scale_colour_manual(values=cbbPalette[2:3])+
-  max.theme
-
-ggplot(all.lck.OT[(all.lck.OT$Condition=="Stim"),], aes(x=OnsetTime, fill=Channel)) + 
-  geom_density(aes(group=Channel, Colour=Channel, fill=Channel), alpha=0.7, adjust=1/5,size=1) +
-  scale_fill_manual(values=cbbPalette[2:3])+
+  ggtitle("stim- neurons vs astrocytes-lck data") + 
+  xlab("Onset Time (s)") + 
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
   max.theme
 
 
+
+# zoomed in plot of onset times
+stim.lck.OT<-subset(all.lck.OT,Condition!="Nostim")
+stim.lck.OT$Group<-0
+stim.lck.OT$Group[stim.lck.OT$OnsetTime<1]<-"fast"
+stim.lck.OT$Group[stim.lck.OT$OnsetTime>=1]<-"delayed"
+
+ggplot(stim.lck.OT[stim.lck.OT$Group=="fast",], aes(x=OnsetTime, y=..density.., colour = interaction(Channel,Group), linetype=Condition)) +
+  geom_freqpoly(binwidth = 0.0845, lwd=1)+
+  ggtitle("stimwindow- neurons vs astrocytes-lck data") + 
+  xlab("Onset Time (s)") + 
+  xlim(0,1)+
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+# mean onset times
+df.OT1<- summarySE(stim.lck.OT, measurevar = "OnsetTime", groupvars = c("Channel", "Group"))
+
+#df.OT1$OnsetTime<-df.OT1$OnsetTime*1000  # convert to ms
+#df.OT1$se<-df.OT1$se*1000 # convert to ms
+
+df.OT1$Channel <- factor(df.OT1$Channel, levels = c("RCaMP","GCaMP"))
+df.OT1$Condition <- factor(df.OT1$Condition, levels = c("shortstim","Stim"))
+df.OT1$Group <- factor(df.OT1$Group, levels = c("fast","delayed"))
+
+df.OT1 = df.OT1[!(df.OT1$Channel=="RCaMP"&df.OT1$Group=="delayed"),]
+
+ggplot(df.OT1, aes(x=interaction(Channel,Group),y=OnsetTime, fill= interaction(Channel,Group))) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean Onset Time (s)") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(data=df2A1, aes(x=ROIType, y=propActive, fill=Channel)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=propActive-se, ymax=propActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("ROIType") +
+  ylab("Proportion of Responding ROIs") +
+  scale_fill_manual(
+    values=c("green", "red")) + 
+  max.theme
+
+stim.lck.OT$Group<-as.factor(stim.lck.OT$Group)
+Condition_Channel=interaction(stim.lck.OT$Condition,stim.lck.OT$Channel)
+Group_Channel=interaction(stim.lck.OT$Group,stim.lck.OT$Channel)
+# stats for onset times- neurons vs astrocytes
+OT.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial) + (1|ROIs_trial), stim.lck.OT,REML=FALSE)
+OT.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial) + (1|ROIs_trial), stim.lck.OT,REML=FALSE)
+OT.model2 = lmer(OnsetTime ~ Condition + (1|Animal) + (1|Spot) + (1|Spot_trial) + (1|ROIs_trial), stim.lck.OT,REML=FALSE)
+OT.model3 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Spot_trial) + (1|ROIs_trial), stim.lck.OT,REML=FALSE)
+OT.model4 = lmer(OnsetTime ~ Group_Channel + (1|Animal) + (1|Spot) + (1|Spot_trial) + (1|ROIs_trial), stim.lck.OT,REML=FALSE)
+OT.model5 = lmer(OnsetTime ~ Condition_Channel + (1|Animal) + (1|Spot) + (1|Spot_trial) + (1|ROIs_trial), stim.lck.OT,REML=FALSE)
+OT.anova <- anova(OT.null, OT.model1,OT.model2,OT.model3,OT.model4,OT.model5)
+print(OT.anova)
+
+OT.Group_channel<- glht(OT.model4, mcp(Group_Channel= "Tukey"))
+summary(OT.Group_channel)
 
 
 ###### 
 #cyto data
 # neuronal onset histogram
 #histogram bins
-histseq= seq(0,12,0.25)
+histseq= seq(0,stimwindow,1)
 # counts for each condition in the histogram
 Nostim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
 Stim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
@@ -337,7 +390,7 @@ ggplot(data=Neuron.cyto.histo, aes(x=time, y= value, colour=variable)) +
 
 # astrocyte lck onset histogram
 #histogram bins
-histseq= seq(0,12,1)
+histseq= seq(0,stimwindow,1)
 
 # counts for each condition in the histogram
 Nostim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="GCaMP" & all.cyto.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
@@ -362,6 +415,15 @@ ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
+# neurons vs. astrocytes
+ggplot(all.cyto.OT[(all.cyto.OT$Condition!="Nostim"),], aes(x=OnsetTime, y=..density.., colour = Channel, linetype=Condition)) +
+  geom_freqpoly(binwidth = 0.5, lwd=1)+
+  ggtitle("stim- neurons vs astrocytes-cyto data") + 
+  xlab("Onset Time (s)") + 
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+
 
 ######
 # cyto DSP4 data
@@ -369,7 +431,7 @@ ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) +
 #cyto data
 # neuronal onset histogram
 #histogram bins
-histseq= seq(0,12,0.25)
+histseq= seq(0,stimwindow,1)
 # counts for each condition in the histogram
 Nostim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
 Stim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="RCaMP" & all.cyto.DSP4.OT$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
@@ -395,7 +457,7 @@ ggplot(data=Neuron.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) +
 
 # astrocyte lck onset histogram
 #histogram bins
-histseq= seq(0,12,1)
+histseq= seq(0,stimwindow,1)
 
 # counts for each condition in the histogram
 Nostim=hist(all.cyto.DSP4.OT$OnsetTime[(all.cyto.DSP4.OT$Channel=="GCaMP" & all.cyto.DSP4.OT$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
@@ -420,14 +482,28 @@ ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
+ggplot(all.cyto.DSP4.OT[(all.cyto.DSP4.OT$Condition!="Nostim"),], aes(x=OnsetTime, y=..density.., colour = Channel, linetype=Condition)) +
+  geom_freqpoly(binwidth = 0.5, lwd=1)+
+  ggtitle("stim- neurons vs astrocytes-cyto.DSP4 data") + 
+  xlab("Onset Time (s)") + 
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+
 #######
 # peak time histograms
 
 # NOTE: sometimes a peak is detected for the whole trial so exclude peaks with really long durations!
 
-all.lck.peaks<-subset(all.lck.peaks,peakTime<15 & peakTime>0 & Duration<45)
-all.cyto.peaks<-subset(all.cyto.peaks,peakTime<20 & peakTime>0 & Duration<80)
-all.cyto.DSP4.peaks<-subset(all.cyto.DSP4.peaks,peakTime<20 & peakTime>0 & Duration<80)
+all.lck.peaks<-subset(all.lck.peaks,peakTime<stimwindow & peakTime>0 & Duration<45)
+all.cyto.peaks<-subset(all.cyto.peaks,peakTime<stimwindow & peakTime>0 & Duration<80)
+all.cyto.DSP4.peaks<-subset(all.cyto.DSP4.peaks,peakTime<stimwindow & peakTime>0 & Duration<80)
+
+ntrials.lck.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.DSP4.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+
+######
 
 # consider ONLY the first peak for each ROI after the start of stimulation
 #ROInames=unique(all.lck.peaks$ROIs_trial)
@@ -448,15 +524,13 @@ all.cyto.DSP4.peaks<-subset(all.cyto.DSP4.peaks,peakTime<20 & peakTime>0 & Durat
   #all.lck.firstpeaks<-rbind(all.lck.firstpeaks,FirstPeak)
 #}
                   
-ntrials.lck.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
-ntrials.cyto.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
-ntrials.cyto.DSP4.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+
 
 
 # lck peak time data
 
 #histogram bins
-histseq= seq(0,15, 0.25)
+histseq= seq(0,stimwindow, 1)
 
 # neuronal peak time histogram
 # counts for each condition in the histogram
@@ -484,7 +558,7 @@ ggplot(data=Neuron.lck.histo, aes(x=time, y= value, colour=variable)) +
 
 # astrocyte lck onset histogram
 #histogram bins
-histseq= seq(0,15, 1)
+histseq= seq(0,stimwindow, 1)
 
 # counts for each condition in the histogram
 Nostim=hist(all.lck.peaks$peakTime[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
@@ -504,7 +578,7 @@ AC.lck.histo<-melt(AC.lck.histo,id="time")
 ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) + 
   geom_line(size=1)+
   xlab("Time to Peak Max (s)") +
-  xlim(0,15) +
+  xlim(0,stimwindow) +
   ylab("number of peaks per trial")+
   ggtitle("Astrocytes- peak time- ROIs per trial- lck data") + 
   scale_colour_manual(values=cbbPalette)+
@@ -514,7 +588,7 @@ ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) +
 # cyto peak time data
 
 #histogram bins
-histseq= seq(0,20, 0.25)
+histseq= seq(0,stimwindow, 1)
 
 # neuronal peak time histogram
 # counts for each condition in the histogram
@@ -542,7 +616,7 @@ ggplot(data=Neuron.cyto.histo, aes(x=time, y= value, colour=variable)) +
 
 # astrocyte lck onset histogram
 #histogram bins
-histseq= seq(-2,20, 0.5)
+histseq= seq(0,stimwindow, 1)
 
 # counts for each condition in the histogram
 Nostim=hist(all.cyto.peaks$peakTime[(all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
@@ -571,7 +645,7 @@ ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) +
 # cyto DSP4 peak time data
 
 #histogram bins
-histseq= seq(0,20, 0.25)
+histseq= seq(0,stimwindow, 1)
 
 # neuronal peak time histogram
 # counts for each condition in the histogram
@@ -597,9 +671,9 @@ ggplot(data=Neuron.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-# astrocyte lck onset histogram
+# astrocyte cyto dsp4 onset histogram
 #histogram bins
-histseq= seq(0,20, 0.5)
+histseq= seq(0,stimwindow, 1)
 
 # counts for each condition in the histogram
 Nostim=hist(all.cyto.DSP4.peaks$peakTime[(all.cyto.DSP4.peaks$Channel=="GCaMP" & all.cyto.DSP4.peaks$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
@@ -657,14 +731,39 @@ ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.lck.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+# boxplot
+
+all.lck.peaks$Condition <- factor(all.lck.peaks$Condition, levels = c("Nostim","shortstim","Stim"))
+
+ggplot(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], aes(x=Condition, y= Duration, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("Duration (s)")+
   ggtitle("Astrocytes- duration - lck data") + 
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
+df.dur<-summarySE(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Condition"))
 
+ggplot(data=df.dur, aes(x=Condition, y= Duration, colour=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette) + 
+    max.theme
+
+all.lck.peaks$Condition_type<-interaction(all.lck.peaks$Condition,all.lck.peaks$ROIType)
+# stats for astrocyte durations
+dur.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.model2= lmer(Duration ~ Condition_type + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.anova <- anova(dur.null, dur.model1,dur.model2)
+print(dur.anova)
+
+dur.Condition<- glht(dur.model1, mcp(Condition= "Tukey"))
+summary(dur.Condition)
+
+dur.Condition_type<- glht(dur.model2, mcp(Condition_type= "Tukey"))
+summary(dur.Condition_type)
 
 ######
 # astrocyte cyto duration
@@ -695,12 +794,38 @@ ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.cyto.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+all.cyto.peaks$Condition <- factor(all.cyto.peaks$Condition, levels = c("Nostim","shortstim","Stim"))
+ggplot(data=all.cyto.peaks[all.cyto.peaks$Channel=="GCaMP",], aes(x=Condition, y= Duration, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("Duration (s)")+
   ggtitle("Astrocytes- duration - cyto data") + 
   scale_colour_manual(values=cbbPalette)+
   max.theme
+
+# boxplot
+
+df.dur2<-summarySE(data=all.cyto.peaks[all.cyto.peaks$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Condition"))
+
+ggplot(data=df.dur2, aes(x=Condition, y= Duration, colour=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+all.cyto.peaks$Condition_type<-interaction(all.cyto.peaks$Condition,all.cyto.peaks$ROIType)
+# stats for astrocyte durations
+dur.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.cyto.peaks[all.cyto.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.cyto.peaks[all.cyto.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.model2= lmer(Duration ~ Condition_type + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.cyto.peaks[all.cyto.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.anova <- anova(dur.null, dur.model1,dur.model2)
+print(dur.anova)
+
+dur.Condition<- glht(dur.model1, mcp(Condition= "Tukey"))
+summary(dur.Condition)
+
+dur.Condition_type<- glht(dur.model2, mcp(Condition_type= "Tukey"))
+summary(dur.Condition_type)
 
 ######
 # astrocyte cyto DSP4 duration
@@ -731,12 +856,38 @@ ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.cyto.DSP4.peaks, aes(x=Condition, y= Duration, colour=Condition)) + 
+all.cyto.DSP4.peaks$Condition <- factor(all.cyto.DSP4.peaks$Condition, levels = c("Nostim","shortstim","Stim"))
+ggplot(data=all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="GCaMP",], aes(x=Condition, y= Duration, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("Duration (s)")+
-  ggtitle("Astrocytes- duration - DSP4 data") + 
+  ggtitle("Astrocytes- duration - cyto data") + 
   scale_colour_manual(values=cbbPalette)+
   max.theme
+
+# boxplot
+
+df.dur2<-summarySE(data=all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Condition"))
+
+ggplot(data=df.dur2, aes(x=Condition, y= Duration, colour=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+all.cyto.DSP4.peaks$Condition_type<-interaction(all.cyto.DSP4.peaks$Condition,all.cyto.DSP4.peaks$ROIType)
+# stats for astrocyte durations
+dur.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.model2= lmer(Duration ~ Condition_type + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.anova <- anova(dur.null, dur.model1,dur.model2)
+print(dur.anova)
+
+dur.Condition<- glht(dur.model1, mcp(Condition= "Tukey"))
+summary(dur.Condition)
+
+dur.Condition_type<- glht(dur.model2, mcp(Condition_type= "Tukey"))
+summary(dur.Condition_type)
 
 ######
 
@@ -744,6 +895,9 @@ ggplot(data=all.cyto.DSP4.peaks, aes(x=Condition, y= Duration, colour=Condition)
 
 # lck data
 
+ggplot(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],x=amplitude) + 
+  geom_histogram(binwidth=0.1)
+  
 # astrocyte lck duration histogram
 #histogram bins
 histseq= seq(-1,15, 0.1)
@@ -771,17 +925,45 @@ ggplot(data=AC.lck.histo, aes(x=time, y= value, colour=variable)) +
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-ggplot(data=all.lck.peaks, aes(x=Condition, y= amplitude, colour=Condition)) + 
+ggplot(all.lck.peaks[(all.lck.peaks$Channel=="GCaMP"&all.lck.peaks$Condition!="Nostim"),], aes(x=amplitude, y=..density.., colour = ROIType)) +
+  geom_freqpoly(binwidth = 0.1, lwd=1)+
+  ggtitle("stim- astrocytes-lck") + 
+  xlab("amplitude") + 
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+ggplot(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], aes(x=Condition, y= amplitude, colour=Condition)) + 
   geom_boxplot(size=1)+
   ylab("amplitude dF/F")+
   ggtitle("Astrocytes- amplitude- - lck data") + 
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
+df.amp<-summarySE(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Condition"))
+
+ggplot(data=df.amp, aes(x=Condition, y= amplitude, colour=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+all.lck.peaks$Condition_type<-interaction(all.lck.peaks$Condition,all.lck.peaks$ROIType)
+# stats for astrocyte durations
+amplitude.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+amplitude.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+amplitude.model2= lmer(amplitude~ Condition_type + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+amplitude.anova <- anova(amplitude.null, amplitude.model1,amplitude.model2)
+print(amplitude.anova)
+
+amplitude.Condition<- glht(amplitude.model1, mcp(Condition= "Tukey"))
+summary(amplitude.Condition)
+
+amplitude.Condition_type<- glht(amplitude.model2, mcp(Condition_type= "Tukey"))
+summary(amplitude.Condition_type)
+
 ######
 
-
-# astrocytes with a similar onset to neurons?
 
 
 

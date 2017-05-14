@@ -7,7 +7,7 @@ Image1(earlyGC{5,10})=1;
  figure;imshow(Image1)
 
 %%  
-filename='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Example_Traces';
+filename='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\ExampleTraces';
 
 write_tiff_stacks(CSArray_Ch1_FLIKA, filename)
  %%
