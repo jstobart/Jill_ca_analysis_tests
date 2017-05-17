@@ -209,7 +209,7 @@ for iAnimal = 1:numAnimals
             % CSArray_Ch2_FLIKA.plot;
             %                     CSArray_Ch1_Hand.plot;
             %                     CSArray_Ch1_FLIKA.plot;
-            %CSArray_Ch2_Hand.plot;
+            CSArray_Ch2_Hand.plot;
             
             % for working out find peaks parameters
             %CSArray_Ch2_FLIKA(1).opt_config()
