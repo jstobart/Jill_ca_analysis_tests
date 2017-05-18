@@ -5,8 +5,8 @@ close all
 %% Load data
 
 % time windows based on stimulation
-NOnsetWindow= 8; %1 for short stim % neuronal onset times
-AOnsetWindow= 12; % 5 for short stim % astrocyte onset times
+NOnsetWindow= 30; %1 for short stim % neuronal onset times
+AOnsetWindow= 30; % 5 for short stim % astrocyte onset times
 Fast_AOnsetWindow=1;
 Fast_NOnsetWindow=1;
 NPTWindow= 9; % one second longer than stimulation for peak times
