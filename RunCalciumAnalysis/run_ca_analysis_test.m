@@ -15,7 +15,7 @@ Settings.AnimalNames = {
 Settings.ScoreSheetNames = {
     'RG14_Scoresheet_test.xls',...
     };
-Settings.NameConditions = {'Nostim','Stim','shortstim'};
+Settings.NameConditions = {'Stim'};
 
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 plotMotion =0;

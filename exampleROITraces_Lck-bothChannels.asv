@@ -1,20 +1,38 @@
 %%
 % load necessary example CellScans
 
-% Lck ShortStim Trial 4
-% extract traces, Ch1 ROI 1,2, Ch 2 Dendrites 9-11, Neurons 8-10
-shortstim_proc1=CSArray_Ch1_FLIKA(1,4).calcMeasureROIs.data.tracesNorm;
-shortstim_dend1=CSArray_Ch2_FLIKA(1,4).calcMeasureROIs.data.tracesNorm(:,9:11);
-shortstim_neur1=CSArray_Ch2_Hand(1,4).calcMeasureROIs.data.tracesNorm(:,8:10);
+stimlength = 8;
+% % Lck ShortStim Trial 4
+% % extract traces, Ch1 ROI 1,2, Ch 2 Dendrites 9-11, Neurons 8-10
+% shortstim_proc1=CSArray_Ch1_FLIKA(1,4).calcMeasureROIs.data.tracesNorm;
+% shortstim_dend1=CSArray_Ch2_FLIKA(1,4).calcMeasureROIs.data.tracesNorm(:,9:11);
+% shortstim_neur1=CSArray_Ch2_Hand(1,4).calcMeasureROIs.data.tracesNorm(:,8:10);
+% 
+% % Lck ShortStim Trial 11
+% % extract traces, Ch1 ROI 1, Ch 2 Dendrites 5, Neurons 8-10
+% shortstim_proc2=CSArray_Ch1_FLIKA(1,11).calcMeasureROIs.data.tracesNorm;
+% shortstim_dend2=CSArray_Ch2_FLIKA(1,11).calcMeasureROIs.data.tracesNorm(:,5);
+% shortstim_neur2=CSArray_Ch2_Hand(1,11).calcMeasureROIs.data.tracesNorm(:,8:10);
 
-% Lck ShortStim Trial 11
-% extract traces, Ch1 ROI 1, Ch 2 Dendrites 5, Neurons 8-10
-shortstim_proc2=CSArray_Ch1_FLIKA(1,11).calcMeasureROIs.data.tracesNorm;
-shortstim_dend2=CSArray_Ch2_FLIKA(1,11).calcMeasureROIs.data.tracesNorm(:,5);
-shortstim_neur2=CSArray_Ch2_Hand(1,11).calcMeasureROIs.data.tracesNorm(:,8:10);
+% Lck LongStim Trial 1
+% extract traces,
+shortstim_proc1=CSArray_Ch1_FLIKA(1,1).calcMeasureROIs.data.tracesNorm;
+shortstim_dend1=CSArray_Ch2_FLIKA(1,1).calcMeasureROIs.data.tracesNorm(:,[6,7,9]);
+shortstim_neur1=CSArray_Ch2_Hand(1,1).calcMeasureROIs.data.tracesNorm(:,7);
 
+% Lck LongStim Trial 3
+% extract traces, 
+shortstim_proc3=CSArray_Ch1_FLIKA(1,3).calcMeasureROIs.data.tracesNorm;
+shortstim_neur3=CSArray_Ch2_Hand(1,3).calcMeasureROIs.data.tracesNorm(:,[7,8]);
 
-% extract ROI masks
+% combine traces
+%shortstim_ACtraces=cat(2,shortstim_proc1, shortstim_proc2);
+%shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1,shortstim_dend2, shortstim_neur2);
+
+shortstim_ACtraces=cat(2,shortstim_proc1, shortstim_proc3)
+shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1, shortstim_neur3);
+
+%% extract ROI masks
 
 if isnumeric(NeuronalData{nNeuro,10})
     Image1=zeros(128,128);
@@ -27,9 +45,6 @@ else
 end
 
 
-% combine traces
-shortstim_ACtraces=cat(2,shortstim_proc1, shortstim_proc2);
-shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1,shortstim_dend2, shortstim_neur2);
 
 %%
 grey = [0.8,0.8,0.8];
@@ -50,7 +65,7 @@ for ii=1:size(shortstim_Ntraces,2)
    tempY2=tempY2(1:stimwindow);
 
 plot(TimeX(1:stimwindow),tempY2'+(3*(ii-1)),'r')
-rectangle('Position', [5 -1 1 30])
+rectangle('Position', [5 -1 stimlength 15])
 %plot([5 5],[-1 20], 'k--','LineWidth', 0.5)
 %plot([5 6],[-1 -1], 'k','LineWidth', 2)
 end
