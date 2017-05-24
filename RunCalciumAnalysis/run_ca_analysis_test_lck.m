@@ -1,4 +1,4 @@
-%% 6 cytoGCaMP long stim
+% 6 lck long stim
 
 clearvars
 
@@ -6,7 +6,7 @@ AllData= [];
 All_traces= [];
 
 
-%% Information about your images
+% Information about your images
 Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
 
 Settings.AnimalNames = {
@@ -15,15 +15,16 @@ Settings.AnimalNames = {
 Settings.ScoreSheetNames = {
     'RG14_Scoresheet_test.xls',...
     };
-Settings.NameConditions = {'Nostim','Stim','shortstim'};
+Settings.NameConditions = {'Stim'};
 
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 plotMotion =0;
 
-% final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'cytoGC&RC_2D_example_12_05_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'cytoGC&RC_2D_example_12_05_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','cytoGC&RC_traces_2D_example_12_05_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+%final data file name
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'LckGC&RC_2D_example_12_05_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'LckGC&RC_2D_example_12_05_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','LckGC&RC_traces_2D_example_12_05_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
@@ -33,18 +34,17 @@ CalFile = Calibration_PixelSize.load(calibration);
 
 if ~exist(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix.mat'),'file')
     % load example high res image
-    unmixFile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6s\RG12\Awake\2016_02_04\spot1_long_Nostim\highres_spot1_long096.tif';
+    unmixFile = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\RG14\Awake\test\highres_spot1_long021.tif';
     unmixImg = SCIM_Tif(unmixFile, channel, CalFile);
     
-    [unmixImg, RCaMP_cGCaMP_Matrix] = unmix_chs(unmixImg); %returns the mixing matrix to be used for all imaging
+    [unmixImg, RCaMP_mGCaMP_Matrix] = unmix_chs(unmixImg); %returns the mixing matrix to be used for all imaging
     
     % save the mixing matrix for loading later
     cd(fullfile(Settings.MainDir, 'Results'));
     % write matrix to created file
-    save('RCaMP_cGCaMP_Matrix.mat', 'RCaMP_cGCaMP_Matrix');
+    save('RCaMP_mGCaMP_Matrix.mat', 'RCaMP_mGCaMP_Matrix');
 else
     load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix.mat'));
-    RCaMP_mGCaMP_Matrix=cell2mat(RCaMP_mGCaMP_Matrix);
 end
 
 
@@ -99,7 +99,7 @@ for iAnimal = 1:numAnimals
             
             
             % Spectral Unmixing of GCaMP and RCaMP
-            ImgArray= ImgArray.unmix_chs(false, [], RCaMP_mGCaMP_Matrix);
+            ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
             
             % Run motion correction
             expfiles2 = dir(fullfile(testRoot,'highres*'));
@@ -120,12 +120,12 @@ for iAnimal = 1:numAnimals
             %% Configs for Finding ROIs
             %ASTROCYTES
             % 2D automated selection for peaks
-            AC_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_cyto_astro', 'baselineFrames',...
-                BL_frames,'sigmaXY', 2,...
-                'sigmaT', 0.5,'threshold_std', 5,...
-                'min_rise_time',0.1689, 'max_rise_time', 8,...
-                'dilateXY', 4,...
-                'dilateT', 0.5,'erodeXY', 2);
+            AC_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_memb_astro', 'baselineFrames',...
+                BL_frames,'freqPassBand',1,'sigmaXY', 2,...
+                'sigmaT', 0.1,'threshold_std', 7, 'threshold_2D', 0.2,...
+                'min_rise_time',0.0845, 'max_rise_time', 1,'minPuffArea', 10,...
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1,...
+                'discardBorderROIs',true);
             
             % hand selected- peaks from cellular structures
             x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
@@ -133,12 +133,12 @@ for iAnimal = 1:numAnimals
             
             
             % 3D automated selection for time and space estimations
-            AC_findConf{3} = ConfigFindROIsFLIKA_3D.from_preset('ca_cyto_astro', 'baselineFrames',...
-                BL_frames,'sigmaXY', 2,...
-                'sigmaT', 0.5,'threshold_std', 5,...
-                'min_rise_time',0.1689, 'max_rise_time', 8,...
-                'dilateXY', 4,...
-                'dilateT', 0.5,'erodeXY', 2);
+            AC_findConf{3} = ConfigFindROIsFLIKA_3D.from_preset('ca_memb_astro', 'baselineFrames',...
+                BL_frames,'freqPassBand',1,'sigmaXY', 2,...
+                'sigmaT', 0.1,'threshold_std', 7, 'threshold_2D', 0.2,...
+                'min_rise_time',0.0845, 'max_rise_time', 1,'minPuffArea', 10,...
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1,...
+                'discardBorderROIs',true);
             
             % NEURONS
              % 2D FLIKA selected for peaks from "dendrites"
@@ -162,10 +162,10 @@ for iAnimal = 1:numAnimals
                 'discardBorderROIs',true);
             
             %% Configuration for measuring ROIs
-            % AWAKE astrocyte cyto calcium
+            % AWAKE astrocyte membrane calcium
             detectConf{1} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...'normMethod', 'z-score','zIters', 100,...
-                'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 3, 'spFilterOrder', 2,...
-                'spPassBandMin',0.05, 'spPassBandMax', 0.2, 'thresholdSD_low', 3,'thresholdSD_band', 5);
+                'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 1.5, 'spFilterOrder', 2,...
+                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdSD_low', 3,'thresholdSD_band', 5);
             
             % AWAKE neuron calcium
             detectConf{2} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,... 'normMethod','z-score',... 'zIters', 10000,...
@@ -203,18 +203,7 @@ for iAnimal = 1:numAnimals
             CSArray_Ch1_Hand =CSArray_Ch1_Hand.process();
             CSArray_Ch2_Hand =CSArray_Ch2_Hand.process();
             CSArray_Ch2_FLIKA =CSArray_Ch2_FLIKA.process();
-            
 
-            %% Make the debugging plots
-            % CSArray_Ch2_FLIKA.plot;
-            %                     CSArray_Ch1_Hand.plot;
-            %                     CSArray_Ch1_FLIKA.plot;
-            CSArray_Ch2_Hand.plot;
-            
-            % for working out find peaks parameters
-            %CSArray_Ch2_FLIKA(1).opt_config()
-            
-            
             
             %% Output data
             
@@ -680,17 +669,6 @@ cd(fullfile(Settings.MainDir, 'Results'));
 cell2csv(SaveFiles{1,1}, AllData2);
 save(SaveFiles{1,3}, 'All_traces','-v7.3');
 save(SaveFiles{1,2}, 'AllData2','-v7.3');
-
-
-
-
-
-
-
-
-
-
-
 
 
 
