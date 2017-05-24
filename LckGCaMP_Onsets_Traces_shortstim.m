@@ -6,14 +6,14 @@ close all
 
 % time windows based on stimulation
 NOnsetWindow= 1; %1 for short stim % neuronal onset times
-AOnsetWindow= 5; % 5 for short stim % astrocyte onset times
+AOnsetWindow= 15; % 5 for short stim % astrocyte onset times
 Fast_AOnsetWindow=1;
 NPTWindow= 2; % one second longer than stimulation for peak times
 APTWindow= 10; % astrocyte longer than stimulation for peak times
 
 % save files names
-saveFiles1='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_firstonset_comparisons.mat';
-saveFiles2='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_firstonset_comparisons.csv';
+saveFiles1='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_firstonset_comparisons2.mat';
+saveFiles2='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_firstonset_comparisons2.csv';
 saveFiles3= 'D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\shortstim_onset&AUC.csv';
 
 %peak data
@@ -225,9 +225,11 @@ if ~exist(saveFiles1, 'file')
                         %create a binary image with each pair of ROIs
                         % for the first ROI
                         if isnumeric(NeuronalData{nNeuro,10})
-                            Image1=zeros(128,128);
-                            Image1(NeuronalData{nNeuro,10})=1;
-                            %Image1=im2bw(Image1);
+                            Image=zeros(127,128);
+                            Image(NeuronalData{nNeuro,10})=1;
+                            ExtraRow=zeros(1,128);
+                            Image1=[Image;ExtraRow];
+                            Image1=im2bw(Image1);
                         elseif islogical(NeuronalData{nNeuro,10})
                             Image1= double(NeuronalData{nNeuro,10});
                         else
@@ -236,8 +238,10 @@ if ~exist(saveFiles1, 'file')
                         
                         % for the second ROI
                         if isnumeric(AstroData{nAstro,10})
-                            Image2=zeros(128,128);
-                            Image2(AstroData{nAstro,10})=1;
+                            Image=zeros(127,128);
+                            Image(AstroData{nAstro,10})=1;
+                            ExtraRow=zeros(1,128);
+                            Image2=[Image;ExtraRow];
                             Image2=im2bw(Image2);
                         elseif islogical(AstroData{nAstro,10})
                             Image2= double(AstroData{nAstro,10});
@@ -583,6 +587,71 @@ end
 fastN=RrespOT(fastIdx2',:);
 MeanNeuronOnset=mean(cell2mat(fastN(:,16)));
 
+
+%%
+figure ('name', 'fast AC with onset times in first 1 sec')
+hold on
+axis off
+xlim([0 35]);
+for xROI= 1:size(fastAC,1)
+    tempY = fastAC{xROI,8};
+    if length(tempY)>590
+        tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];        
+        plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+    end
+end
+plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
+rectangle('Position', [5 -1 1 10])
+
+%%
+figure('name', 'Lck short stim all means')
+hold on
+axis off
+xlim([0 35]);
+ylim([-0.2 3]);
+plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
+rectangle('Position', [5 -1 1 3])
+plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
+plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
+
+%% shaded error bar with 
+
+% SEM calculations
+fastAC_SDTrace = std(fastAC_traces');
+fastAC_SEM=fastAC_SDTrace/sqrt(size(fastAC_traces,2));
+
+slowAC_SDTrace = std(slowAC_traces');
+slowAC_SEM=slowAC_SDTrace/sqrt(size(slowAC_traces,2));
+
+RC_SDTrace = std(OT_RCaMP_traces');
+RC_SEM=RC_SDTrace/sqrt(size(OT_RCaMP_traces,2));
+
+
+figure('name', 'Lck short stim all means- plus SEM')
+hold on
+axis off
+xlim([0 35]);
+%ylim([-0.2 3]);
+shadedErrorBar(TimeX,slowAC_mean,slowAC_SEM,'b',1);
+shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM,'k',1);
+shadedErrorBar(TimeX,(OT_RCaMP_mean+2.2),RC_SEM,'r',1);
+rectangle('Position', [5 -0.3 1 5])
+
+%%
+plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
+
+plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
+for xROI= 1:size(slowAC,1)
+    tempY = slowAC{xROI,8};
+    tempY=tempY(1:nframes);
+    slowAC_traces= horzcat(slowAC_traces, tempY);
+end
+slowAC_mean= mean(slowAC_traces');
+plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
+
+%%
+
 % is there a similar onset elsewhere in the trial?
 % is there a similar trace elsewhere in the trial when separating by the
 % same parameters?
@@ -604,205 +673,205 @@ MeanNeuronOnset=mean(cell2mat(fastN(:,16)));
 
 
 
-%% Group Responders by ROIType
-Resp_RCaMP_traces=[];
-Resp_GCaMP_traces=[];
-Resp_somata_traces=[];
-Resp_EF_traces=[];
-Resp_processes_traces=[];
-Resp_neuron_traces=[];
-Resp_neuropil_traces=[];
-
-%find GCaMP, RCaMP
-for xROI= 1:length(RespondingROIs)
-    RC_str= strfind(RespondingROIs{xROI, 3},'RCaMP');
-    GC_str= strfind(RespondingROIs{xROI, 3},'GCaMP');
-    
-    tempY= RespondingROIs{xROI,8};
-    if length(tempY)>590
-        tempY=tempY(1:nframes);
-        if ~isempty(RC_str)
-            Resp_RCaMP_traces= horzcat(Resp_RCaMP_traces, tempY);
-        elseif ~isempty(GC_str)
-            Resp_GCaMP_traces= horzcat(Resp_GCaMP_traces, tempY);
-        end
-    end
-end
-
-
-%find ROITypes
-for xROI= 1:length(RespondingROIs)
-    N_str= strfind(RespondingROIs{xROI, 13},'Neuron');
-    S_str= strfind(RespondingROIs{xROI, 13},'Dendrite');
-    EF_str= strfind(RespondingROIs{xROI, 13},'Endfeet');
-    P_str= strfind(RespondingROIs{xROI, 13},'Process');
-    NP_str= strfind(RespondingROIs{xROI, 13},'Neuropil');
-    
-    tempY= RespondingROIs{xROI,8};
-    if length(tempY)>590
-        tempY=tempY(1:nframes);
-        if ~isempty(N_str)
-            Resp_neuron_traces= horzcat(Resp_neuron_traces, tempY);
-        elseif ~isempty(S_str)
-            Resp_somata_traces= horzcat(Resp_somata_traces, tempY);
-        elseif ~isempty(EF_str)
-            Resp_EF_traces= horzcat(Resp_EF_traces, tempY);
-        elseif ~isempty(P_str)
-            Resp_processes_traces= horzcat(Resp_processes_traces, tempY);
-        elseif ~isempty(NP_str)
-            Resp_neuropil_traces= horzcat(Resp_neuropil_traces, tempY);
-        end
-    end
-end
-
-% means and SDs
-%RCaMP
-RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
-RespRCSDTrace = std(Resp_RCaMP_traces');
-
-%GcaMP
-RespGCmeanTrace = mean(Resp_GCaMP_traces,2);
-RespGCSDTrace = std(Resp_GCaMP_traces');
-
-%neurons
-RespNmeanTrace = mean(Resp_neuron_traces,2);
-RespNSDTrace = std(Resp_neuron_traces');
-
-%neuropil
-RespNPmeanTrace = mean(Resp_neuropil_traces,2);
-RespNPSDTrace = std(Resp_neuropil_traces');
-
-%somata
-RespSmeanTrace = mean(Resp_somata_traces,2);
-RespSSDTrace = std(Resp_somata_traces');
-
-%endfeet
-RespEFmeanTrace = mean(Resp_EF_traces,2);
-RespEFSDTrace = std(Resp_EF_traces');
-
-%processes
-RespPmeanTrace = mean(Resp_processes_traces,2);
-RespPSDTrace = std(Resp_processes_traces');
-
-
-%% Mean RCaMP vs GCaMP
-figure ('name', 'Mean traces only: GCaMP vs RCaMP responding ROIs')
-hold on
-axis off
-plot(TimeX(1:stimwindow),smooth(RespRCmeanTrace(1:stimwindow)',5),'r','LineWidth',1.5);
-plot(TimeX(1:stimwindow),smooth(RespGCmeanTrace(1:stimwindow)',5),'g','LineWidth', 1.5);
-plot([5 5],[-1 2], 'k--','LineWidth', 1)
-plot([5 13],[0 0], 'k','LineWidth', 3)
-legend('RCaMP','GCaMP')
-
-
-
-%% ROITypes
-figure ('name', 'Overlaid traces + mean:All responding ROItype')
-subplot(1,5,1)
-hold on
-axis off
-ylim([-5 40]);
-for xROI= 1:size(Resp_neuron_traces,2)
-    tempY = Resp_neuron_traces(:,xROI);
-    if length(tempY)>600
-        tempY=tempY(1:nframes);
-    end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-    
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
-plot(TimeX(1:stimwindow), RespNmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
-x1 = 0;
-y1 = 5;
-txt1 = 'Neurons';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-subplot(1,5,2)
-hold on
-axis off
-ylim([-5 40]);
-for xROI= 1:size(Resp_neuropil_traces,2)
-    tempY = Resp_neuropil_traces(:,xROI);
-    if length(tempY)>600
-        tempY=tempY(1:nframes);
-    end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
-plot(TimeX(1:stimwindow), RespNPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
-x1 = 0;
-y1 = 5;
-txt1 = 'Neuropil';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot(1,5,4)
-hold on
-axis off
-ylim([-5 40]);
-for xROI= 1:size(Resp_EF_traces,2)
-    tempY = Resp_EF_traces(:,xROI);
-    if length(tempY)>600
-        tempY=tempY(1:nframes);
-    end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
-plot(TimeX(1:stimwindow), RespEFmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
-x1 = 0;
-y1 = 5;
-txt1 = 'Endfeet';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot(1,5,3)
-hold on
-axis off
-ylim([-5 40]);
-for xROI= 1:size(Resp_somata_traces,2)
-    tempY = Resp_somata_traces(:,xROI);
-    if length(tempY)>600
-        tempY=tempY(1:nframes);
-    end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
-plot(TimeX(1:stimwindow), RespSmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
-x1 = 0;
-y1 = 5;
-txt1 = 'Dendrites';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-subplot(1,5,5)
-hold on
-axis off
-ylim([-5 40]);
-for xROI= 1:size(Resp_processes_traces,2)
-    tempY = Resp_processes_traces(:,xROI);
-    if length(tempY)>600
-        tempY=tempY(1:nframes);
-    end
-    grey = [0.8,0.8,0.8];
-    plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
-end
-plot([5 13],[-2 -2], 'k','LineWidth', 2)
-plot(TimeX(1:stimwindow), RespPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
-plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
-x1 = 0;
-y1 = 5;
-txt1 = 'Processes';
-text(x1,y1,txt1,'HorizontalAlignment','right')
-
-
-
-
+% %% Group Responders by ROIType
+% Resp_RCaMP_traces=[];
+% Resp_GCaMP_traces=[];
+% Resp_somata_traces=[];
+% Resp_EF_traces=[];
+% Resp_processes_traces=[];
+% Resp_neuron_traces=[];
+% Resp_neuropil_traces=[];
+% 
+% %find GCaMP, RCaMP
+% for xROI= 1:length(RespondingROIs)
+%     RC_str= strfind(RespondingROIs{xROI, 3},'RCaMP');
+%     GC_str= strfind(RespondingROIs{xROI, 3},'GCaMP');
+%     
+%     tempY= RespondingROIs{xROI,8};
+%     if length(tempY)>590
+%         tempY=tempY(1:nframes);
+%         if ~isempty(RC_str)
+%             Resp_RCaMP_traces= horzcat(Resp_RCaMP_traces, tempY);
+%         elseif ~isempty(GC_str)
+%             Resp_GCaMP_traces= horzcat(Resp_GCaMP_traces, tempY);
+%         end
+%     end
+% end
+% 
+% 
+% %find ROITypes
+% for xROI= 1:length(RespondingROIs)
+%     N_str= strfind(RespondingROIs{xROI, 13},'Neuron');
+%     S_str= strfind(RespondingROIs{xROI, 13},'Dendrite');
+%     EF_str= strfind(RespondingROIs{xROI, 13},'Endfeet');
+%     P_str= strfind(RespondingROIs{xROI, 13},'Process');
+%     NP_str= strfind(RespondingROIs{xROI, 13},'Neuropil');
+%     
+%     tempY= RespondingROIs{xROI,8};
+%     if length(tempY)>590
+%         tempY=tempY(1:nframes);
+%         if ~isempty(N_str)
+%             Resp_neuron_traces= horzcat(Resp_neuron_traces, tempY);
+%         elseif ~isempty(S_str)
+%             Resp_somata_traces= horzcat(Resp_somata_traces, tempY);
+%         elseif ~isempty(EF_str)
+%             Resp_EF_traces= horzcat(Resp_EF_traces, tempY);
+%         elseif ~isempty(P_str)
+%             Resp_processes_traces= horzcat(Resp_processes_traces, tempY);
+%         elseif ~isempty(NP_str)
+%             Resp_neuropil_traces= horzcat(Resp_neuropil_traces, tempY);
+%         end
+%     end
+% end
+% 
+% % means and SDs
+% %RCaMP
+% RespRCmeanTrace = mean(Resp_RCaMP_traces,2);
+% RespRCSDTrace = std(Resp_RCaMP_traces');
+% 
+% %GcaMP
+% RespGCmeanTrace = mean(Resp_GCaMP_traces,2);
+% RespGCSDTrace = std(Resp_GCaMP_traces');
+% 
+% %neurons
+% RespNmeanTrace = mean(Resp_neuron_traces,2);
+% RespNSDTrace = std(Resp_neuron_traces');
+% 
+% %neuropil
+% RespNPmeanTrace = mean(Resp_neuropil_traces,2);
+% RespNPSDTrace = std(Resp_neuropil_traces');
+% 
+% %somata
+% RespSmeanTrace = mean(Resp_somata_traces,2);
+% RespSSDTrace = std(Resp_somata_traces');
+% 
+% %endfeet
+% RespEFmeanTrace = mean(Resp_EF_traces,2);
+% RespEFSDTrace = std(Resp_EF_traces');
+% 
+% %processes
+% RespPmeanTrace = mean(Resp_processes_traces,2);
+% RespPSDTrace = std(Resp_processes_traces');
+% 
+% 
+% %% Mean RCaMP vs GCaMP
+% figure ('name', 'Mean traces only: GCaMP vs RCaMP responding ROIs')
+% hold on
+% axis off
+% plot(TimeX(1:stimwindow),smooth(RespRCmeanTrace(1:stimwindow)',5),'r','LineWidth',1.5);
+% plot(TimeX(1:stimwindow),smooth(RespGCmeanTrace(1:stimwindow)',5),'g','LineWidth', 1.5);
+% plot([5 5],[-1 2], 'k--','LineWidth', 1)
+% plot([5 13],[0 0], 'k','LineWidth', 3)
+% legend('RCaMP','GCaMP')
+% 
+% 
+% 
+% %% ROITypes
+% figure ('name', 'Overlaid traces + mean:All responding ROItype')
+% subplot(1,5,1)
+% hold on
+% axis off
+% ylim([-5 40]);
+% for xROI= 1:size(Resp_neuron_traces,2)
+%     tempY = Resp_neuron_traces(:,xROI);
+%     if length(tempY)>600
+%         tempY=tempY(1:nframes);
+%     end
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+%     
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespNmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Neurons';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% subplot(1,5,2)
+% hold on
+% axis off
+% ylim([-5 40]);
+% for xROI= 1:size(Resp_neuropil_traces,2)
+%     tempY = Resp_neuropil_traces(:,xROI);
+%     if length(tempY)>600
+%         tempY=tempY(1:nframes);
+%     end
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespNPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Neuropil';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% 
+% subplot(1,5,4)
+% hold on
+% axis off
+% ylim([-5 40]);
+% for xROI= 1:size(Resp_EF_traces,2)
+%     tempY = Resp_EF_traces(:,xROI);
+%     if length(tempY)>600
+%         tempY=tempY(1:nframes);
+%     end
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespEFmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Endfeet';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% 
+% subplot(1,5,3)
+% hold on
+% axis off
+% ylim([-5 40]);
+% for xROI= 1:size(Resp_somata_traces,2)
+%     tempY = Resp_somata_traces(:,xROI);
+%     if length(tempY)>600
+%         tempY=tempY(1:nframes);
+%     end
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespSmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Dendrites';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% 
+% subplot(1,5,5)
+% hold on
+% axis off
+% ylim([-5 40]);
+% for xROI= 1:size(Resp_processes_traces,2)
+%     tempY = Resp_processes_traces(:,xROI);
+%     if length(tempY)>600
+%         tempY=tempY(1:nframes);
+%     end
+%     grey = [0.8,0.8,0.8];
+%     plot(TimeX(1:stimwindow),tempY(1:stimwindow),'Color',grey,'LineWidth',0.01);
+% end
+% plot([5 13],[-2 -2], 'k','LineWidth', 2)
+% plot(TimeX(1:stimwindow), RespPmeanTrace(1:stimwindow), 'k', 'LineWidth',1)
+% plot([5 5],[-1 10], 'k--','LineWidth', 0.5)
+% x1 = 0;
+% y1 = 5;
+% txt1 = 'Processes';
+% text(x1,y1,txt1,'HorizontalAlignment','right')
+% 
+% 
+% 
+% 

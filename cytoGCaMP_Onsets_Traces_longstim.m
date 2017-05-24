@@ -5,8 +5,8 @@ close all
 %% Load data
 
 % time windows based on stimulation
-NOnsetWindow= 8; %1 for short stim % neuronal onset times
-AOnsetWindow= 12; % 5 for short stim % astrocyte onset times
+NOnsetWindow= 30; %1 for short stim % neuronal onset times
+AOnsetWindow= 30; % 5 for short stim % astrocyte onset times
 Fast_AOnsetWindow=1;
 Fast_NOnsetWindow=1;
 NPTWindow= 9; % one second longer than stimulation for peak times
@@ -579,32 +579,62 @@ MeanfastACOnset=mean(cell2mat(fastAC(:,16)));
 
 % neurons with onset in first 1 sec of stim
 for iROI=1:length(RrespOT)
-    fastIdx2(iROI)=~isempty(find(RrespOT{iROI,16}>0 && RrespOT{iROI,16}<Fast_NOnsetWindow));
+    fastIdx2(iROI)=~isempty(find(RrespOT{iROI,16}>0 && RrespOT{iROI,16}<=1));
 end
 fastN=RrespOT(fastIdx2',:);
 MeanNeuronOnset=mean(cell2mat(fastN(:,16)));
 
 
-% y scaled
-stimwindow=round(30*11.84);
-figure ('name', 'Mean traces only: RCaMP, fast AC, slow AC cyto GCaMP6s')
+%%
+figure ('name', 'fast AC with onset times in first 1 sec')
 hold on
 axis off
+%xlim([0 35]);
+ylim([-5 35]);
+for xROI= 1:size(fastAC,1)
+    tempY = fastAC{xROI,8};
+    if length(tempY)>590
+        tempY=tempY(1:nframes);
+        grey = [0.8,0.8,0.8];        
+        plot(TimeX,tempY,'Color',grey,'LineWidth',0.01);
+    end
+end
 plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
+rectangle('Position', [5 -1 8 10])
+
+%%
+figure('name', 'cyto long stim all means')
+hold on
+axis off
+xlim([0 35]);
+ylim([-0.2 3]);
+plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
+rectangle('Position', [5 -1 8 3])
 plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
 plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
-plot([5 5],[-1 2], 'k--','LineWidth', 1)
-plot([5 6],[0 0], 'k','LineWidth', 3)
-legend('fast cyto','RCaMP','slow cyto')
+
+%% shaded error bar with 
+
+% SEM calculations
+fastAC_SDTrace = std(fastAC_traces');
+fastAC_SEM=fastAC_SDTrace/sqrt(size(fastAC_traces,2));
+
+slowAC_SDTrace = std(slowAC_traces');
+slowAC_SEM=slowAC_SDTrace/sqrt(size(slowAC_traces,2));
+
+RC_SDTrace = std(OT_RCaMP_traces');
+RC_SEM=RC_SDTrace/sqrt(size(OT_RCaMP_traces,2));
 
 
-% IdxAUC= find(Shortstim(:,17)>5);
-% fastAUC=Shortstim(IdxAUC,:);
-
-
-
-% label ROIs as responding or not 
-
+figure('name', 'cyto long stim all means- plus SEM')
+hold on
+axis off
+xlim([0 35]);
+%ylim([-0.2 3]);
+shadedErrorBar(TimeX,slowAC_mean,slowAC_SEM,'b',1);
+shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM,'k',1);
+shadedErrorBar(TimeX,(OT_RCaMP_mean+2.2),RC_SEM,'r',1);
+rectangle('Position', [5 -0.3 8 5])
 
 
 

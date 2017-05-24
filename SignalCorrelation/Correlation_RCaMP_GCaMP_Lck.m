@@ -6,12 +6,12 @@ doplot=0;
 %FileSave{1,1}='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.mat';
 %FileSave{1,2}='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.csv';
 
-FileSave{1,1}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Shortstim_Correlations.mat';
-FileSave{1,2}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Shortstim_Correlations.csv';
+FileSave{1,1}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Longstim_Correlations_fixedDis.mat';
+FileSave{1,2}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Longstim_Correlations_fixedDis.csv';
 
 
 % load data traces
-load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_shortstim_28_04_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_28_04_2017.mat');
 
 Shortstim=All_traces;
 
@@ -150,9 +150,11 @@ for itrial= 1:length(trial_condition)
                 %create a binary image with each pair of ROIs
                 % for the first ROI
                 if isnumeric(CorrData{1,11})
-                    Image1=zeros(128,128);
-                    Image1(CorrData{1,11})=1;
-                    %Image1=im2bw(Image1);
+                    Image=zeros(127,128);
+                    Image(CorrData{1,11})=1;
+                    ExtraRow=zeros(1,128);
+                    Image1=[Image;ExtraRow];
+                    Image1=im2bw(Image1);
                 elseif islogical(CorrData{1,11})
                     Image1= double(CorrData{1,11});
                 else
@@ -161,8 +163,10 @@ for itrial= 1:length(trial_condition)
                 
                 % for the second ROI
                 if isnumeric(CorrData{1,16})
-                    Image2=zeros(128,128);
-                    Image2(CorrData{1,16})=1;
+                    Image=zeros(127,128);
+                    Image(CorrData{1,16})=1;
+                    ExtraRow=zeros(1,128);
+                    Image2=[Image;ExtraRow];
                     Image2=im2bw(Image2);
                 elseif islogical(CorrData{1,16})
                     Image2= double(CorrData{1,16});
