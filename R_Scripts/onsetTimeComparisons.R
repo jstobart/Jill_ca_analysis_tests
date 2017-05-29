@@ -1,18 +1,28 @@
+
 #onset time comparisons- neurons vs. astrocytes
-longstim.OT.comp$compType<-paste(longstim.OT$N_ROIType, longstim.OT$A_ROIType, sep= "_")
-shortstim.OT.comp$compType<-paste(shortstim.OT$N_ROIType, shortstim.OT$A_ROIType, sep= "_")
-nostim.OT.comp$compType<-paste(nostim.OT$N_ROIType, nostim.OT$A_ROIType, sep= "_")
+
+longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+
+longstim.OT.comp <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons_fixedDis.csv", header=TRUE, sep = ",")
+shortstim.OT.comp <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons_fixedDis.csv", header=TRUE, sep = ",")
+nostim.OT.comp <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons_fixedDis.csv", header=TRUE, sep = ",")
+
+
+longstim.OT.comp$compType<-paste(longstim.OT.comp$N_ROIType, longstim.OT.comp$A_ROIType, sep= "_")
+shortstim.OT.comp$compType<-paste(shortstim.OT.comp$N_ROIType, shortstim.OT.comp$A_ROIType, sep= "_")
+nostim.OT.comp$compType<-paste(nostim.OT.comp$N_ROIType, nostim.OT.comp$A_ROIType, sep= "_")
 
 
 # get rid of onsets from the last few seconds of the trial (probably not a complete peak and we can't measure it)
 
-nostim.OT=nostim.OT[nostim.OT$N_Onset<43,]
-nostim.OT=nostim.OT[nostim.OT$A_Onset<43,]
+#nostim.OT=nostim.OT[nostim.OT$N_Onset<43,]
+#nostim.OT=nostim.OT[nostim.OT$A_Onset<43,]
 
 # subset data to 3 sec on either side (so AC peaks 3 sec before or after neuronal peaks)
-nostim.OT.small<-subset(nostim.OT, TimeDiff<3 & TimeDiff>-3)
-
-nostim.OT.close<-subset(nostim.OT.small, distance<5)
+#nostim.OT.small<-subset(nostim.OT, TimeDiff<3 & TimeDiff>-3)
+#nostim.OT.close<-subset(nostim.OT.small, distance<5)
 
 
 ######

@@ -63,9 +63,9 @@ short.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/R
 nostim.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/DSP4_cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
 # onset time comparisons for nostim data
-longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
-shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
-nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+#longstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+#shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
+#nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 
 longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
 shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
@@ -732,6 +732,14 @@ ggplot(all.lck.peaks.group, aes(x=peakTime, colour = interaction(Channel,Group))
 df.pT1<- summarySE(all.lck.peaks.group, measurevar = "peakTime", groupvars = c("Channel", "Group","Condition"))
 
 
+ggplot(all.lck.peaks[(all.lck.peaks$Condition=="shortstim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
+  geom_histogram(binwidth = 0.5, position=position_dodge())+
+  ggtitle("long stim- neurons vs astrocytes-lck data") + 
+  xlab("Peak Time (s)") + 
+  xlim(-0.5,20)+
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
 ######
 # cyto peak time data
 
@@ -787,6 +795,14 @@ ggplot(data=AC.cyto.histo, aes(x=time, y= value, colour=variable)) +
   ylab("number of peaks per trial")+
   ggtitle("Astrocytes- peak time- ROIs per trial- cyto data") + 
   scale_colour_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(all.cyto.peaks[(all.cyto.peaks$Condition=="Stim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
+  geom_histogram(binwidth = 0.5, position=position_dodge())+
+  ggtitle("long stim- neurons vs astrocytes-cyto data") + 
+  xlab("Peak Time (s)") + 
+  xlim(-0.5,20)+
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
   max.theme
 
 #####
@@ -1625,7 +1641,8 @@ cyto.nPeak.model2A= lmer(nPeaks~ Condition_channel + (1|Animal) + (1|Spot), cont
 cyto.nPeak.model2B= lmer(nPeaks~ treatment_channel + (1|Animal) + (1|Spot), control.vs.DSP4.trials.type, REML=FALSE)
 cyto.nPeak.model3= lmer(nPeaks~ Condition_channel_treatment + (1|Animal) + (1|Spot), control.vs.DSP4.trials.type, REML=FALSE)
 cyto.nPeak.model4= lmer(nPeaks~ Condition_channel_treatment_type + (1|Animal) + (1|Spot), control.vs.DSP4.trials.type, REML=FALSE)
-cyto.nPeak.anova <- anova(cyto.nPeak.null, cyto.nPeak.model1, cyto.nPeak.model2,cyto.nPeak.model3,cyto.nPeak.model4)
+cyto.nPeak.anova <- anova(cyto.nPeak.null, cyto.nPeak.model1, cyto.nPeak.model2A,cyto.nPeak.model2B,
+                          cyto.nPeak.model3,cyto.nPeak.model4)
 print(cyto.nPeak.anova)
 
 cyto.nPeak.Condition_channel<- glht(cyto.nPeak.model2B, mcp(Condition_channel= "Tukey"))
@@ -1647,13 +1664,46 @@ summary(cyto.nPeak.Condition_channel_t_t)
 
 
 ########
-#
+#mean peak amplitude for each ROI with peaks from the stim window
+# use this to calculate high, mid and low responding neuronal somas
+
+ROIwise<- ddply(all.lck.peaks, c("Animal", "Spot","Trial","Channel","ROIname","Condition","trials", "ROIs_trial" ,"ROIType"), 
+                summarise, meanAmp=mean(amplitude), meanDur= mean(Duration), meanProm=mean(prominence),
+                meanPAUC=mean(peakAUC), nPeaks= length(amplitude))
+
+ROIwise$ROInameUnique<-paste(ROIwise$Animal,ROIwise$Spot,ROIwise$ROIname, sep="_")
+ROIwise.Neurons<-subset(ROIwise, Condition!="Nostim" & ROIType=="Neuron")
+ROIwise.Dendrites<-subset(ROIwise, Condition!="Nostim" & ROIType=="Dendrite")
+
+# MEAN info for each ROI for trials of short OR long stim
+NeuronSomas<-ddply(ROIwise.Neurons, c("Animal", "Spot", "ROInameUnique"),
+                   summarise, meanAmp2=mean(meanAmp), meanProm2=mean(meanProm),
+                   meanDur2=mean(meanDur), meanPAUC2=mean(meanPAUC))
+NeuronDendrites<-ROIwise.Dendrites
+
+# histograms for neurons
+ggplot(NeuronSomas, aes(x=meanAmp2)) + geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("neuronal soma mean amplitude- both stim types averaged") +
+  max.theme
+
+ggplot(NeuronDendrites, aes(x=meanAmp)) + geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("neuronal dendrites mean amplitude- both stim types averaged") +
+  max.theme
 
 
+# calculate responders
+neuronS_percentiles<-quantile(NeuronSomas$meanAmp2, prob = seq(0, 1, length = 21), type = 5)
+neuronD_percentiles<-quantile(NeuronDendrites$meanAmp, prob = seq(0, 1, length = 21), type = 5)
 
-#Area under the curve for each ROI with an onset time near the neuron?
-# only area in second before or second after?
-# based on astrocyte onset time
+NeuronSomas$responders=0
+NeuronSomas$responders[NeuronSomas$meanAmp2>neuronS_percentiles[20]]="high"
+NeuronSomas$responders[NeuronSomas$meanAmp2<neuronS_percentiles[11]]="low"
+NeuronSomas$responders[NeuronSomas$meanAmp2<=neuronS_percentiles[20] & NeuronSomas$meanAmp2>=neuronS_percentiles[11]]="mid"
+
+NeuronDendrites$responders=0
+NeuronDendrites$responders[NeuronDendrites$meanAmp>neuronD_percentiles[20]]="high"
+NeuronDendrites$responders[NeuronDendrites$meanAmp<neuronD_percentiles[11]]="low"
+NeuronDendrites$responders[NeuronDendrites$meanAmp<=neuronD_percentiles[20] & NeuronDendrites$meanAmp>=neuronD_percentiles[11]]="mid"
 
 
 
@@ -1661,40 +1711,7 @@ summary(cyto.nPeak.Condition_channel_t_t)
 
 
 
-#####
-# short stim
 
-short$ROIType= 0
-shortA<- subset(short, Channel=="GCaMP")
-shortB<- subset(short, Channel=="RCaMP")
-
-# ROITypes
-shortA$ROIType[grepl("r",shortA$ROIname)]="Process"
-shortA$ROIType[grepl("E",shortA$ROIname)]="Endfoot"
-shortB$ROIType[grepl("r",shortB$ROIname)]="Dendrite"
-shortB$ROIType[grepl("D",shortB$ROIname)]="Dendrite"
-shortB$ROIType[grepl("N",shortB$ROIname)]="Neuron"
-
-short<-rbind(shortA, shortB)
-short$ROIType<- as.factor(short$ROIType)
-
-#unique ROI names
-short$ROIs_trial<-paste(short$Animal, short$Spot, short$Trial,short$ROIname, sep= "_")
-
-short$trials<-paste(short$Animal, short$Spot, short$Trial, sep= "_")
-
-
-# remove matching astrocyte process and soma ROIs
-Overlap= short$overlap!=0
-short2<-short[!Overlap,]
-
-# stim onset at 5 sec
-short2$peakTime<-short2$peakTime-5
-short2$peakStart<-short2$peakStart-5
-short2$peakStartHalf<-short2$peakStartHalf-5
-
-#duration
-short2$Duration<-short2$halfWidth*2
 
 #######
 # histogram of peak times for stim
@@ -1727,8 +1744,8 @@ ggplot(GCaMP, aes(x=peakTime, fill=Condition)) + geom_histogram(binwidth=1, posi
 # short stim= peak between 0 and 2 sec, duration < 3 s
 
 # find responding neurons
-responding.neurons_long<- subset(longstim, peakTime>0 & peakTime<9 & Duration<11 & Channel=="RCaMP")
-responding.neurons_short<- subset(shortstim, peakTime>0 & peakTime<2 & Duration<3 & Channel=="RCaMP")
+responding.neurons_long<- subset(all.lck.peaks, Condition=="Stim" & peakTime>0 & peakTime<10 & Duration<11 & Channel=="RCaMP")
+responding.neurons_short<- subset(all.lck.peaks, Condition=="shortstim"& peakTime>0 & peakTime<3 & Duration<4 & Channel=="RCaMP")
 
 responding.trials_long<-unique(responding.neurons_long$trials)  # 313 trials of 423- 73.9% of trials
 responding.trials_short<-unique(responding.neurons_short$trials) # 96 trials of 149- 64.4% of trials

@@ -6,8 +6,8 @@ doplot=0;
 %FileSave{1,1}='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.mat';
 %FileSave{1,2}='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\LongStim_Correlations.csv';
 
-FileSave{1,1}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Longstim_Correlations_fixedDis.mat';
-FileSave{1,2}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Longstim_Correlations_fixedDis.csv';
+FileSave{1,1}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Longstim_Correlations_fixedDis_Overlap.mat';
+FileSave{1,2}='D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Longstim_Correlations_fixedDis_Overlap.csv';
 
 
 % load data traces
@@ -176,7 +176,7 @@ for itrial= 1:length(trial_condition)
                 
                 Mask=Image1+Image2;
                 Mask=im2bw(Mask);
-                
+
                 %Pythaogrean theorem method
                 
                 % Define object boundaries
