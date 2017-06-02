@@ -614,6 +614,7 @@ plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
 rectangle('Position', [5 -1 1 3])
 plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
 plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
+plot([0.1 0.1],[0 1], 'k','LineWidth', 1)
 
 %% shaded error bar with 
 
@@ -631,24 +632,27 @@ RC_SEM=RC_SDTrace/sqrt(size(OT_RCaMP_traces,2));
 figure('name', 'Lck short stim all means- plus SEM')
 hold on
 axis off
-xlim([0 35]);
+xlim([-1 35]);
+lineProps.width = 1;
+lineProps.edgestyle = ':';
 %ylim([-0.2 3]);
-shadedErrorBar(TimeX,slowAC_mean,slowAC_SEM,'b',1);
-shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM,'k',1);
-shadedErrorBar(TimeX,(OT_RCaMP_mean+2.2),RC_SEM,'r',1);
+
+mseb(TimeX,slowAC_mean,slowAC_SEM,lineProps)
+mseb(TimeX,(fastAC_mean+0.75),fastAC_SEM,lineProps)
+mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
 rectangle('Position', [5 -0.3 1 5])
-
+plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 %%
-plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
-
-plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
-for xROI= 1:size(slowAC,1)
-    tempY = slowAC{xROI,8};
-    tempY=tempY(1:nframes);
-    slowAC_traces= horzcat(slowAC_traces, tempY);
-end
-slowAC_mean= mean(slowAC_traces');
-plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
+% plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
+% 
+% plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
+% for xROI= 1:size(slowAC,1)
+%     tempY = slowAC{xROI,8};
+%     tempY=tempY(1:nframes);
+%     slowAC_traces= horzcat(slowAC_traces, tempY);
+% end
+% slowAC_mean= mean(slowAC_traces');
+% plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
 
 %%
 

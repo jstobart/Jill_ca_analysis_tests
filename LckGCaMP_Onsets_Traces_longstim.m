@@ -602,7 +602,7 @@ plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
 rectangle('Position', [5 -1 8 10])
 
 %%
-figure('name', 'Lck short stim all means')
+figure('name', 'Lck long stim all means')
 hold on
 axis off
 xlim([0 35]);
@@ -611,8 +611,12 @@ plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
 rectangle('Position', [5 -0.3 8 2.5])
 plot(TimeX, OT_RCaMP_mean, 'Color', 'r','LineWidth',1);
 plot(TimeX, slowAC_mean, 'Color', 'b','LineWidth',1);
+plot([-1 -1],[0 1], 'k','LineWidth', 1)
 
 %% shaded error bar with 
+green=[(27/255) (120/255) (55/255)];
+purple=[(123/255) (50/255) (148/255)];
+blue= [(0/255) (114/255) (178/255)];
 
 % SEM calculations
 fastAC_SDTrace = std(fastAC_traces');
@@ -627,12 +631,21 @@ RC_SEM=RC_SDTrace/sqrt(size(OT_RCaMP_traces,2));
 figure('name', 'Lck short stim all means- plus SEM')
 hold on
 axis off
-xlim([0 35]);
+xlim([-1 35]);
+lineProps.width = 1;
+lineProps.edgestyle = ':';
 %ylim([-0.2 3]);
-shadedErrorBar(TimeX,slowAC_mean,slowAC_SEM,'b',1);
-shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM,'k',1);
-shadedErrorBar(TimeX,(OT_RCaMP_mean+2),RC_SEM,'r',1);
+
+mseb(TimeX,slowAC_mean,slowAC_SEM,lineProps)
+mseb(TimeX,(fastAC_mean+0.75),fastAC_SEM,lineProps)
+mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
+
+% H2=shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM)%,green,1);
+% H3=shadedErrorBar(TimeX,(OT_RCaMP_mean+2),RC_SEM)%,purple,1);
 rectangle('Position', [5 -0.3 8 4])
+plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
+
+%export_fig 'D:\Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\Lck_longstim_meanWithSEM_Exportfig.eps' '-eps'
 
 %%
 
