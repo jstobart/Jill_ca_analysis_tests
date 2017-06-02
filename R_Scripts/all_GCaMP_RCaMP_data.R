@@ -1004,11 +1004,16 @@ ggplot(data=all.lck.peaks[(all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condit
 
 summary(all.lck.peaks$Duration[all.lck.peaks$Channel=="GCaMP" & all.lck.peaks$Condition!="Nostim"])
 
+all.lck.peaks.group$Group<-as.factor(all.lck.peaks.group$Group)
+all.lck.peaks.group$Group<-factor(all.lck.peaks.group$Group, levels=c("fast","delayed"))
 
 # bar graph
 df.dur.lck1<-summarySE(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Condition"))
 
 df.dur.lck2<-summarySE(data=all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Condition","ROIType"))
+
+df.dur.lck3<-summarySE(data=all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Group"))
+df.dur.lck4<-summarySE(data=all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Group","ROIType"))
 
 ggplot(data=df.dur.lck1, aes(x=Condition, y= Duration, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1027,12 +1032,23 @@ ggplot(data=df.dur.lck2, aes(x=ROIType, y=Duration, fill=Condition)) +
     values=cbbPalette) + 
   max.theme
 
+ggplot(data=df.dur.lck3, aes(x=Group, y=Duration, fill=Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Group") +
+  ylab("Duration (s)") +
+  ggtitle("astrocyte lck duration- ROIType") +
+  scale_fill_manual(
+    values=cbbPalette) + 
+  max.theme
+
 all.lck.peaks$Condition_type<-interaction(all.lck.peaks$Condition,all.lck.peaks$ROIType)
 # stats for astrocyte durations
 dur.lck.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
 dur.lck.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
 dur.lck.model2= lmer(Duration ~ Condition_type + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
-dur.lck.anova <- anova(dur.lck.null, dur.lck.model1,dur.lck.model2)
+dur.lck.model3= lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks[all.lck.peaks$Channel=="GCaMP",],REML=FALSE)
+dur.lck.anova <- anova(dur.lck.null, dur.lck.model1,dur.lck.model2,dur.lck.model3)
 print(dur.lck.anova)
 
 dur.lck.Condition<- glht(dur.lck.model1, mcp(Condition= "Tukey"))
@@ -1073,15 +1089,19 @@ all.lck.peaks.group$Condition_group<-interaction(all.lck.peaks.group$Condition,a
 # stats for astrocyte durations
 dur.lck.group.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
 dur.lck.group.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
-dur.lck.group.model2= lmer(Duration ~ Condition_group + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
-dur.lck.group.anova <- anova(dur.lck.group.null, dur.lck.group.model1,dur.lck.group.model2)
+dur.lck.group.model2= lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
+dur.lck.group.model3= lmer(Duration ~ Condition_group + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
+dur.lck.group.anova <- anova(dur.lck.group.null, dur.lck.group.model1,dur.lck.group.model2,dur.lck.group.model3)
 print(dur.lck.group.anova)
 
 dur.lck.group.Condition<- glht(dur.lck.group.model1, mcp(Condition= "Tukey"))
 summary(dur.lck.group.Condition)
 
-dur.lck.group.Condition_group<- glht(dur.lck.group.model2, mcp(Condition_group= "Tukey"))
+dur.lck.group.Condition_group<- glht(dur.lck.group.model3, mcp(Condition_group= "Tukey"))
 summary(dur.lck.group.Condition_group)
+
+dur.lck.group.pv<- glht(dur.lck.group.model2, mcp(Group= "Tukey"))
+summary(dur.lck.group.pv)
 
 ######
 # astrocyte cyto duration
@@ -1298,6 +1318,51 @@ amp.lck.Condition_type<- glht(amp.lck.model2, mcp(Condition_type= "Tukey"))
 summary(amp.lck.Condition_type)
 
 
+# amplitude of fast vs delayed
+
+df.amp.lck3<-summarySE(data=all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Condition","Group"))
+df.amp.lck4<-summarySE(data=all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Group"))
+
+ggplot(data=df.amp.lck3, aes(x=Condition, y=amplitude, fill=Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("ROIType") +
+  ylab("amplitude") +
+  ggtitle("astrocyte lck duration- fast vs delayed") +
+  scale_fill_manual(
+    values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.amp.lck4, aes(x=Group, y=amplitude, fill=Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("ROIType") +
+  ylab("amplitude") +
+  ggtitle("astrocyte lck duration- fast vs delayed") +
+  scale_fill_manual(
+    values=cbbPalette) + 
+  max.theme
+
+all.lck.peaks.group$Condition_group<-interaction(all.lck.peaks.group$Condition,all.lck.peaks.group$Group)
+# stats for astrocyte durations
+amp.lck.group.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
+amp.lck.group.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
+amp.lck.group.model2= lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
+amp.lck.group.model3= lmer(amplitude ~ Condition_group + (1|Animal) + (1|Spot) + (1|trials) + (1|ROIs_trial), all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",],REML=FALSE)
+amp.lck.group.anova <- anova(amp.lck.group.null, amp.lck.group.model1,amp.lck.group.model2,amp.lck.group.model3)
+print(amp.lck.group.anova)
+
+amp.lck.group.Condition<- glht(amp.lck.group.model1, mcp(Condition= "Tukey"))
+summary(amp.lck.group.Condition)
+
+amp.lck.group.Condition_group<- glht(amp.lck.group.model3, mcp(Condition_group= "Tukey"))
+summary(amp.lck.group.Condition_group)
+
+amp.lck.group.pv<- glht(amp.lck.group.model2, mcp(Group= "Tukey"))
+summary(amp.lck.group.pv)
+
+
+
 ######
 # cyto amplitude
 
@@ -1424,6 +1489,7 @@ lck.ROIarea<-subset(all.lck.peaks, (ROIType=="Dendrite" |ROIType=="Process"))
 lck.ROIarea.group<-subset(all.lck.peaks.group, ROIType=="Dendrite" |ROIType=="Process")
 
 lck.ROIarea$Condition<- factor(lck.ROIarea$Condition, levels=c("Nostim","shortstim","Stim"))
+lck.ROIarea$Group<- factor(lck.ROIarea$Condition, levels=c("fast","delayed"))
 
 #boxplot
 ggplot(data=lck.ROIarea, aes(x=Condition, y= area, colour=ROIType)) + 
@@ -1436,7 +1502,6 @@ ggplot(data=lck.ROIarea, aes(x=Condition, y= area, colour=ROIType)) +
 df.area1<- summarySE(lck.ROIarea, measurevar="area", groupvars=c("Condition","ROIType"))
 df.area2<- summarySE(lck.ROIarea.group, measurevar="area", groupvars=c("Condition","ROIType", "Group"))
 df.area3<- summarySE(lck.ROIarea.group[lck.ROIarea.group$Condition!="Nostim",], measurevar="area", groupvars=c("ROIType", "Group"))
-
 
 ggplot(data=df.area1, aes(x=ROIType, y= area, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1459,7 +1524,7 @@ ggplot(data=df.area3, aes(x=ROIType, y= area, fill=Group)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.area3[df.area3$ROIType!="Dendrite",], aes(x=ROIType, y= area, fill=Group)) + 
+ggplot(data=df.area3[df.area3$ROIType!="Dendrite",], aes(x=Group, y= area, fill=Group)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("ROIarea") +

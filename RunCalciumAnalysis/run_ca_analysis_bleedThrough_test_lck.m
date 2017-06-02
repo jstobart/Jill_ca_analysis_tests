@@ -15,15 +15,15 @@ Settings.AnimalNames = {
 Settings.ScoreSheetNames = {
     'RG14_Scoresheet_test2.xls',...
     };
-Settings.NameConditions = {'Stim'};
+Settings.NameConditions = {'Bleed'};
 
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 plotMotion =0;
 
 %final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'LckGC&RC_2D_example_12_05_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'LckGC&RC_2D_example_12_05_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','LckGC&RC_traces_2D_example_12_05_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'bleedthroughtest_02_06_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'bleedthroughtest_02_06_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','bleedthroughtest_traces_02_06_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 
 %% Load calibration file
@@ -129,7 +129,7 @@ for iAnimal = 1:numAnimals
             
             % hand selected- peaks from cellular structures
             x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
-            AC_findConf{2} = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'Astrocytes.zip'), x_pix, y_pix,1);
+            AC_findConf{2} = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'BleedThrough.zip'), x_pix, y_pix,1);
             
             
             % 3D automated selection for time and space estimations
@@ -151,7 +151,7 @@ for iAnimal = 1:numAnimals
             
             % hand selected for peaks from somata
             x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
-            Neur_findConf{2} = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'Neurons.zip'), x_pix, y_pix,1);
+            Neur_findConf{2} = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'BleedThrough.zip'), x_pix, y_pix,1);
             
            % 3D FLIKA selected for time and space estimations
             Neur_findConf{3} = ConfigFindROIsFLIKA_3D.from_preset('ca_neuron', 'baselineFrames',...

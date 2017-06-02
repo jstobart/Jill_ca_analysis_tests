@@ -54,10 +54,10 @@ shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur3);
 % %maps_dend=vertcat(CSArray_Ch2_FLIKA(1,4).calcFindROIs.data.puffIdxs(9:11,1),CSArray_Ch2_FLIKA(1,4).calcFindROIs.data.puffIdxs(5,1));
 % maps_neur=CSArray_Ch2_Hand(1,4).calcFindROIs.data.roiMask(:,:,8:9);
 % maps_dend=CSArray_Ch2_FLIKA(1,4).calcFindROIs.data.puffIdxs(9:11,1);%,CSArray_Ch2_FLIKA(1,4).calcFindROIs.data.puffIdxs(5,1));
-% 
+
 
 % % long stim
-%maps_proc=CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,10],1);
+maps_proc=CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,10],1);
 maps_proc=vertcat(CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([10],1),CSArray_Ch1_FLIKA(1,3).calcFindROIs.data.puffIdxs([4,5,6],1));
 
 maps_dend=CSArray_Ch2_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,9],1);

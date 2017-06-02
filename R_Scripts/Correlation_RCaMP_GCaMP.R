@@ -179,6 +179,7 @@ for (ii in 1:nrow(respGC2))
 {
   ROIx=respGC2$ROIs_trial[ii]
   Groupx=respGC2$Group[ii]
+  Groupx=paste(Groupx,"A")
   subset1=subset(GCaMP_RCaMP, ROIs_trial==ROIx)
   if (nrow(subset1)>0)
   {
@@ -193,6 +194,7 @@ for (ii in 1:nrow(respRC2))
 {
   ROIy=respRC2$ROIs_trial[ii]
   Groupy=respRC2$Group[ii]
+  Groupy=paste(Groupy,"N")
   subset1=subset(GCaMP_RCaMP.group, RCaMP_ROIs==ROIy)
   if (nrow(subset1)>0)
   {
@@ -250,7 +252,8 @@ GCaMP_RCaMP.Nresp$GroupY<- as.factor(GCaMP_RCaMP.Nresp$GroupY)
 GCaMP_RCaMP.Nresp$Nresponders<- as.factor(GCaMP_RCaMP.Nresp$Nresponders)
 
 GCaMP_RCaMP.Nresp$CompType <- factor(GCaMP_RCaMP.Nresp$CompType, levels = c("Endfeet_Neuron","Endfeet_Dendrite", "Process_Neuron","Process_Dendrite"))
-GCaMP_RCaMP.Nresp$GroupX <- factor(GCaMP_RCaMP.Nresp$GroupX, levels = c("fast","delayed"))
+GCaMP_RCaMP.Nresp$GroupX <- factor(GCaMP_RCaMP.Nresp$GroupX, levels = c("fastA","delayedA"))
+GCaMP_RCaMP.Nresp$GroupY <- factor(GCaMP_RCaMP.Nresp$GroupY, levels = c("fastN","delayedN"))
 GCaMP_RCaMP.Nresp$Nresponders <- factor(GCaMP_RCaMP.Nresp$Nresponders, levels = c("low","mid", "high"))
 
 
@@ -260,6 +263,8 @@ df4B<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Short_Corr", groupvars=c("GroupX
 df4C<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Short_Corr", groupvars=c("GroupX","Condition"))
 df4E<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Short_Corr", groupvars=c("Nresponders"))
 df4F<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Short_Corr", groupvars=c("GroupX","Nresponders"))
+df4G<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Short_Corr", groupvars=c("GroupX","GroupY"))
+df4G2<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Short_Corr", groupvars=c("GroupX","GroupY","CompType"))
 
 
 ggplot(data=df4B, aes(x=GroupX, y=Short_Corr, fill=GroupX)) +
@@ -302,12 +307,29 @@ ggplot(data=df4F, aes(x=Nresponders, y=Short_Corr, fill=GroupX)) +
   ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
   max.theme
 
+ggplot(data=df4G, aes(x=GroupY, y=Short_Corr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
+  max.theme
+
+ggplot(data=df4G2, aes(x=interaction(GroupY,CompType), y=Short_Corr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
+  max.theme
+
 #stats
 # interactions and factors
 GroupX_CompType=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$CompType)
 GroupX_Condition=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$Condition)
 GroupX_Nresp=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$Nresponders)
 Condition_Nresp=interaction(GCaMP_RCaMP.Nresp$Condition, GCaMP_RCaMP.Nresp$Nresponders)
+GroupX_GroupY=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$GroupY)
 
 #correlation of only the stim window traces (short corr)
 shortCorr.null = lmer(Short_Corr ~ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
@@ -319,9 +341,10 @@ shortCorr.model4 = lmer(Short_Corr ~ GroupX_CompType + (1|Animal) + (1|Spot)+ (1
 shortCorr.model5 = lmer(Short_Corr ~ Nresponders+ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
 shortCorr.model5B = lmer(Short_Corr ~ Condition_Nresp+ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
 shortCorr.model6 = lmer(Short_Corr ~ GroupX_Nresp + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model7 = lmer(Short_Corr ~ GroupX_GroupY + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
 
 shortCorr.anova <- anova(shortCorr.null,shortCorr.model1,shortCorr.model1B,shortCorr.model2,shortCorr.model3,
-                         shortCorr.model4,shortCorr.model5,shortCorr.model5B,shortCorr.model6)
+                         shortCorr.model4,shortCorr.model5,shortCorr.model5B,shortCorr.model6,shortCorr.model7)
 print(shortCorr.anova)
 
 # p values
@@ -340,6 +363,8 @@ summary(shortCorr.Nresp.pvalue)
 shortCorr.NrespType.pvalue <- glht(shortCorr.model6, mcp(GroupX_Nresp= "Tukey"))
 summary(shortCorr.NrespType.pvalue)
 
+shortCorr.groupxgroupy.pvalue <- glht(shortCorr.model7, mcp(GroupX_GroupY= "Tukey"))
+summary(shortCorr.groupxgroupy.pvalue)
 
 ######
 df5A<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("GroupX"))
