@@ -11,21 +11,21 @@ stimwindow=round(35*11.84);
 % shortstim_neur1=CSArray_Ch2_Hand(1,4).calcMeasureROIs.data.tracesNorm(:,8:9);
 
 % Lck ShortStim Trial 11
-% extract traces, Ch1 ROI 1, Ch 2 Dendrites 5, Neurons 8-10
-%shortstim_proc2=CSArray_Ch1_FLIKA(1,11).calcMeasureROIs.data.tracesNorm;
-%shortstim_dend2=CSArray_Ch2_FLIKA(1,11).calcMeasureROIs.data.tracesNorm(:,5);
-%shortstim_neur2=CSArray_Ch2_Hand(1,11).calcMeasureROIs.data.tracesNorm(:,8:10);
-
-% % Lck LongStim Trial 1
-% % extract traces,
-shortstim_proc1=CSArray_Ch1_FLIKA(1,1).calcMeasureROIs.data.tracesNorm(:,[10]);
-shortstim_dend1=CSArray_Ch2_FLIKA(1,1).calcMeasureROIs.data.tracesNorm(:,[6,7,9]);
-%shortstim_neur1=CSArray_Ch2_Hand(1,1).calcMeasureROIs.data.tracesNorm(:,7);
-
-% Lck LongStim Trial 3
-% extract traces, 
-shortstim_proc3=CSArray_Ch1_FLIKA(1,3).calcMeasureROIs.data.tracesNorm(:, [4,5,6]);
-shortstim_neur3=CSArray_Ch2_Hand(1,3).calcMeasureROIs.data.tracesNorm(:,7);
+% % extract traces, Ch1 ROI 1, Ch 2 Dendrites 5, Neurons 8-10
+% %shortstim_proc2=CSArray_Ch1_FLIKA(1,11).calcMeasureROIs.data.tracesNorm;
+% %shortstim_dend2=CSArray_Ch2_FLIKA(1,11).calcMeasureROIs.data.tracesNorm(:,5);
+% %shortstim_neur2=CSArray_Ch2_Hand(1,11).calcMeasureROIs.data.tracesNorm(:,8:10);
+% 
+% % % Lck LongStim Trial 1
+% % % extract traces,
+% shortstim_proc1=CSArray_Ch1_FLIKA(1,1).calcMeasureROIs.data.tracesNorm(:,[10]);
+% shortstim_dend1=CSArray_Ch2_FLIKA(1,1).calcMeasureROIs.data.tracesNorm(:,[6,7,9]);
+% %shortstim_neur1=CSArray_Ch2_Hand(1,1).calcMeasureROIs.data.tracesNorm(:,7);
+% 
+% % Lck LongStim Trial 3
+% % extract traces, 
+% shortstim_proc3=CSArray_Ch1_FLIKA(1,3).calcMeasureROIs.data.tracesNorm(:, [4,5,6]);
+% shortstim_neur3=CSArray_Ch2_Hand(1,3).calcMeasureROIs.data.tracesNorm(:,7);
 
 
 % Lck No Stim Trial 5
@@ -38,8 +38,25 @@ shortstim_neur3=CSArray_Ch2_Hand(1,3).calcMeasureROIs.data.tracesNorm(:,7);
 % shortstim_ACtraces=shortstim_proc1;
 % shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1);
 
-shortstim_ACtraces=cat(2,shortstim_proc1, shortstim_proc3);
-shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur3);
+% Fast Lck traces
+% long stim
+% shortstim_proc1=CSArray_Ch1_FLIKA(1,6).calcMeasureROIs.data.tracesNorm(:,9);
+% shortstim_dend1=CSArray_Ch2_FLIKA(1,6).calcMeasureROIs.data.tracesNorm(:,[6,7]);
+% shortstim_neur1=CSArray_Ch2_Hand(1,6).calcMeasureROIs.data.tracesNorm(:,7);
+% 
+% shortstim_ACtraces=cat(2,shortstim_proc1);
+% shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1);
+
+% long stim
+shortstim_proc1=CSArray_Ch1_FLIKA(1,11).calcMeasureROIs.data.tracesNorm(:,8);
+shortstim_dend1=CSArray_Ch2_FLIKA(1,11).calcMeasureROIs.data.tracesNorm;
+shortstim_neur1=CSArray_Ch2_Hand(1,11).calcMeasureROIs.data.tracesNorm(:,7);
+
+shortstim_ACtraces=cat(2,shortstim_proc1);
+shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1);
+
+% shortstim_ACtraces=cat(2,shortstim_proc1, shortstim_proc3);
+% shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur3);
 
 % shortstim_ACtraces=cat(2,shortstim_proc1);
 % shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur1);
@@ -57,11 +74,11 @@ shortstim_Ntraces=cat(2, shortstim_dend1, shortstim_neur3);
 
 
 % % long stim
-maps_proc=CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,10],1);
-maps_proc=vertcat(CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([10],1),CSArray_Ch1_FLIKA(1,3).calcFindROIs.data.puffIdxs([4,5,6],1));
-
-maps_dend=CSArray_Ch2_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,9],1);
-maps_neur=CSArray_Ch2_Hand(1,3).calcFindROIs.data.roiMask(:,:,7);
+% maps_proc=CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,10],1);
+% maps_proc=vertcat(CSArray_Ch1_FLIKA(1,1).calcFindROIs.data.puffIdxs([10],1),CSArray_Ch1_FLIKA(1,3).calcFindROIs.data.puffIdxs([4,5,6],1));
+% 
+% maps_dend=CSArray_Ch2_FLIKA(1,1).calcFindROIs.data.puffIdxs([6,7,9],1);
+% maps_neur=CSArray_Ch2_Hand(1,3).calcFindROIs.data.roiMask(:,:,7);
 
 
 %no stim
@@ -70,6 +87,17 @@ maps_neur=CSArray_Ch2_Hand(1,3).calcFindROIs.data.roiMask(:,:,7);
 % maps_dend=CSArray_Ch2_FLIKA(1,5).calcFindROIs.data.puffIdxs([6,10],1);
 % maps_neur=CSArray_Ch2_Hand(1,5).calcFindROIs.data.roiMask(:,:,[1,7]);
 
+% fast Lck long stim
+%  maps_proc=CSArray_Ch1_FLIKA(1,6).calcFindROIs.data.puffIdxs(9,1);
+% % 
+%  maps_dend=CSArray_Ch2_FLIKA(1,6).calcFindROIs.data.puffIdxs([6,7],1);
+%  maps_neur=CSArray_Ch2_Hand(1,6).calcFindROIs.data.roiMask(:,:,7);
+
+ % fast Lck long stim
+ maps_proc=CSArray_Ch1_FLIKA(1,11).calcFindROIs.data.puffIdxs(8,1);
+% 
+ maps_dend=CSArray_Ch2_FLIKA(1,11).calcFindROIs.data.puffIdxs(:,1);
+ maps_neur=CSArray_Ch2_Hand(1,11).calcFindROIs.data.roiMask(:,:,7);
 
 ProcMap1=zeros(127,128);
 for imaps=1:length(maps_proc)

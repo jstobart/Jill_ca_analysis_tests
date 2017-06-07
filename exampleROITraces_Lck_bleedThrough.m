@@ -8,15 +8,15 @@ stimwindow=round(35*11.84);
 
 % % Lck LongStim Trial 1
 % % extract traces,
-shortstim_neur1=CSArray_Ch2_Hand(1,1).calcMeasureROIs.data.tracesNorm;
-shortstim_proc2=CSArray_Ch1_Hand(1,1).calcMeasureROIs.data.tracesNorm;
+shortstim_neur1=CSArray_Ch2_Hand(1,3).calcMeasureROIs.data.tracesNorm(:,3);
+shortstim_proc2=CSArray_Ch1_Hand(1,3).calcMeasureROIs.data.tracesNorm(:,3);
 
 shortstim_ACtraces=shortstim_proc2;
 shortstim_Ntraces=shortstim_neur1;
 %% extract ROI masks
 % % long stim
 
-maps_neur=CSArray_Ch2_Hand(1,1).calcFindROIs.data.roiMask(:,:,:);
+maps_neur=CSArray_Ch2_Hand(1,3).calcFindROIs.data.roiMask(:,:,3);
 
 
 NeuroMap2=sum(double(maps_neur),3);

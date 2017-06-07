@@ -1829,6 +1829,8 @@ RCaMP<-subset(all.lck.peaks.Nresp,Channel=="RCaMP")
 
 GCaMP$Group<-factor(GCaMP$Group,levels= c("fast","delayed"))
 
+fastROIs<-unique(GCaMP$ROIs_trial[GCaMP$Group=="fast"])
+
 allROIs.all<-length(unique(GCaMP$ROIs_trial))
 fastROIs.all<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="fast"]))
 delayedROIs.all<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="delayed"]))
