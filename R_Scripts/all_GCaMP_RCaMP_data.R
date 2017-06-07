@@ -662,7 +662,7 @@ ntrials.cyto.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=len
 ntrials.cyto.DSP4.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
 
 
-###
+#####
 # lck peak time data
 
 #histogram bins
@@ -816,6 +816,17 @@ ggplot(all.cyto.peaks[(all.cyto.peaks$Condition=="Stim"),], aes(x=peakTime, y=..
 #####
 # cyto DSP4 peak time data
 
+# find spot 1 and spot 2
+all.cyto.DSP4.peaks$SpotTime<-0
+all.cyto.DSP4.peaks$SpotTime[grepl("spot1",all.cyto.DSP4.peaks$Spot)]="Spot1"
+all.cyto.DSP4.peaks$SpotTime[grepl("spot2",all.cyto.DSP4.peaks$Spot)]="Spot2"
+all.cyto.DSP4.peaks$SpotTime<-as.factor(all.cyto.DSP4.peaks$SpotTime)
+
+# control in the first 2 days
+all.cyto.DSP4.peaks$Drug="DSP4"
+all.cyto.DSP4.peaks$Drug[grepl("04_06",all.cyto.DSP4.peaks$Spot)]="control"
+all.cyto.DSP4.peaks$Drug[grepl("04_08",all.cyto.DSP4.peaks$Spot)]="control"
+
 #histogram bins
 histseq= seq(0,stimwindow, 1)
 
@@ -872,7 +883,7 @@ ggplot(data=AC.cyto.DSP4.histo, aes(x=time, y= value, colour=variable)) +
 
 
 ##########
-
+# compare to other control trials
 # COMPARE CONTROL VS DSP4 peak times
 all.cyto.DSP4.peaks$treatment="DSP4"
 all.cyto.peaks$treatment="control"
@@ -895,6 +906,10 @@ ggplot(control.vs.DSP4.peaks[(control.vs.DSP4.peaks$Channel!="GCaMP"),], aes(x=p
 df.peaks3<- summarySE(control.vs.DSP4.peaks, measurevar = "peakTime", groupvars = c("Channel", "treatment"))
 
 df.peaks3$Channel <- factor(df.peaks3$Channel, levels = c("RCaMP","GCaMP"))
+df.peaks.dsp4<- summarySE(all.cyto.DSP4.peaks, measurevar = "peakTime", groupvars = c("Channel", "Condition","Drug"))
+df.peaks.dsp5<- summarySE(all.cyto.DSP4.peaks, measurevar = "peakTime", groupvars = c("Channel", "Condition","Drug","ROIType"))
+
+df.peaks.dsp4$Condition <- factor(df.peaks.dsp4$Condition, levels = c("Nostim","shortstim","Stim"))
 #df.OT3$treatment <- factor(df.OT3$treatment, levels = c("fast","delayed"))
 
 #df.OT1 = df.OT1[!(df.OT1$Channel=="RCaMP"&df.OT1$Group=="delayed"),]
@@ -906,6 +921,26 @@ ggplot(df.peaks3, aes(x=Channel,y=peakTime, fill= interaction(Channel,treatment)
   scale_fill_manual(values=cbbPalette)+
   max.theme
 
+ggplot(df.peaks.dsp4[df.peaks.dsp4$Channel=="GCaMP",], aes(x=interaction(Channel,Condition),y=peakTime, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean peak Time (s)") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.peaks.dsp5[df.peaks.dsp5$Channel=="GCaMP",], aes(x=interaction(ROIType,Condition),y=peakTime, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean peak Time (s)") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.peaks.dsp4[df.peaks.dsp4$Channel=="RCaMP",], aes(x=interaction(Channel,Condition),y=peakTime, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean peak Time (s)") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
 
 # delayed peak time with dsp4 treatment?
 
@@ -925,6 +960,37 @@ summary(pT.cytovsDSP.Condition)
 
 pT.cytovsDSP.treatment_Condition<- glht(pT.cytovsDSP.model4, mcp(treatment_Condition= "Tukey"))
 summary(pT.cytovsDSP.treatment_Condition)
+
+
+all.cyto.DSP4.peaks$Drug<-as.factor(all.cyto.DSP4.peaks$Drug)
+all.cyto.DSP4.peaks$SpotTime<-as.factor(all.cyto.DSP4.peaks$SpotTime)
+all.cyto.DSP4.peaks$Drug_Condition=interaction(all.cyto.DSP4.peaks$Drug,all.cyto.DSP4.peaks$Condition)
+
+# stats for peak times- control vs DSP4
+pT.cytovsDSP2.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model1 = lmer(peakTime ~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model2 = lmer(peakTime ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model3 = lmer(peakTime ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model4 = lmer(peakTime ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.anova <- anova(pT.cytovsDSP2.null, pT.cytovsDSP2.model1, pT.cytovsDSP2.model2, pT.cytovsDSP2.model3, 
+                             pT.cytovsDSP2.model4)
+print(pT.cytovsDSP2.anova)
+
+pT.cytovsDSP.treatment_Condition2<- glht(pT.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(pT.cytovsDSP.treatment_Condition2)
+
+
+pT.cytovsDSP2.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model1 = lmer(peakTime ~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model2 = lmer(peakTime ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model3 = lmer(peakTime ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.model4 = lmer(peakTime ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+pT.cytovsDSP2.anova <- anova(pT.cytovsDSP2.null, pT.cytovsDSP2.model1, pT.cytovsDSP2.model2, pT.cytovsDSP2.model3, 
+                             pT.cytovsDSP2.model4)
+print(pT.cytovsDSP2.anova)
+
+pT.cytovsDSP.treatment_Condition2<- glht(pT.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(pT.cytovsDSP.treatment_Condition2)
 
 #Results: not significantly different between control and DSP4 for astrocyte peak times!
 
@@ -1191,7 +1257,11 @@ summary(dur.cyto.Condition_type)
 # COMPARE CONTORL AND TREATMENT
 # mean duration times
 control.vs.DSP4.peaks$Condition<- factor(control.vs.DSP4.peaks$Condition, levels = c("Nostim","shortstim","Stim"))
+all.cyto.DSP4.peaks$Condition<- factor(all.cyto.DSP4.peaks$Condition, levels = c("Nostim","shortstim","Stim"))
+
+
 df.dur.cyto3<- summarySE(control.vs.DSP4.peaks, measurevar = "Duration", groupvars = c("Channel", "Condition","treatment"))
+df.dur.cyto4<- summarySE(all.cyto.DSP4.peaks, measurevar = "Duration", groupvars = c("Channel", "Condition","Drug"))
 
 ggplot(df.dur.cyto3[df.dur.cyto3$Channel!="RCaMP",], aes(x=Condition,y=Duration, fill= treatment)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1202,6 +1272,22 @@ ggplot(df.dur.cyto3[df.dur.cyto3$Channel!="RCaMP",], aes(x=Condition,y=Duration,
   max.theme
 
 ggplot(df.dur.cyto3[df.dur.cyto3$Channel!="GCaMP",], aes(x=Condition,y=Duration, fill= treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration (s)") +
+  ggtitle("neurons") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.dur.cyto4[df.dur.cyto4$Channel!="RCaMP",], aes(x=Condition,y=Duration, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration (s)") +
+  ggtitle("astrocytes") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.dur.cyto4[df.dur.cyto4$Channel=="RCaMP",], aes(x=Condition,y=Duration, fill= Drug)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Duration (s)") +
@@ -1223,6 +1309,32 @@ summary(dur.cytovsDSP.Condition)
 
 dur.cytovsDSP.treatment_Condition<- glht(dur.cytovsDSP.model4, mcp(treatment_Condition= "Tukey"))
 summary(dur.cytovsDSP.treatment_Condition)
+
+#astrocytes with before or after for the same spot
+dur.cytovsDSP2.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model2 = lmer(Duration ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model3 = lmer(Duration ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model4 = lmer(Duration ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.anova <- anova(dur.cytovsDSP2.null, dur.cytovsDSP2.model1, dur.cytovsDSP2.model2, 
+                              dur.cytovsDSP2.model3, dur.cytovsDSP2.model4)
+print(dur.cytovsDSP2.anova)
+
+dur.cytovsDSP.treatment_Condition2<- glht(dur.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(dur.cytovsDSP.treatment_Condition2)
+
+
+dur.cytovsDSP2.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model2 = lmer(Duration ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model3 = lmer(Duration ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.model4 = lmer(Duration ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+dur.cytovsDSP2.anova <- anova(dur.cytovsDSP2.null, dur.cytovsDSP2.model1, dur.cytovsDSP2.model2, 
+                              dur.cytovsDSP2.model3, dur.cytovsDSP2.model4)
+print(dur.cytovsDSP2.anova)
+
+dur.cytovsDSP.treatment_Condition2<- glht(dur.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(dur.cytovsDSP.treatment_Condition2)
 
 ######
 
@@ -1451,6 +1563,11 @@ control.vs.DSP4.peaks$Condition<- factor(control.vs.DSP4.peaks$Condition, levels
 df.amp.cyto3<- summarySE(control.vs.DSP4.peaks, measurevar = "amplitude", groupvars = c("Channel", "Condition","treatment"))
 df.amp.cyto4<- summarySE(control.vs.DSP4.peaks, measurevar = "amplitude", groupvars = c("Channel", "Condition","treatment","ROIType"))
 
+# comparing to early time point controls
+df.amp.cyto5<- summarySE(all.cyto.DSP4.peaks, measurevar = "amplitude", groupvars = c("Channel", "Condition","Drug"))
+df.amp.cyto6<- summarySE(all.cyto.DSP4.peaks, measurevar = "amplitude", groupvars = c("Channel", "Condition","Drug","ROIType"))
+df.amp.cyto7<- summarySE(all.cyto.DSP4.peaks, measurevar = "amplitude", groupvars = c("Channel", "Condition","Drug","SpotTime"))
+
 ggplot(df.amp.cyto3[df.amp.cyto3$Channel!="GCaMP",], aes(x=Condition,y=amplitude, fill= treatment)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
@@ -1460,6 +1577,30 @@ ggplot(df.amp.cyto3[df.amp.cyto3$Channel!="GCaMP",], aes(x=Condition,y=amplitude
   max.theme
 
 ggplot(df.amp.cyto3[df.amp.cyto3$Channel!="RCaMP",], aes(x=Condition,y=amplitude, fill= treatment)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("astrocytes") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp.cyto5[df.amp.cyto5$Channel!="RCaMP",], aes(x=Condition,y=amplitude, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("astrocytes") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp.cyto5[df.amp.cyto5$Channel=="RCaMP",], aes(x=Condition,y=amplitude, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("neurons") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp.cyto6[df.amp.cyto6$Channel!="RCaMP",], aes(x=interaction(Condition,ROIType),y=amplitude, fill= Drug)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("amplitude") +
@@ -1481,6 +1622,33 @@ print(amp.cytovsDSP.anova)
 
 amp.cytovsDSP.treatment_Condition<- glht(amp.cytovsDSP.model4, mcp(treatment_Condition= "Tukey"))
 summary(amp.cytovsDSP.treatment_Condition)
+
+
+#astrocytes with before or after
+amp.cytovsDSP2.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model2 = lmer(amplitude ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model3 = lmer(amplitude ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model4 = lmer(amplitude ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel!="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.anova <- anova(amp.cytovsDSP2.null, amp.cytovsDSP2.model1, amp.cytovsDSP2.model2, 
+                              amp.cytovsDSP2.model3, amp.cytovsDSP2.model4)
+print(amp.cytovsDSP2.anova)
+
+amp.cytovsDSP.treatment_Condition2<- glht(amp.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(amp.cytovsDSP.treatment_Condition2)
+
+
+amp.cytovsDSP2.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model2 = lmer(amplitude ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model3 = lmer(amplitude ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.model4 = lmer(amplitude ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime) + (1|trials), all.cyto.DSP4.peaks[all.cyto.DSP4.peaks$Channel=="RCaMP",],REML=FALSE)
+amp.cytovsDSP2.anova <- anova(amp.cytovsDSP2.null, amp.cytovsDSP2.model1, amp.cytovsDSP2.model2, 
+                              amp.cytovsDSP2.model3, amp.cytovsDSP2.model4)
+print(amp.cytovsDSP2.anova)
+
+amp.cytovsDSP.treatment_Condition2<- glht(amp.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(amp.cytovsDSP.treatment_Condition2)
 
 ######
 #  Lck ROI area
@@ -1674,10 +1842,16 @@ ggplot(data=df.lck.numPeaks2, aes(x=interaction(Channel,ROIType), y= nPeaks, fil
 control.vs.DSP4.trials<-ddply(control.vs.DSP4.peaks, c("Animal","Spot","trials","Condition","Channel","treatment"), summarise, nPeaks=length(amplitude))
 control.vs.DSP4.trials.type<-ddply(control.vs.DSP4.peaks, c("Animal","Spot","trials","Condition","Channel","ROIType","treatment"), summarise, nPeaks=length(amplitude))
 
+all.cyto.DSP4.trials<-ddply(all.cyto.DSP4.peaks, c("Animal","Spot","trials","SpotTime","Condition","Channel","Drug"), summarise, nPeaks=length(amplitude))
+all.cyto.DSP4.trials.type<-ddply(all.cyto.DSP4.peaks, c("Animal","Spot","trials","SpotTime","Condition","Channel","ROIType","Drug"), summarise, nPeaks=length(amplitude))
+
 
 df.cyto.numPeaks1<-summarySE(control.vs.DSP4.trials, measurevar="nPeaks", groupvars=c("Channel","treatment"))
 df.cyto.numPeaks2<-summarySE(control.vs.DSP4.trials, measurevar="nPeaks", groupvars=c("Condition","Channel","treatment"))
 df.cyto.numPeaks3<-summarySE(control.vs.DSP4.trials.type, measurevar="nPeaks", groupvars=c("ROIType","Condition","Channel","treatment"))
+
+df.cyto.numPeaks4<-summarySE(all.cyto.DSP4.trials, measurevar="nPeaks", groupvars=c("Channel","Condition","Drug"))
+df.cyto.numPeaks5<-summarySE(all.cyto.DSP4.trials.type, measurevar="nPeaks", groupvars=c("ROIType","Condition","Channel","Drug"))
 
 
 ggplot(data=df.cyto.numPeaks1, aes(x=Channel, y= nPeaks, fill=treatment)) + 
@@ -1701,6 +1875,40 @@ ggplot(data=df.cyto.numPeaks3, aes(x=interaction(Channel,interaction(ROIType,Con
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
+ggplot(data=df.cyto.numPeaks4[df.cyto.numPeaks4$Channel=="GCaMP",], aes(x=Condition, y= nPeaks, fill=Drug)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=nPeaks-se, ymax=nPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("nPeaks/trial") +
+  ggtitle("astrocytes")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+  
+  ggplot(data=df.cyto.numPeaks4[df.cyto.numPeaks4$Channel=="RCaMP",], aes(x=Condition, y= nPeaks, fill=Drug)) + 
+    geom_bar(stat="identity", position=position_dodge(), colour="black") +
+    geom_errorbar(aes(ymin=nPeaks-se, ymax=nPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
+    ylab("nPeaks/trial") +
+    ggtitle("neurons")+
+  scale_fill_manual(values=cbbPalette) + 
+    max.theme
+  
+  
+  ggplot(data=df.cyto.numPeaks5[df.cyto.numPeaks5$Channel=="GCaMP",], aes(x=interaction(Condition,ROIType), y= nPeaks, fill=Drug)) + 
+    geom_bar(stat="identity", position=position_dodge(), colour="black") +
+    geom_errorbar(aes(ymin=nPeaks-se, ymax=nPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
+    ylab("nPeaks/trial") +
+    ggtitle("astrocytes")+
+  scale_fill_manual(values=cbbPalette) + 
+    max.theme
+  
+  ggplot(data=df.cyto.numPeaks5[df.cyto.numPeaks5$Channel=="RCaMP",], aes(x=interaction(Condition,ROIType), y= nPeaks, fill=Drug)) + 
+    geom_bar(stat="identity", position=position_dodge(), colour="black") +
+    geom_errorbar(aes(ymin=nPeaks-se, ymax=nPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
+    ylab("nPeaks/trial") +
+    ggtitle("neurons")+
+  scale_fill_manual(values=cbbPalette) + 
+    max.theme
+
+#######
 control.vs.DSP4.trials.type$Condition_channel<-interaction(control.vs.DSP4.trials.type$Condition,control.vs.DSP4.trials.type$Channel)
 control.vs.DSP4.trials.type$treatment_channel<-interaction(control.vs.DSP4.trials.type$treatment,control.vs.DSP4.trials.type$Channel)
 control.vs.DSP4.trials.type$Condition_channel_treatment<-interaction(control.vs.DSP4.trials.type$Condition,control.vs.DSP4.trials.type$Channel,
@@ -1730,11 +1938,38 @@ summary(cyto.nPeak.Condition_channel_t)
 cyto.nPeak.Condition_channel_t_t<- glht(cyto.nPeak.model4, mcp(Condition_channel_treatment_type= "Tukey"))
 summary(cyto.nPeak.Condition_channel_t_t)
 
+#########
+all.cyto.DSP4.trials$Drug_Condition=interaction(all.cyto.DSP4.trials$Drug, all.cyto.DSP4.trials$Condition)
+all.cyto.DSP4.trials.type$Drug_Condition= interaction(all.cyto.DSP4.trials.type$Drug,
+                                                      all.cyto.DSP4.trials.type$Condition)
+all.cyto.DSP4.trials.type$Drug_Cond_type= interaction(all.cyto.DSP4.trials.type$Drug,
+                                                      all.cyto.DSP4.trials.type$Condition,
+                                                      all.cyto.DSP4.trials.type$ROIType)
+#before and after dsp4
+nP.cytovsDSP2.null = lmer(nPeaks ~ (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel!="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model1 = lmer(nPeaks~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel!="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model2 = lmer(nPeaks ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel!="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model3 = lmer(nPeaks ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel!="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model4 = lmer(nPeaks ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel!="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.anova <- anova(nP.cytovsDSP2.null, nP.cytovsDSP2.model1, nP.cytovsDSP2.model2, 
+                             nP.cytovsDSP2.model3, nP.cytovsDSP2.model4)
+print(nP.cytovsDSP2.anova)
+
+nP.cytovsDSP.treatment_Condition2<- glht(nP.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(nP.cytovsDSP.treatment_Condition2)
 
 
-# fraction of responding ROIs per trial? or # of peaks per trial (for no stim)
+nP.cytovsDSP2.null = lmer(nPeaks ~ (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel=="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model1 = lmer(nPeaks~ Condition + (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel=="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model2 = lmer(nPeaks ~ Drug+ (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel=="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model3 = lmer(nPeaks ~ Condition+Drug + (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel=="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.model4 = lmer(nPeaks ~ Drug_Condition + (1|Animal) + (1|Spot) + (1|SpotTime), all.cyto.DSP4.trials[all.cyto.DSP4.trials$Channel=="RCaMP",],REML=FALSE)
+nP.cytovsDSP2.anova <- anova(nP.cytovsDSP2.null, nP.cytovsDSP2.model1, nP.cytovsDSP2.model2, 
+                             nP.cytovsDSP2.model3, nP.cytovsDSP2.model4)
+print(nP.cytovsDSP2.anova)
 
-
+nP.cytovsDSP.treatment_Condition2<- glht(nP.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(nP.cytovsDSP.treatment_Condition2)
 
 ########
 #mean peak amplitude for each ROI with peaks from the stim window

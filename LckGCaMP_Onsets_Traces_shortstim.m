@@ -618,6 +618,10 @@ plot([0.1 0.1],[0 1], 'k','LineWidth', 1)
 
 %% shaded error bar with 
 
+green=[(27/255) (120/255) (55/255)];
+purple=[(123/255) (50/255) (148/255)];
+blue= [(0/255) (114/255) (178/255)];
+
 % SEM calculations
 fastAC_SDTrace = std(fastAC_traces');
 fastAC_SEM=fastAC_SDTrace/sqrt(size(fastAC_traces,2));
@@ -637,10 +641,31 @@ lineProps.width = 1;
 lineProps.edgestyle = ':';
 %ylim([-0.2 3]);
 
+lineProps.col = {blue};
 mseb(TimeX,slowAC_mean,slowAC_SEM,lineProps)
+lineProps.col = {green};
 mseb(TimeX,(fastAC_mean+0.75),fastAC_SEM,lineProps)
+lineProps.col = {purple};
 mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
 rectangle('Position', [5 -0.3 1 5])
+plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
+
+
+figure('name', 'Lck short stim all means- plus SD')
+hold on
+axis off
+xlim([-1 35]);
+lineProps.width = 1;
+lineProps.edgestyle = ':';
+%ylim([-0.2 3]);
+
+lineProps.col = {blue};
+mseb(TimeX,slowAC_mean,slowAC_SDTrace,lineProps)
+lineProps.col = {green};
+mseb(TimeX,(fastAC_mean+3),fastAC_SDTrace,lineProps)
+lineProps.col = {purple};
+mseb(TimeX,(OT_RCaMP_mean+7),RC_SDTrace,lineProps)
+rectangle('Position', [5 -0.3 1 10])
 plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 %%
 % plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);

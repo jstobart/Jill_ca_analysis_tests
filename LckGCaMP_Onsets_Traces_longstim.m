@@ -634,10 +634,13 @@ axis off
 xlim([-1 35]);
 lineProps.width = 1;
 lineProps.edgestyle = ':';
-%ylim([-0.2 3]);
 
+%ylim([-0.2 3]);
+lineProps.col = {blue};
 mseb(TimeX,slowAC_mean,slowAC_SEM,lineProps)
+lineProps.col = {green};
 mseb(TimeX,(fastAC_mean+0.75),fastAC_SEM,lineProps)
+lineProps.col = {purple};
 mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
 
 % H2=shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM)%,green,1);
@@ -645,8 +648,23 @@ mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
 rectangle('Position', [5 -0.3 8 4])
 plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 
-%export_fig 'D:\Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\Lck_longstim_meanWithSEM_Exportfig.eps' '-eps'
 
+figure('name', 'Lck short stim all means- plus SD')
+hold on
+axis off
+xlim([-1 35]);
+lineProps.width = 1;
+lineProps.edgestyle = ':';
+%ylim([-0.2 3]);
+
+lineProps.col = {blue};
+mseb(TimeX,slowAC_mean,slowAC_SDTrace,lineProps)
+lineProps.col = {green};
+mseb(TimeX,(fastAC_mean+3),fastAC_SDTrace,lineProps)
+lineProps.col = {purple};
+mseb(TimeX,(OT_RCaMP_mean+7),RC_SDTrace,lineProps)
+rectangle('Position', [5 -0.3 8 10])
+plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 %%
 
 
