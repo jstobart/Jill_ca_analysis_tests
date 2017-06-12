@@ -33,8 +33,8 @@ max.theme <- theme_classic() +
 longstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 shortstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 
-#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
-#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+longstim.corr <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
+shortstim.corr  <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 
 CorrData<- rbind(longstim.corr, shortstim.corr)
 #CorrData<- shortstim.corr

@@ -300,7 +300,7 @@ ggplot(data=AC.lck.histo2, aes(x=time, y= value, colour=variable)) +
 ###
 # astrocyte compartments
 ggplot(all.lck.OT[(all.lck.OT$Condition!="Nostim"& all.lck.OT$Channel=="GCaMP"),], aes(x=OnsetTime, y=..density.., colour = ROIType, linetype=Condition)) +
-  geom_freqpoly(binwidth = 0.5, lwd=1)+
+  geom_freqpoly(binwidth = 1, lwd=1)+
   ggtitle("EF vs P-lck data") + 
   xlab("Onset Time (s)") + 
   xlim(-0.5,30)+
@@ -336,7 +336,7 @@ stim.lck.OT$Group[stim.lck.OT$OnsetTime<1]<-"fast"
 stim.lck.OT$Group[stim.lck.OT$OnsetTime>=1]<-"delayed"
 
 ggplot(stim.lck.OT[stim.lck.OT$Group=="fast"& stim.lck.OT$Channel=="GCaMP",], aes(x=OnsetTime, y=..density.., colour = interaction(ROIType,Group), linetype=Condition)) +
-  geom_freqpoly(binwidth = 0.0845, lwd=1)+
+  geom_freqpoly(binwidth = (0.0845*3), lwd=1)+
   ggtitle("EF vs P-lck data") + 
   xlab("Onset Time (s)") + 
   scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
@@ -401,6 +401,20 @@ print(OT.anova)
 OT.Group_channel<- glht(OT.model4, mcp(Group_Channel= "Tukey"))
 summary(OT.Group_channel)
 
+
+Condition_ROIType=interaction(all.lck.OT$Condition,all.lck.OT$ROIType)
+# stats for onset times- neurons vs astrocytes
+OT.lck.type.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
+OT.lck.type.model1 = lmer(OnsetTime ~ ROIType + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
+OT.lck.type.model2 = lmer(OnsetTime ~ Condition + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
+OT.lck.type.model4 = lmer(OnsetTime ~ ROIType+Condition + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
+OT.lck.type.model5 = lmer(OnsetTime ~ Condition_ROIType + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
+OT.lck.type.anova <- anova(OT.lck.type.null, OT.lck.type.model1, OT.lck.type.model2, 
+                           OT.lck.type.model4, OT.lck.type.model5)
+print(OT.lck.type.anova)
+
+OT.lck.Cond_ROIType<- glht(OT.lck.type.model5, mcp(Condition_ROIType= "Tukey"))
+summary(OT.lck.Cond_ROIType)
 
 
 #AUC vs onset time scatter plot
@@ -773,17 +787,59 @@ ggplot(all.lck.peaks.group, aes(x=peakTime, colour = interaction(Channel,Group))
   scale_colour_manual(values=cbbPalette)+
   max.theme
 
-# mean onset times
-df.pT1<- summarySE(all.lck.peaks.group, measurevar = "peakTime", groupvars = c("Channel", "Group","Condition"))
+# mean peak times
+df.pT1A<- summarySE(all.lck.peaks.group, measurevar = "peakTime", groupvars = c("Channel", "Group","Condition"))
+df.pT1B<- summarySE(all.lck.peaks, measurevar = "peakTime", groupvars = c("ROIType", "Condition"))
 
-
-ggplot(all.lck.peaks[(all.lck.peaks$Condition=="shortstim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
+ggplot(all.lck.peaks[(all.lck.peaks$Condition!="shortstim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
   geom_histogram(binwidth = 0.5, position=position_dodge())+
   ggtitle("long stim- neurons vs astrocytes-lck data") + 
   xlab("Peak Time (s)") + 
   xlim(-0.5,20)+
   scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
   max.theme
+
+
+
+#print median values
+all.lck.peaks.short<-subset(all.lck.peaks, peakTime<15)
+
+lck.pt.median<-quantile(all.lck.peaks.short$peakTime[(all.lck.peaks.short$Condition!="shortstim"&all.lck.peaks.short$Channel=="GCaMP")])
+lck.pt.median=lck.pt.median[3]
+
+rcamp1.pt.median<-quantile(all.lck.peaks.short$peakTime[(all.lck.peaks.short$Condition!="shortstim"&all.lck.peaks.short$Channel=="RCaMP")],
+                           prob = seq(0, 1, length = 5), type = 5)
+rcamp1.pt.median<-rcamp1.pt.median[3]
+#summary(all.lck.peaks.short$peakTime[(all.lck.peaks.short$Condition!="shortstim"&all.lck.peaks.short$Channel=="GCaMP")])
+#summary(all.lck.peaks.short$peakTime[(all.lck.peaks.short$Condition!="shortstim"&all.lck.peaks.short$Channel=="RCaMP")])
+
+ggplot(all.lck.peaks.short[(all.lck.peaks.short$Condition!="shortstim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
+  geom_histogram(binwidth = 0.5, position=position_dodge())+
+  ggtitle("long stim- neurons vs astrocytes-lck data") + 
+  geom_vline(xintercept=lck.pt.median, linetype="dashed", size=1) +
+  geom_vline(xintercept=rcamp1.pt.median, linetype="dashed", size=1) +
+  xlab("Peak Time (s)") + 
+  xlim(-0.5,15)+
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+
+
+Condition_ROIType=interaction(all.lck.peaks$Condition,all.lck.peaks$ROIType)
+# stats for onset times- neurons vs astrocytes
+pT.lck.type.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.lck.peaks,REML=FALSE)
+pT.lck.type.model1 = lmer(peakTime ~ ROIType + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.lck.peaks,REML=FALSE)
+pT.lck.type.model2 = lmer(peakTime ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.lck.peaks,REML=FALSE)
+pT.lck.type.model4 = lmer(peakTime ~ ROIType+Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.lck.peaks,REML=FALSE)
+pT.lck.type.model5 = lmer(peakTime ~ Condition_ROIType + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.lck.peaks,REML=FALSE)
+pT.lck.type.anova <- anova(pT.lck.type.null, pT.lck.type.model1, pT.lck.type.model2, 
+                            pT.lck.type.model4, pT.lck.type.model5)
+print(pT.lck.type.anova)
+
+pT.lck.Cond_ROIType<- glht(pT.lck.type.model5, mcp(Condition_ROIType= "Tukey"))
+summary(pT.lck.Cond_ROIType)
+
+
 
 ######
 # cyto peak time data
@@ -850,11 +906,9 @@ ggplot(all.cyto.peaks[(all.cyto.peaks$Condition=="Stim"),], aes(x=peakTime, y=..
   scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
   max.theme
 
+
 df.pT2A<- summarySE(all.cyto.peaks, measurevar = "peakTime", groupvars = c("Condition"))
 df.pT2B<- summarySE(all.cyto.peaks, measurevar = "peakTime", groupvars = c("ROIType", "Condition"))
-
-gcamp.longstim.pT<-all.cyto.peaks$peakTime[all.cyto.peaks$Channel=="GCaMP" & all.cyto.peaks$Condition=="Stim"]
-
 
 Condition_ROIType=interaction(all.cyto.peaks$Condition,all.cyto.peaks$ROIType)
 # stats for onset times- neurons vs astrocytes
@@ -871,6 +925,74 @@ pT.cyto.Cond_ROIType<- glht(pT.cyto.type.model5, mcp(Condition_ROIType= "Tukey")
 summary(pT.cyto.Cond_ROIType)
 
 
+ggplot(all.cyto.peaks[(all.cyto.peaks$Condition!="shortstim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
+  geom_histogram(binwidth = 0.5, position=position_dodge())+
+  ggtitle("long stim- neurons vs astrocytes-cyto data") + 
+  xlab("Peak Time (s)") + 
+  xlim(-0.5,15)+
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+ggplot(all.cyto.peaks[(all.cyto.peaks$Condition!="shortstim"),], aes(x=peakTime, y=..density.., colour = ROIType)) +
+  geom_freqpoly(binwidth = 0.5, lwd=1)+
+  ggtitle("long stim- neurons vs astrocytes-cyto data") + 
+  xlab("Peak Time (s)") + 
+  xlim(-0.5,15)+
+  max.theme
+
+#print median values
+all.cyto.peaks.short<-subset(all.cyto.peaks, peakTime<15)
+
+cyto.pt.median<-quantile(all.cyto.peaks.short$peakTime[(all.cyto.peaks.short$Condition!="shortstim"&all.cyto.peaks.short$Channel=="GCaMP")])
+cyto.pt.median=cyto.pt.median[3]
+
+rcamp2.pt.median<-quantile(all.cyto.peaks.short$peakTime[(all.cyto.peaks.short$Condition!="shortstim"&all.cyto.peaks.short$Channel=="RCaMP")],
+                           prob = seq(0, 1, length = 5), type = 5)
+rcamp2.pt.median<-rcamp2.pt.median[3]
+#summary(all.lck.peaks.short$peakTime[(all.lck.peaks.short$Condition!="shortstim"&all.lck.peaks.short$Channel=="GCaMP")])
+#summary(all.lck.peaks.short$peakTime[(all.lck.peaks.short$Condition!="shortstim"&all.lck.peaks.short$Channel=="RCaMP")])
+
+ggplot(all.cyto.peaks.short[(all.cyto.peaks.short$Condition!="shortstim"),], aes(x=peakTime, y=..density.., fill = Channel)) +
+  geom_histogram(binwidth = 0.5, position=position_dodge())+
+  ggtitle("long stim- neurons vs astrocytes-cyto data") + 
+  geom_vline(xintercept=cyto.pt.median, linetype="dashed", size=1) +
+  geom_vline(xintercept=rcamp1.pt.median, linetype="dashed", size=1) +
+  xlab("Peak Time (s)") + 
+  xlim(-0.5,15)+
+  scale_colour_manual(values=c(cbbPalette[3],cbbPalette[2]))+
+  max.theme
+
+####
+#compare cyto to lck peak times
+
+cyto<-subset(all.cyto.peaks.short, Channel=="GCaMP" & Condition!="Nostim")
+lck<-subset(all.lck.peaks.short, Channel=="GCaMP"& Condition!="Nostim")
+
+cyto$Channel="cyto"
+lck$Channel="lck"
+lck$Group=NULL
+GCaMP.pT<-rbind(cyto,lck)
+
+df.pT2C1<- summarySE(GCaMP.pT, measurevar = "peakTime", groupvars = c("Channel"))
+df.pT2C2<- summarySE(GCaMP.pT, measurevar = "peakTime", groupvars = c("Channel", "Condition"))
+df.pT2D<- summarySE(GCaMP.pT, measurevar = "peakTime", groupvars = c("Channel", "Condition","ROIType"))
+
+Condition_Channel=interaction(GCaMP.pT$Condition,GCaMP.pT$Channel)
+# stats for onset times- neurons vs astrocytes
+pT.cytovslck.type.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
+pT.cytovslck.type.model1 = lmer(peakTime ~ Channel + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
+pT.cytovslck.type.model2 = lmer(peakTime ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
+pT.cytovslck.type.model4 = lmer(peakTime ~ Channel+Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
+pT.cytovslck.type.model5 = lmer(peakTime ~ Condition_Channel + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
+pT.cytovslck.type.anova <- anova(pT.cytovslck.type.null, pT.cytovslck.type.model1, pT.cytovslck.type.model2, 
+                            pT.cytovslck.type.model4, pT.cytovslck.type.model5)
+print(pT.cytovslck.type.anova)
+
+pT.cytovslck.channel<- glht(pT.cytovslck.type.model1, mcp(Channel= "Tukey"))
+summary(pT.cytovslck.channel)
+
+pT.cytovslck.Cond_Ch<- glht(pT.cytovslck.type.model5, mcp(Condition_Channel= "Tukey"))
+summary(pT.cytovslck.Cond_Ch)
 
 #####
 # cyto DSP4 peak time data
@@ -1392,8 +1514,8 @@ dur.cytovsDSP2.anova <- anova(dur.cytovsDSP2.null, dur.cytovsDSP2.model1, dur.cy
                               dur.cytovsDSP2.model3, dur.cytovsDSP2.model4)
 print(dur.cytovsDSP2.anova)
 
-dur.cytovsDSP.treatment_Condition2<- glht(dur.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
-summary(dur.cytovsDSP.treatment_Condition2)
+dur.cytovsDSP.treatment_Condition3<- glht(dur.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(dur.cytovsDSP.treatment_Condition3)
 
 ######
 
@@ -1706,8 +1828,8 @@ amp.cytovsDSP2.anova <- anova(amp.cytovsDSP2.null, amp.cytovsDSP2.model1, amp.cy
                               amp.cytovsDSP2.model3, amp.cytovsDSP2.model4)
 print(amp.cytovsDSP2.anova)
 
-amp.cytovsDSP.treatment_Condition2<- glht(amp.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
-summary(amp.cytovsDSP.treatment_Condition2)
+amp.cytovsDSP.treatment_Condition3<- glht(amp.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(amp.cytovsDSP.treatment_Condition3)
 
 ######
 #  Lck ROI area
@@ -1901,6 +2023,8 @@ ggplot(data=df.lck.numPeaks2, aes(x=interaction(Channel,ROIType), y= nPeaks, fil
 control.vs.DSP4.trials<-ddply(control.vs.DSP4.peaks, c("Animal","Spot","trials","Condition","Channel","treatment"), summarise, nPeaks=length(amplitude))
 control.vs.DSP4.trials.type<-ddply(control.vs.DSP4.peaks, c("Animal","Spot","trials","Condition","Channel","ROIType","treatment"), summarise, nPeaks=length(amplitude))
 
+all.cyto.DSP4.peaks<-subset(all.cyto.DSP4.peaks, peakTime<15)
+
 all.cyto.DSP4.trials<-ddply(all.cyto.DSP4.peaks, c("Animal","Spot","trials","SpotTime","Condition","Channel","Drug"), summarise, nPeaks=length(amplitude))
 all.cyto.DSP4.trials.type<-ddply(all.cyto.DSP4.peaks, c("Animal","Spot","trials","SpotTime","Condition","Channel","ROIType","Drug"), summarise, nPeaks=length(amplitude))
 
@@ -2027,8 +2151,8 @@ nP.cytovsDSP2.anova <- anova(nP.cytovsDSP2.null, nP.cytovsDSP2.model1, nP.cytovs
                              nP.cytovsDSP2.model3, nP.cytovsDSP2.model4)
 print(nP.cytovsDSP2.anova)
 
-nP.cytovsDSP.treatment_Condition2<- glht(nP.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
-summary(nP.cytovsDSP.treatment_Condition2)
+nP.cytovsDSP.treatment_Condition3<- glht(nP.cytovsDSP2.model4, mcp(Drug_Condition= "Tukey"))
+summary(nP.cytovsDSP.treatment_Condition3)
 
 
 ###
