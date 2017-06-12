@@ -357,7 +357,7 @@ summary(shortCorr.GroupX_types)
 shortCorr.CompType.pvalue <- glht(shortCorr.model2, mcp(CompType= "Tukey"))
 summary(shortCorr.CompType.pvalue)
 
-shortCorr.Nresp.pvalue <- glht(shortCorr.model5, mcp(Nresponders= "Tukey"))
+***P<0.0001shortCorr.Nresp.pvalue <- glht(shortCorr.model5, mcp(Nresponders= "Tukey"))
 summary(shortCorr.Nresp.pvalue)
 
 shortCorr.NrespType.pvalue <- glht(shortCorr.model6, mcp(GroupX_Nresp= "Tukey"))

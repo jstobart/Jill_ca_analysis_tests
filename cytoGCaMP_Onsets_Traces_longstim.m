@@ -59,6 +59,7 @@ for iROI=1:length(ShortstimPeaks)
     D_str= strfind(ShortstimPeaks{iROI, 1},'D'); %hand selected dendrite
     r_str= strfind(ShortstimPeaks{iROI, 1},'r'); %FLIKA ROIs
     EF_str= strfind(ShortstimPeaks{iROI, 1},'E');
+    S_str= strfind(ShortstimPeaks{iROI, 1},'S');
     
     if ~isempty(N_str)
         ShortstimPeaks{iROI,21}='Neuron';
@@ -73,6 +74,8 @@ for iROI=1:length(ShortstimPeaks)
         end
     elseif ~isempty(EF_str)
         ShortstimPeaks{iROI,21}='Endfeet';
+    elseif ~isempty(S_str)
+        ShortstimPeaks{iROI,21}='Soma';
     end
     
     % make new unique trial names
@@ -112,6 +115,7 @@ for iROI=1:length(Shortstim)
     D_str= strfind(Shortstim{iROI, 1},'D'); %hand selected dendrite
     r_str= strfind(Shortstim{iROI, 1},'r'); %FLIKA ROIs
     EF_str= strfind(Shortstim{iROI, 1},'E');
+    S_str= strfind(Shortstim{iROI, 1},'S');
     
     if ~isempty(N_str)
         Shortstim{iROI,13}='Neuron';
@@ -126,6 +130,8 @@ for iROI=1:length(Shortstim)
         end
     elseif ~isempty(EF_str)
         Shortstim{iROI,13}='Endfeet';
+    elseif ~isempty(S_str)
+        ShortstimPeaks{iROI,21}='Soma';
     end
     
     % make new unique trial names
