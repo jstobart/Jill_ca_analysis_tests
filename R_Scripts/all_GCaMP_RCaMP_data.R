@@ -388,6 +388,7 @@ ggplot(df.OT1, aes(x=interaction(Channel,Group),y=OnsetTime, fill= interaction(C
 stim.lck.OT$Group<-as.factor(stim.lck.OT$Group)
 Condition_Channel=interaction(stim.lck.OT$Condition,stim.lck.OT$Channel)
 Group_Channel=interaction(stim.lck.OT$Group,stim.lck.OT$Channel)
+Group_Channel_Type=interaction(stim.lck.OT$Group,stim.lck.OT$Channel,stim.lck.OT$ROIType)
 # stats for onset times- neurons vs astrocytes
 OT.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), stim.lck.OT,REML=FALSE)
 OT.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), stim.lck.OT,REML=FALSE)
@@ -395,11 +396,15 @@ OT.model2 = lmer(OnsetTime ~ Condition + (1|Animal) + (1|Spot) + (1|Spot_trial) 
 OT.model3 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Spot_trial), stim.lck.OT,REML=FALSE)
 OT.model4 = lmer(OnsetTime ~ Group_Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), stim.lck.OT,REML=FALSE)
 OT.model5 = lmer(OnsetTime ~ Condition_Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), stim.lck.OT,REML=FALSE)
-OT.anova <- anova(OT.null, OT.model1,OT.model2,OT.model3,OT.model4,OT.model5)
+OT.model6 = lmer(OnsetTime ~ Group_Channel_Type + (1|Animal) + (1|Spot) + (1|Spot_trial), stim.lck.OT,REML=FALSE)
+OT.anova <- anova(OT.null, OT.model1,OT.model2,OT.model3,OT.model4,OT.model5,OT.model6)
 print(OT.anova)
 
 OT.Group_channel<- glht(OT.model4, mcp(Group_Channel= "Tukey"))
 summary(OT.Group_channel)
+
+OT.Group_channel_ty<- glht(OT.model6, mcp(Group_Channel_Type= "Tukey"))
+summary(OT.Group_channel_ty)
 
 
 Condition_ROIType=interaction(all.lck.OT$Condition,all.lck.OT$ROIType)
@@ -709,8 +714,8 @@ all.cyto.peaks<-subset(all.cyto.peaks,peakTime<stimwindow & peakTime>0 & Duratio
 all.cyto.DSP4.peaks<-subset(all.cyto.DSP4.peaks,peakTime<stimwindow & peakTime>0 & Duration<80)
 
 ntrials.lck.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
-ntrials.cyto.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
-ntrials.cyto.DSP4.peaks<- ddply(all.lck.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.peaks<- ddply(all.cyto.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.DSP4.peaks<- ddply(all.cyto.DSP4.peaks, c("Condition"), summarise, ntrials=length(unique(trials)))
 
 
 #####
