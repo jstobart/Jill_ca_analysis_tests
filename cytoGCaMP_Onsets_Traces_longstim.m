@@ -436,6 +436,10 @@ for xROI= 1:size(OT_GCaMP_traces,2)
 end
 plot(TimeX, OT_GCaMP_mean, 'Color', 'k','LineWidth',1);
 
+
+
+
+
 %% responding ROIs based on peak times (max)
 
 % ROI with a response to stimulation 
