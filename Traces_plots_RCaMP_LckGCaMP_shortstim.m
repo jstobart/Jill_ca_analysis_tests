@@ -3,17 +3,18 @@ clearvars
 close all
 
 %load data traces
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_17_02_2017.mat');
-%load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_17_02_2017.mat');
-
-Long_Short=All_traces;
-
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LStim_LckGC&RC_traces_17_02_2017.mat');
-%load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LStim_LckGC&RC_traces_17_02_2017.mat');
-
-Long=All_traces;
-
-All_traces=vertcat(Long_Short,Long);
+ load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_17_02_2017.mat');
+% %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\S&LStim_LckGC&RC_traces_17_02_2017.mat');
+% 
+% Long_Short=All_traces;
+% 
+ load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LStim_LckGC&RC_traces_17_02_2017.mat');
+% %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LStim_LckGC&RC_traces_17_02_2017.mat');
+% 
+% Long=All_traces;
+% 
+% All_traces=vertcat(Long_Short,Long);
+%load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat')
 FrameRate=11.84;
 stimwindow=round(FrameRate*30);
 

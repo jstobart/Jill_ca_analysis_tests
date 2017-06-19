@@ -13,7 +13,6 @@ library("reshape2")
 library("data.table")
 library("Hmisc")
 library("stringr")
-library('hexbin')
 
 ########################
 
@@ -27,12 +26,7 @@ max.theme <- theme_classic() +
     legend.text=element_text(size=12),
     legend.title=element_text(size=14, face="bold"),
     axis.line.x = element_line(colour = 'black', size=1, linetype='solid'),
-    axis.line.y = element_line(colour = 'black', size=1, linetype='solid'))
-
-# COLOUR BLIND FRIENDLY PALETTE FOR PLOTS
-# The palette with black:
-cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0E442")
-
+    axis.line.y = element_line(colour = 'black', size=1, linetype='solid')) 
 
 ###########
 # NOTES
