@@ -822,11 +822,43 @@ end
 plot([0 0],[0 length(NvsA_SpaceOnsets)], 'r--','LineWidth', 1)
 xlabel('time from neuronal event')
 
+%% combine nostim and stim
+Stim=NvsA_SpaceOnsets;
+Stim(:,16)={'Stim'};
+Nostim=NvsA_SpaceOnsets;
+Nostim(:,16)={'Nostim'};
+
+%%
+AllComb=vertcat(Stim,Nostim);
+[~, R_idx] = sort(AllComb(:,2));
+AllComb=AllComb(R_idx,:);
+
+figure('name', 'histogram: Stim vs Nostim, NvsA_space')
+h1=histogram(cell2mat(Stim(:,13)),158, 'Normalization','pdf');
+hold on
+h3=histogram(cell2mat(Nostim(:,13)),158, 'Normalization','pdf');
+xlim([-20 20])
+xlabel('time from neuronal event')
+
+figure('name', 'Raster plot Stim vs Nostim- NvsA_space')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+for iComp=1:length(Stim)
+    scatter(cell2mat(Stim(iComp,13)), iComp, 5, 'filled','b')
+    if iComp<=length(Nostim)
+    scatter(cell2mat(Nostim(iComp,13)), iComp, 5, 'filled','r')
+    end
+    xlim([-20 20])
+end
+plot([0 0],[0 length(Stim)], 'r--','LineWidth', 1)
+xlabel('time from neuronal event')
 %%
 
 figure('name', 'histogram: A vs N- closest in space')
 histogram(cell2mat(AvsN_SpaceOnsets(:,13)),158, 'Normalization','pdf')
 xlim([-20 20])
+ylim([0 0.09])
 xlabel('time from neuronal event')
 
 figure('name', 'Raster plot A vs N- closest in space')
