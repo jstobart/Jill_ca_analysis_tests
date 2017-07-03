@@ -18,11 +18,11 @@ saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_nostim_f
 saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_nostim_onset&AUC.csv';
 
 %peak data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_28_04_2017.mat');
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
 
 % Load trace data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_28_04_2017.mat');
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_28_04_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_28_04_2017.mat');
 
 
@@ -717,6 +717,20 @@ end
 %     load(saveFiles1);
 %     end
 
+
+%% only consider ROIs that are within -20 and 20 s
+
+NvsA_TimeOnsetsIdx=find(cell2mat(NvsA_TimeOnsets(:,13))>=-20 & cell2mat(NvsA_TimeOnsets(:,13))<=20);
+NvsA_TimeOnsets=NvsA_TimeOnsets(NvsA_TimeOnsetsIdx,:);
+
+NvsA_SpaceOnsetsIdx=find(cell2mat(NvsA_SpaceOnsets(:,13))>=-20 & cell2mat(NvsA_SpaceOnsets(:,13))<=20);
+NvsA_SpaceOnsets=NvsA_SpaceOnsets(NvsA_SpaceOnsetsIdx,:);
+
+AvsN_TimeOnsetsIdx=find(cell2mat(AvsN_TimeOnsets(:,13))>=-20 & cell2mat(AvsN_TimeOnsets(:,13))<=20);
+AvsN_TimeOnsets=AvsN_TimeOnsets(AvsN_TimeOnsetsIdx,:);
+
+AvsN_SpaceOnsetsIdx=find(cell2mat(AvsN_SpaceOnsets(:,13))>=-20 & cell2mat(AvsN_SpaceOnsets(:,13))<=20);
+AvsN_SpaceOnsets=AvsN_SpaceOnsets(AvsN_SpaceOnsetsIdx,:);
 %% histograms
 figure('name', 'histogram: N vs A- closest in time')
 h1=histogram(cell2mat(NvsA_TimeOnsets(:,13)),158, 'Normalization','pdf');
@@ -788,6 +802,26 @@ end
 plot([0 0],[0 length(NvsA_SpaceOnsets)], 'r--','LineWidth', 1)
 xlabel('time from neuronal event')
 
+ %%
+
+figure('name', 'histogram: A vs N- closest in space')
+histogram(cell2mat(AvsN_SpaceOnsets(:,13)),158, 'Normalization','pdf')
+xlim([-20 20])
+ylim([0 0.09])
+xlabel('time from neuronal event')
+
+figure('name', 'Raster plot A vs N- closest in space')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+for iComp=1:length(AvsN_SpaceOnsets)
+    
+    scatter(cell2mat(AvsN_SpaceOnsets(iComp,13)), iComp, 5, 'filled','k')
+    xlim([-20 20])
+end
+plot([0 0],[0 length(AvsN_SpaceOnsets)], 'r--','LineWidth', 1)
+xlabel('time from neuronal event')
+
 %% sort by timedifference
 
 [~, Dis_idx] = sort([NvsA_SpaceOnsets{:,13}], 'ascend');
@@ -807,8 +841,8 @@ xlabel('time from neuronal event')
 
 %% sort by astrocyte ROI area
 
-[~, Dis_idx] = sort([NvsA_SpaceOnsets{:,9}], 'ascend');
-NvsA_SpaceOnsets=NvsA_SpaceOnsets(Dis_idx,:);
+[~, area_idx] = sort([NvsA_SpaceOnsets{:,9}], 'ascend');
+NvsA_SpaceOnsets=NvsA_SpaceOnsets(area_idx,:);
 
 figure('name', 'Raster plot NvsA_SpaceOnsets- sorted by astrocyte ROI area')
 hold on
@@ -822,56 +856,43 @@ end
 plot([0 0],[0 length(NvsA_SpaceOnsets)], 'r--','LineWidth', 1)
 xlabel('time from neuronal event')
 
-%% combine nostim and stim
-Stim=NvsA_SpaceOnsets;
-Stim(:,16)={'Stim'};
-Nostim=NvsA_SpaceOnsets;
-Nostim(:,16)={'Nostim'};
+%% sort by amplitude
 
-%%
-AllComb=vertcat(Stim,Nostim);
-[~, R_idx] = sort(AllComb(:,2));
-AllComb=AllComb(R_idx,:);
+[C,ia,ib] = intersect(AvsN_SpaceOnsets(:,4),ShortstimPeaks(:,23));% astrocyte ROIs from comparisons vs peak info ROIs
 
-figure('name', 'histogram: Stim vs Nostim, NvsA_space')
-h1=histogram(cell2mat(Stim(:,13)),158, 'Normalization','pdf');
-hold on
-h3=histogram(cell2mat(Nostim(:,13)),158, 'Normalization','pdf');
-xlim([-20 20])
-xlabel('time from neuronal event')
+peakInfo=ShortstimPeaks(ib,:);
 
-figure('name', 'Raster plot Stim vs Nostim- NvsA_space')
-hold on
-set(gca,'ytick',[])
-set(gca,'YColor',get(gcf,'Color'))
-for iComp=1:length(Stim)
-    scatter(cell2mat(Stim(iComp,13)), iComp, 5, 'filled','b')
-    if iComp<=length(Nostim)
-    scatter(cell2mat(Nostim(iComp,13)), iComp, 5, 'filled','r')
-    end
-    xlim([-20 20])
-end
-plot([0 0],[0 length(Stim)], 'r--','LineWidth', 1)
-xlabel('time from neuronal event')
-%%
-
-figure('name', 'histogram: A vs N- closest in space')
-histogram(cell2mat(AvsN_SpaceOnsets(:,13)),158, 'Normalization','pdf')
-xlim([-20 20])
-ylim([0 0.09])
-xlabel('time from neuronal event')
-
-figure('name', 'Raster plot A vs N- closest in space')
-hold on
-set(gca,'ytick',[])
-set(gca,'YColor',get(gcf,'Color'))
-for iComp=1:length(AvsN_SpaceOnsets)
-    
-    scatter(cell2mat(AvsN_SpaceOnsets(iComp,13)), iComp, 5, 'filled','k')
-    xlim([-20 20])
-end
-plot([0 0],[0 length(AvsN_SpaceOnsets)], 'r--','LineWidth', 1)
-xlabel('time from neuronal event')
+% %% combine nostim and stim
+% Stim=NvsA_SpaceOnsets;
+% Stim(:,16)={'Stim'};
+% Nostim=NvsA_SpaceOnsets;
+% Nostim(:,16)={'Nostim'};
+% 
+% %%
+% AllComb=vertcat(Stim,Nostim);
+% [~, R_idx] = sort(AllComb(:,2));
+% AllComb=AllComb(R_idx,:);
+% 
+% figure('name', 'histogram: Stim vs Nostim, NvsA_space')
+% h1=histogram(cell2mat(Stim(:,13)),158, 'Normalization','pdf');
+% hold on
+% h3=histogram(cell2mat(Nostim(:,13)),158, 'Normalization','pdf');
+% xlim([-20 20])
+% xlabel('time from neuronal event')
+% 
+% figure('name', 'Raster plot Stim vs Nostim- NvsA_space')
+% hold on
+% set(gca,'ytick',[])
+% set(gca,'YColor',get(gcf,'Color'))
+% for iComp=1:length(Stim)
+%     scatter(cell2mat(Stim(iComp,13)), iComp, 5, 'filled','b')
+%     if iComp<=length(Nostim)
+%     scatter(cell2mat(Nostim(iComp,13)), iComp, 5, 'filled','r')
+%     end
+%     xlim([-20 20])
+% end
+% plot([0 0],[0 length(Stim)], 'r--','LineWidth', 1)
+% xlabel('time from neuronal event')
 
 %% Scatterplot of TimeDifferences vs distance
 
