@@ -858,9 +858,41 @@ xlabel('time from neuronal event')
 
 %% sort by amplitude
 
-[C,ia,ib] = intersect(AvsN_SpaceOnsets(:,4),ShortstimPeaks(:,23));% astrocyte ROIs from comparisons vs peak info ROIs
+[~,~,ib] = intersect(AvsN_SpaceOnsets(:,4),ShortstimPeaks(:,23));% astrocyte ROIs from comparisons vs peak info ROIs
 
 peakInfo=ShortstimPeaks(ib,:);
+
+for iROI=1:length(peakInfo)
+    SpaceIdx = find(~cellfun(@isempty, regexp(AvsN_SpaceOnsets(:,4), peakInfo(iROI,23))));
+    AvsN_SpaceOnsets(SpaceIdx,16)=peakInfo(iROI,1); % astrocyte amplitude
+    AvsN_SpaceOnsets(SpaceIdx,17)=peakInfo(iROI,5); % astrocyte peak time
+    %AvsN_SpaceOnsets(SpaceIdx,18)=cell2mat(peakInfo(iROI,3))*2; % astrocyte duration
+end
+
+[~, amp_idx] = sort([AvsN_SpaceOnsets{:,16}], 'ascend');
+AvsN_SpaceOnsets=AvsN_SpaceOnsets(amp_idx,:);
+
+figure('name', 'Raster plot NvsA_SpaceOnsets- sorted by astrocyte amplitude')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+for iComp=1:length(AvsN_SpaceOnsets)
+    
+    scatter(cell2mat(AvsN_SpaceOnsets(iComp,13)), iComp, 5, 'filled','k')
+    xlim([-20 20])
+    
+end
+plot([0 0],[0 length(AvsN_SpaceOnsets)], 'r--','LineWidth', 1)
+xlabel('time from neuronal event')
+
+figure('name','A vs N- closest in space- TimeDiff vs astrocyte amp')
+hold on
+for iComp=1:length(AvsN_SpaceOnsets)
+    scatter(cell2mat(AvsN_SpaceOnsets(iComp,13)), cell2mat(AvsN_SpaceOnsets(iComp,16)), 10,'k','o', 'filled')
+end
+    xlim([-20 20])
+    xlabel('time from neuronal event')
+    ylabel('amplitude')
 
 % %% combine nostim and stim
 % Stim=NvsA_SpaceOnsets;
@@ -913,18 +945,18 @@ end
     xlim([-20 20])
     xlabel('time from neuronal event')
     ylabel('Distance')
-%% 3d scatter time diff vs distance vs astroyte ROI area
-figure('name','N vs A- closest in time- TimeDiff vs distance vs Astrocyte ROI area')
-hold on
-for iComp=1:length(NvsA_TimeOnsets)
-    scatter3(cell2mat(NvsA_TimeOnsets(iComp,13)), cell2mat(NvsA_TimeOnsets(iComp,10)),cell2mat(NvsA_TimeOnsets(iComp,9)))
+%% 3d scatter time diff vs distance vs astroyte amp
+data=[cell2mat(AvsN_SpaceOnsets(:,13)) cell2mat(AvsN_SpaceOnsets(:,16)) cell2mat(AvsN_SpaceOnsets(:,10)) ];
+figure('name','A vs N- closest in space- TimeDiff vs distance vs Astrocyte amp')
+    plot3k(data, 'marker',{'o',6})
     xlim([-20 20])
+    ylim([0 4])
     xlabel('Onset time diff')
-    ylabel('Distance')
-    zlabel('Astrocyte ROI area')
-end
+    ylabel('Astrocyte amp')
+    zlabel('Distance')
 
 
+%view(3)
 %% Responding Neurons and Astrocytes based on onset times
 
 % ROI with a response to stimulation
