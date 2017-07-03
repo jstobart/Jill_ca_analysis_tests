@@ -33,8 +33,8 @@ max.theme <- theme_classic() +
 longstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 shortstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 
-longstim.corr <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
-shortstim.corr  <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
+#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
 
 CorrData<- rbind(longstim.corr, shortstim.corr)
 #CorrData<- shortstim.corr
@@ -221,7 +221,7 @@ for (ii in 1:nrow(NeuronDendrites))
 }
 
 GCaMP_RCaMP.groups$ROInameUnique<-paste(GCaMP_RCaMP.groups$Animal,GCaMP_RCaMP.groups$Spot,GCaMP_RCaMP.groups$ROI_Y, sep="_")
-GCaMP_RCaMP.Nresp2=data.frame()
+#GCaMP_RCaMP.groups$Nresponders=0
 for (ii in 1:nrow(NeuronSomas))
 {
   Soma=NeuronSomas$ROInameUnique[ii]
@@ -231,13 +231,10 @@ for (ii in 1:nrow(NeuronSomas))
   {
     subset1$Nresponders=RespType
     subset1$ROInameUnique=NULL
-    GCaMP_RCaMP.Nresp2<-rbind(GCaMP_RCaMP.Nresp2, subset1)
+    GCaMP_RCaMP.Nresp<-rbind(GCaMP_RCaMP.Nresp, subset1)
   }
 }
 
-GCaMP_RCaMP.Nresp$ROInameUnique=NULL
-
-GCaMP_RCaMP.Nresp<-rbind(GCaMP_RCaMP.Nresp,GCaMP_RCaMP.Nresp2)
 
 #####
 # histograms
@@ -246,7 +243,7 @@ GCaMP_RCaMP.Nresp<-rbind(GCaMP_RCaMP.Nresp,GCaMP_RCaMP.Nresp2)
 ggplot(GCaMP_RCaMP.Nresp, aes(x=Short_Corr, fill=interaction(Nresponders,GroupX))) + geom_density(alpha=0.3)+
   ggtitle("density-") + max.theme
 
-ggplot(GCaMP_RCaMP.Nresp[GCaMP_RCaMP.Nresp$GroupX=="fast A",], aes(x=Short_Corr, fill=Condition)) + geom_density(alpha=0.3)+
+ggplot(GCaMP_RCaMP.Nresp[GCaMP_RCaMP.Nresp$GroupX=="fast",], aes(x=Short_Corr, fill=Condition)) + geom_density(alpha=0.3)+
   ggtitle("density-") + max.theme
 
 #change order for plots
@@ -255,8 +252,8 @@ GCaMP_RCaMP.Nresp$GroupY<- as.factor(GCaMP_RCaMP.Nresp$GroupY)
 GCaMP_RCaMP.Nresp$Nresponders<- as.factor(GCaMP_RCaMP.Nresp$Nresponders)
 
 GCaMP_RCaMP.Nresp$CompType <- factor(GCaMP_RCaMP.Nresp$CompType, levels = c("Endfeet_Neuron","Endfeet_Dendrite", "Process_Neuron","Process_Dendrite"))
-GCaMP_RCaMP.Nresp$GroupX <- factor(GCaMP_RCaMP.Nresp$GroupX, levels = c("fast A","delayed A"))
-GCaMP_RCaMP.Nresp$GroupY <- factor(GCaMP_RCaMP.Nresp$GroupY, levels = c("fast N","delayed N"))
+GCaMP_RCaMP.Nresp$GroupX <- factor(GCaMP_RCaMP.Nresp$GroupX, levels = c("fastA","delayedA"))
+GCaMP_RCaMP.Nresp$GroupY <- factor(GCaMP_RCaMP.Nresp$GroupY, levels = c("fastN","delayedN"))
 GCaMP_RCaMP.Nresp$Nresponders <- factor(GCaMP_RCaMP.Nresp$Nresponders, levels = c("low","mid", "high"))
 
 
@@ -326,14 +323,6 @@ ggplot(data=df4G2, aes(x=interaction(GroupY,CompType), y=Short_Corr, fill=GroupX
   ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
   max.theme
 
-ggplot(data=df4G[df4G$GroupY=="fast N",], aes(x=GroupX, y=Short_Corr, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Astrocyte Group") +
-  ylab("Short_Corr") +
-  ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
-  max.theme
-
 #stats
 # interactions and factors
 GroupX_CompType=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$CompType)
@@ -341,18 +330,18 @@ GroupX_Condition=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$Conditi
 GroupX_Nresp=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$Nresponders)
 Condition_Nresp=interaction(GCaMP_RCaMP.Nresp$Condition, GCaMP_RCaMP.Nresp$Nresponders)
 GroupX_GroupY=interaction(GCaMP_RCaMP.Nresp$GroupX, GCaMP_RCaMP.Nresp$GroupY)
-#+ (1|ROIs_trial) + (1|RCaMP_ROIs)
+
 #correlation of only the stim window traces (short corr)
-shortCorr.null = lmer(Short_Corr ~ (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model1 = lmer(Short_Corr ~ GroupX + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model1B = lmer(Short_Corr ~ GroupX_Condition + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model2 = lmer(Short_Corr ~ CompType + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model3 = lmer(Short_Corr ~ CompType+GroupX + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model4 = lmer(Short_Corr ~ GroupX_CompType + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model5 = lmer(Short_Corr ~ Nresponders+ (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model5B = lmer(Short_Corr ~ Condition_Nresp+ (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model6 = lmer(Short_Corr ~ GroupX_Nresp + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-shortCorr.model7 = lmer(Short_Corr ~ GroupX_GroupY + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.null = lmer(Short_Corr ~ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model1 = lmer(Short_Corr ~ GroupX + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model1B = lmer(Short_Corr ~ GroupX_Condition + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model2 = lmer(Short_Corr ~ CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model3 = lmer(Short_Corr ~ CompType+GroupX + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model4 = lmer(Short_Corr ~ GroupX_CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model5 = lmer(Short_Corr ~ Nresponders+ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model5B = lmer(Short_Corr ~ Condition_Nresp+ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model6 = lmer(Short_Corr ~ GroupX_Nresp + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+shortCorr.model7 = lmer(Short_Corr ~ GroupX_GroupY + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
 
 shortCorr.anova <- anova(shortCorr.null,shortCorr.model1,shortCorr.model1B,shortCorr.model2,shortCorr.model3,
                          shortCorr.model4,shortCorr.model5,shortCorr.model5B,shortCorr.model6,shortCorr.model7)
@@ -368,7 +357,7 @@ summary(shortCorr.GroupX_types)
 shortCorr.CompType.pvalue <- glht(shortCorr.model2, mcp(CompType= "Tukey"))
 summary(shortCorr.CompType.pvalue)
 
-shortCorr.Nresp.pvalue <- glht(shortCorr.model5, mcp(Nresponders= "Tukey"))
+***P<0.0001shortCorr.Nresp.pvalue <- glht(shortCorr.model5, mcp(Nresponders= "Tukey"))
 summary(shortCorr.Nresp.pvalue)
 
 shortCorr.NrespType.pvalue <- glht(shortCorr.model6, mcp(GroupX_Nresp= "Tukey"))
@@ -383,8 +372,7 @@ df5B1<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("CompType")
 df5B2<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("GroupX","CompType"))
 df5C<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("Nresponders"))
 df5D<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("GroupX","Nresponders"))
-df5G<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("GroupX","GroupY"))
-df5G2<- summarySE(GCaMP_RCaMP.Nresp, measurevar="xCorr", groupvars=c("GroupX","GroupY","CompType"))
+
 
 ggplot(GCaMP_RCaMP.Nresp, aes(x=xCorr, fill=GroupX)) + geom_density(alpha=0.3)+
   ggtitle("density-") + max.theme
@@ -429,48 +417,21 @@ ggplot(data=df5D, aes(x=Nresponders, y=xCorr, fill=GroupX)) +
   ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
   max.theme
 
-
-ggplot(data=df5G, aes(x=GroupY, y=xCorr, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Astrocyte Group") +
-  ylab("xCorr") +
-  ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
-  max.theme
-
-ggplot(data=df5G2, aes(x=interaction(GroupY,CompType), y=xCorr, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Astrocyte Group") +
-  ylab("xCorr") +
-  ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
-  max.theme
-
-
-ggplot(data=df5G[df5G$GroupY=="fast N",], aes(x=GroupX, y=xCorr, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Astrocyte Group") +
-  ylab("xCorr") +
-  ggtitle("Astrocyte group vs neuron group for responding GCaMP") +
-  max.theme
 #stats
 # Likelihood-ratio test 
 
 #cross correlation
-xCorr.null = lmer(xCorr ~ (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model2 = lmer(xCorr ~ GroupX + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model3 = lmer(xCorr ~ CompType + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model4 = lmer(xCorr ~ CompType+GroupX + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model5 = lmer(xCorr ~ GroupX_CompType + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model6 = lmer(xCorr ~ Nresponders + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model7 = lmer(xCorr ~ GroupX_Nresp + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-xCorr.model8 = lmer(xCorr ~ GroupX_GroupY + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.null = lmer(xCorr ~ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.model2 = lmer(xCorr ~ GroupX + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.model3 = lmer(xCorr ~ CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.model4 = lmer(xCorr ~ CompType+GroupX + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.model5 = lmer(xCorr ~ GroupX_CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.model6 = lmer(xCorr ~ Nresponders + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+xCorr.model7 = lmer(xCorr ~ GroupX_Nresp + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
 
 
 xCorr.anova <- anova(xCorr.null,xCorr.model2,xCorr.model3,
-                     xCorr.model4,xCorr.model5,xCorr.model6,
-                     xCorr.model7,xCorr.model8)
+                     xCorr.model4,xCorr.model5,xCorr.model6,xCorr.model7)
 print(xCorr.anova)
 
 # p values
@@ -490,9 +451,6 @@ summary(xCorr.Nresponders)
 xCorr.Groupx_Nresp<- glht(xCorr.model7, mcp(GroupX_Nresp= "Tukey"))
 summary(xCorr.Groupx_Nresp)
 
-xCorr.Groupx_groupy<- glht(xCorr.model8, mcp(GroupX_GroupY= "Tukey"))
-summary(xCorr.Groupx_groupy)
-
 ######
 #Lag
 df6A<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Lag", groupvars=c("GroupX"))
@@ -501,7 +459,6 @@ df6C<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Lag", groupvars=c("CompType"))
 
 df6D<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Lag", groupvars=c("Nresponders"))
 df6E<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Lag", groupvars=c("GroupX","Nresponders"))
-df6F<- summarySE(GCaMP_RCaMP.Nresp, measurevar="Lag", groupvars=c("GroupX","GroupY"))
 
 
 ggplot(data=df6A, aes(x=GroupX, y=Lag, fill=GroupX)) +
@@ -545,36 +502,19 @@ ggplot(data=df6E, aes(x=GroupX, y=Lag, fill=Nresponders)) +
   ggtitle("Lag for responding GCaMP") +
   max.theme
 
-ggplot(data=df6F, aes(x=GroupY, y=Lag, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Nresponders") +
-  ylab("Lag") +
-  ggtitle("Lag for responding GCaMP") +
-  max.theme
-
-ggplot(data=df6F[df6F$GroupY=="fast N",], aes(x=GroupX, y=Lag, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("Nresponders") +
-  ylab("Lag") +
-  ggtitle("Lag for responding GCaMP") +
-  max.theme
-
 #Stats
 #lag
-Lag.null = lmer(Lag ~ (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model1 = lmer(Lag ~ GroupX + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model2 = lmer(Lag ~ CompType + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model3 = lmer(Lag ~ CompType+GroupX + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model4 = lmer(Lag ~ GroupX_CompType + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model5 = lmer(Lag ~ Nresponders + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model6 = lmer(Lag ~ GroupX+Nresponders + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model7 = lmer(Lag ~ GroupX_Nresp + (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
-Lag.model8 = lmer(Lag ~ GroupX_GroupY+ (1|Animal) + (1|Spot), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.null = lmer(Lag ~ (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model1 = lmer(Lag ~ GroupX + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model2 = lmer(Lag ~ CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model3 = lmer(Lag ~ CompType+GroupX + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model4 = lmer(Lag ~ GroupX_CompType + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model5 = lmer(Lag ~ Nresponders + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model6 = lmer(Lag ~ GroupX+Nresponders + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
+Lag.model7 = lmer(Lag ~ GroupX_Nresp + (1|Animal) + (1|Spot)+ (1|ROIs_trial), GCaMP_RCaMP.Nresp,REML=FALSE)
 
 Lag.anova <- anova(Lag.null,Lag.model1,Lag.model2,Lag.model3,
-                   Lag.model4,Lag.model5,Lag.model6,Lag.model7,Lag.model8)
+                   Lag.model4,Lag.model5,Lag.model6,Lag.model7)
 print(Lag.anova)
 
 # p values
@@ -593,9 +533,6 @@ summary(Lag.GroupX_types)
 Lag.GroupX_Nresp <- glht(Lag.model7, mcp(GroupX_Nresp= "Tukey"))
 summary(Lag.GroupX_Nresp)
 
-Lag.GroupX_GroupY <- glht(Lag.model8, mcp(GroupX_GroupY= "Tukey"))
-summary(Lag.GroupX_GroupY)
-
 #####
 #distance
 
@@ -604,7 +541,7 @@ df7B<- summarySE(GCaMP_RCaMP.Nresp, measurevar="MinDistance", groupvars=c("Nresp
 df7C<- summarySE(GCaMP_RCaMP.Nresp, measurevar="MinDistance", groupvars=c("CompType"))
 df7D<- summarySE(GCaMP_RCaMP.Nresp, measurevar="MinDistance", groupvars=c("GroupX","CompType"))
 df7E<- summarySE(GCaMP_RCaMP.Nresp, measurevar="MinDistance", groupvars=c("GroupX","Nresponders"))
-df7F<- summarySE(GCaMP_RCaMP.Nresp, measurevar="MinDistance", groupvars=c("GroupX","GroupY"))
+
 
 ggplot(data=df7A, aes(x=GroupX, y=MinDistance, fill=GroupX)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -646,13 +583,7 @@ ggplot(data=df7C, aes(x=CompType, y=MinDistance, fill=CompType)) +
   ggtitle("MinDistance for responding GCaMP") +
   max.theme
 
-ggplot(data=df7F, aes(x=GroupY, y=MinDistance, fill=GroupX)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=MinDistance-se, ymax=MinDistance+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  xlab("CompType") +
-  ylab("MinDistance") +
-  ggtitle("MinDistance for responding GCaMP") +
-  max.theme
+
 
 
 #MinDistance
