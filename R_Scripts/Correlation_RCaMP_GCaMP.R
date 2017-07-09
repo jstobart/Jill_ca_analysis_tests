@@ -10,7 +10,7 @@ library("Rmisc")
 library("MASS")
 library("multcomp")
 library("reshape2")
-library("data.table")
+#library("data.table")
 library("Hmisc")
 library("stringr")
 
