@@ -922,12 +922,20 @@ library("GGally")
 
 pairsData<-stim.both.alldata[,c(1,5,11,14,16,18,21,26,28,29,30,31)]
 
-pairsData$Cond_Channel<-interaction(pairsData$Condition, pairsData$Channel)
-pairsData$Cond_Channel<-as.factor(pairsData$Cond_Channel)
+ggpairs(data=pairsData)
 
-ggpairs(data=pairsData[,c(1:3,5,6,13)], mapping=aes(color = Cond_Channel))
+# pairs plots
+stim.both.alldata %>%
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_scatterplot()
 
-ggpairs(data=pairsData[pairsData$Channel=="lck_GCaMP",c(7:12)])
+pairs(amplitude+OnsetTime, data=stim.both.alldata)
+Z=cbind(Sunset$Copepod,Sunset[,c(1:10)]) 
+Pairs.Copepod=pairs(Z,main="Copepods vs. explanatory variables",
+                    > panel=panel.smooth)
 
 #######
 # greater number ROIs with fast onset than Nostim?

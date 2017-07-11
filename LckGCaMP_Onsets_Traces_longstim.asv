@@ -15,18 +15,16 @@ APTWindow= 15; % astrocyte longer than stimulation for peak times
 stimwindow=20; % 5 s baseline, 15 s imaging 
 
 % save files names
-saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\nostim_firstonset_comparisons.mat';
-saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\nostim_firstonset_comparisons.csv';
-saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\nostim_onset&AUC.csv';
+saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.mat';
+saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.csv';
+saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset&AUC.csv';
 
-AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\AstrocyteTraces_noStim.xlsx';
-NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\NeuronalTraces_noStim.xlsx';
- %peak data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_nostim_05_04_2017.mat');
+%peak data
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_05_04_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
 
 % Load trace data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_nostim_05_04_2017.mat');
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_28_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_Shortstim_05_04_2017.mat');
 %load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_Shortstim_05_04_2017.mat');
@@ -776,8 +774,8 @@ for xROI= 1:length(RrespOT_sort)
 end
 
 
-xlswrite(AstrocyteExcelFile, AC_traces)
-xlswrite(NeuronalExcelFile, N_traces)
+xlswrite('AstrocyteTraces.xlsx', AC_traces)
+xlswrite('NeuronalTraces.xlsx', N_traces)
 
 %%
 figure ('name', 'fast AC with onset times in first 1 sec-long stim')
@@ -873,7 +871,7 @@ plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
     P_str= strfind(fastAC{xROI, 13},'Process');
      
      tempY= fastAC{xROI,8};
-     tempY=tempY(3:round(25*FrameRate));
+     tempY=tempY(1:round(25*FrameRate));
      if ~isempty(EF_str)
             Resp_EF_traces= horzcat(Resp_EF_traces, tempY);
      elseif ~isempty(P_str)
@@ -884,12 +882,12 @@ end
 % means and SDs
 
 %endfeet
-RespEFmeanTrace = mean(Resp_EF_traces,2)';
-RespEFSEMTrace = std(Resp_EF_traces')/sqrt(size(Resp_EF_traces,2));
+RespEFmeanTrace = mean(Resp_EF_traces,2);
+RespEFSDTrace = std(Resp_EF_traces');
 
 %processes
-RespPmeanTrace = mean(Resp_processes_traces,2)';
-RespPSEMTrace = std(Resp_processes_traces')/sqrt(size(Resp_processes_traces,2));
+RespPmeanTrace = mean(Resp_processes_traces,2);
+RespPSDTrace = std(Resp_processes_traces');
 
 
 figure('name', 'Lck FAST endfeet vs processes- plus SEM')
@@ -901,11 +899,10 @@ lineProps.edgestyle = ':';
 
 %ylim([-0.2 3]);
 lineProps.col = {blue};
-mseb(TimeX(3:round(25*FrameRate)),RespEFmeanTrace,RespEFSEMTrace,lineProps)
+mseb(TimeX,slowAC_mean,slowAC_SEM,lineProps)
 lineProps.col = {green};
-mseb(TimeX(3:round(25*FrameRate)),(RespPmeanTrace+2.5),RespPSEMTrace,lineProps)
-rectangle('Position', [5 -1 8 5.5])
-plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
-
+mseb(TimeX,(fastAC_mean+0.75),fastAC_SEM,lineProps)
+lineProps.col = {purple};
+mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
 
 
