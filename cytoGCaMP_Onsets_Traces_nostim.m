@@ -15,18 +15,19 @@ APTWindow= 15; % astrocyte longer than stimulation for peak times
 stimwindow=20; % 5 s baseline, 15 s imaging 
 
 % save files names
-saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.mat';
-saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.csv';
-saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset&AUC.csv';
+saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\cyto_nostim_firstonset_comparisons.mat';
+saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\cyto_nostim_firstonset_comparisons.csv';
+saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\cyto_nostim_onset&AUC.csv';
 
-AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-AstrocyteTraces_Stim.xlsx';
-NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-NeuronalTraces_Stim.xlsx';
+AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_&_Nostimvsstim_comparison\cyto_AstrocyteTraces_Nostim.xlsx';
+NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_&_Nostimvsstim_comparison\cyto_NeuronalTraces_Nostim.xlsx';
+
 %peak data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_05_04_2017.mat');
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\cytoGC&RC_2D_nostim_28_04_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
 
 % Load trace data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_traces_2D_longstim_05_04_2017.mat');
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\cyto_GCaMP6s\Results\cytoGC&RC_traces_2D_nostim_28_04_2017.mat');
 
 
 ShortstimPeaks=AllData2(2:end,:);
@@ -781,6 +782,7 @@ figure ('name', 'fast AC with onset times in first 1 sec-long stim')
 hold on
 axis off
 xlim([-1 25]);
+ylim([-5 15]);
 for xROI= 1:size(fastAC,1)
     tempY = fastAC{xROI,8};
     if length(tempY)>590
@@ -831,13 +833,11 @@ lineProps.edgestyle = ':';
 lineProps.col = {blue};
 mseb(TimeX,slowAC_mean,slowAC_SEM,lineProps)
 lineProps.col = {green};
-mseb(TimeX,(fastAC_mean+0.75),fastAC_SEM,lineProps)
+mseb(TimeX,(fastAC_mean+2),fastAC_SEM,lineProps)
 lineProps.col = {purple};
-mseb(TimeX,(OT_RCaMP_mean+2),RC_SEM,lineProps)
+mseb(TimeX,(OT_RCaMP_mean+5),RC_SEM,lineProps)
 
-% H2=shadedErrorBar(TimeX,(fastAC_mean+0.75),fastAC_SEM)%,green,1);
-% H3=shadedErrorBar(TimeX,(OT_RCaMP_mean+2),RC_SEM)%,purple,1);
-rectangle('Position', [5 -0.3 8 4])
+rectangle('Position', [5 -0.3 8 7])
 plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 
 

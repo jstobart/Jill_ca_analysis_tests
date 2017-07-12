@@ -783,7 +783,7 @@ xlswrite(NeuronalExcelFile, N_traces)
 figure ('name', 'fast AC with onset times in first 1 sec-long stim')
 hold on
 axis off
-xlim([0 35]);
+xlim([-1 25]);
 for xROI= 1:size(fastAC,1)
     tempY = fastAC{xROI,8};
     if length(tempY)>590
@@ -794,7 +794,7 @@ for xROI= 1:size(fastAC,1)
 end
 plot(TimeX, fastAC_mean, 'Color', 'k','LineWidth',1);
 rectangle('Position', [5 -1 8 10])
-
+plot([-1 -1],[0 1], 'k','LineWidth', 1)
 %%
 figure('name', 'Lck long stim all means')
 hold on
