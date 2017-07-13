@@ -30,13 +30,12 @@ max.theme <- theme_classic() +
 
 ########################
 #Correlation of RCaMP and GCaMP Signals during long stim
-longstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
-shortstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
+#longstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
+#shortstim.corr <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 
-#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
-#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
 
-CorrData<- rbind(longstim.corr, shortstim.corr)
+#CorrData<- rbind(longstim.corr, shortstim.corr)
 #CorrData<- shortstim.corr
 
 
@@ -357,7 +356,7 @@ summary(shortCorr.GroupX_types)
 shortCorr.CompType.pvalue <- glht(shortCorr.model2, mcp(CompType= "Tukey"))
 summary(shortCorr.CompType.pvalue)
 
-***P<0.0001shortCorr.Nresp.pvalue <- glht(shortCorr.model5, mcp(Nresponders= "Tukey"))
+shortCorr.Nresp.pvalue <- glht(shortCorr.model5, mcp(Nresponders= "Tukey"))
 summary(shortCorr.Nresp.pvalue)
 
 shortCorr.NrespType.pvalue <- glht(shortCorr.model6, mcp(GroupX_Nresp= "Tukey"))

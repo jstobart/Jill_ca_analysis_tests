@@ -1508,12 +1508,351 @@ ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="lck_GCaMP.fast",], aes(
   ggtitle("lck data- fast no stim vs stim")+
   max.theme
 
+#####
+# scatterplots with multiple variables
+
+ggplot(stim.lck.compdata[stim.lck.compdata$Channel=="lck_GCaMP",], aes(x=OnsetTime,y=amplitude, size=Duration, colour=interaction(Condition,Group))) +
+  geom_point()+
+  max.theme
+
+ggplot(stim.lck.compdata[stim.lck.compdata$Channel=="lck_GCaMP",], aes(x=OnsetTime,y=amplitude, colour=interaction(Condition,Group))) +
+  geom_point() +
+  max.theme
+
+library("plot3D")
+x1=stim.lck.compdata[stim.lck.compdata$Channel=="lck_GCaMP",]$OnsetTime
+y1=stim.lck.compdata[stim.lck.compdata$Channel=="lck_GCaMP",]$amplitude
+z1=stim.lck.compdata[stim.lck.compdata$Channel=="lck_GCaMP",]$Duration
+
+
+scatter3D(-(y1),x1, z1,phi= 10, main="lck-data",expand =0.2,
+          ylab = "OnsetTime(s)", xlab ="amplitude", zlab = "duration (s)",
+          colvar = as.integer(stim.lck.compdata[stim.lck.compdata$Channel=="lck_GCaMP",]$Condition), 
+          col = c("blue", "red"),
+          pch = 18, ticktype = "detailed",
+          colkey = list(at = c(2, 3), side = 1, 
+                        addlines = TRUE, length = 0.1, width = 0.5))
+                        #labels = c("Nostim", "Stim")) )
+
+
+
+
+x2=stim.lck.compdata[stim.lck.compdata$Channel_Group=="lck_GCaMP.fast",]$OnsetTime
+y2=stim.lck.compdata[stim.lck.compdata$Channel_Group=="lck_GCaMP.fast",]$amplitude
+z2=stim.lck.compdata[stim.lck.compdata$Channel_Group=="lck_GCaMP.fast",]$Duration
+
+scatter3D(-(y2),x2, z2,phi= 10, main="fast lck data only",expand =0.5,#bty = "u",
+          ylab = "OnsetTime(s)", xlab ="amplitude", zlab = "duration (s)",
+          colvar = as.integer(stim.lck.compdata[stim.lck.compdata$Channel_Group=="lck_GCaMP.fast",]$Condition), 
+          col = c("blue", "red"),
+          pch = 18, ticktype = "detailed",
+          colkey = list(at = c(2, 3), side = 1, 
+                        addlines = TRUE, length = 0.1, width = 0.5))
+                        #labels = c("Nostim", "Stim")) )
+
+
+
+
+
+##### 
+# correlation data 
+
+CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+
+CorrData$ROI_Y_type<-as.character(CorrData$ROI_Y_type)
+CorrData$ROI_Y_type[grepl("D",CorrData$ROI_Y)]="Dendrite"
+CorrData$ROI_Y_type<-as.factor(CorrData$ROI_Y_type)
+CorrData$CompChannel<-paste(CorrData$ChannelX, CorrData$ChannelY, sep= "_")
+CorrData$CompType<-paste(CorrData$ROI_X_type, CorrData$ROI_Y_type, sep= "_")
+
+# GCaMP and RCaMP ROIs
+GCaMP_RCaMP<-subset(CorrData, CompChannel=="GCaMP_RCaMP")
+GCaMP_RCaMP$ROIs_trial<-paste(GCaMP_RCaMP$Animal, GCaMP_RCaMP$Spot, GCaMP_RCaMP$Trial,GCaMP_RCaMP$ROI_X, sep= "_")
+GCaMP_RCaMP$RCaMP_ROIs<-paste(GCaMP_RCaMP$Animal, GCaMP_RCaMP$Spot, GCaMP_RCaMP$Trial,GCaMP_RCaMP$ROI_Y, sep= "_")
+
+#remove random spots with gcamp neurons
+ntypes=c("Neuron_Neuron","Neuron_Neuropil","Neuropil_Neuron","Neuropil_Neuropil")
+GCaMP_RCaMP<-subset(GCaMP_RCaMP, !(CompType %in% ntypes))
+
+
+
+# consider only comparisons between astrocyte and neuronal ROIs that respond to stimulation 
+
+respGC<-subset(stim.both.alldata, Channel=="lck_GCaMP" & Condition=="Stim") 
+respRC<-subset(stim.both.alldata, Channel=="lck_RCaMP" & Condition=="Stim") 
+
+# list of responding astrocytes and their corresponding group
+respGC2<-unique(respGC[c("ROIs_trial","Group")])
+respRC2<-unique(respRC[c("ROIs_trial","Group")])
+
+# only correlations from responding astrocytes and neurons
+GCaMP_RCaMP<-subset(GCaMP_RCaMP, ROIs_trial %in% respGC2$ROIs_trial)
+GCaMP_RCaMP<-subset(GCaMP_RCaMP, RCaMP_ROIs %in% unique(respRC$ROIs_trial))
+
+# put group information into correlation table ("fast or delayed")
+GCaMP_RCaMP.group=data.frame()
+for (ii in 1:nrow(respGC2))
+{
+  ROIx=respGC2$ROIs_trial[ii]
+  Groupx=respGC2$Group[ii]
+  Groupx=paste(Groupx,"A")
+  subset1=subset(GCaMP_RCaMP, ROIs_trial==ROIx)
+  if (nrow(subset1)>0)
+  {
+    subset1$GroupX=Groupx
+    GCaMP_RCaMP.group<-rbind(GCaMP_RCaMP.group, subset1)
+  }
+}
+
+# RCaMP group info
+GCaMP_RCaMP.groups=data.frame()
+for (ii in 1:nrow(respRC2))
+{
+  ROIy=respRC2$ROIs_trial[ii]
+  Groupy=respRC2$Group[ii]
+  Groupy=paste(Groupy,"N")
+  subset1=subset(GCaMP_RCaMP.group, RCaMP_ROIs==ROIy)
+  if (nrow(subset1)>0)
+  {
+    subset1$GroupY=Groupy
+    GCaMP_RCaMP.groups<-rbind(GCaMP_RCaMP.groups, subset1)
+  }
+}
+
+
+ggplot(GCaMP_RCaMP.groups, aes(x=Short_Corr, fill=GroupX)) + geom_density(alpha=0.3)+
+  ggtitle("density-") + max.theme
+
+ggplot(GCaMP_RCaMP.groups, aes(x=MinDistance, y=Short_Corr, colour=GroupX))+
+  geom_point(alpha=0.3) +
+  max.theme
+
+ggplot(GCaMP_RCaMP.groups, aes(x=MinDistance, y=Short_Corr, color=GroupX)) + 
+  geom_point(alpha=0.3) + 
+  geom_density2d()+
+  max.theme
+
+ggplot(GCaMP_RCaMP.groups[GCaMP_RCaMP.groups$GroupX=="fast A",], aes(x=MinDistance, y=Short_Corr)) + 
+  geom_point() + 
+  geom_smooth(method='lm')+
+  max.theme
+
+
+#  means considering all correlations
+GCaMP_RCaMP.groups$GroupX <- factor(GCaMP_RCaMP.groups$GroupX, levels = c("fast A","delayed A"))
+
+#########
+# significant correlation (and respond to stimulation)
+
+# comparisons with significant P values
+GR_Corr_Sig<-subset(GCaMP_RCaMP.groups, ShortPvalue<0.05)
+
+ggplot(GR_Corr_Sig, aes(x=Short_Corr, fill=GroupX)) + geom_density(alpha=0.3)+
+  ggtitle("density-") + max.theme
+
+ggplot(GR_Corr_Sig, aes(x=MinDistance, y=Short_Corr, colour=GroupX))+
+  geom_point(alpha=0.3) +
+  max.theme
+
+
+df5A1<- summarySE(GCaMP_RCaMP.groups, measurevar="Short_Corr", groupvars=c("GroupX"))
+df5A2<- summarySE(GCaMP_RCaMP.groups, measurevar="Short_Corr", groupvars=c("CompType"))
+df5A3<- summarySE(GCaMP_RCaMP.groups, measurevar="Short_Corr", groupvars=c("GroupX","CompType"))
+
+df5B1<- summarySE(GR_Corr_Sig, measurevar="Short_Corr", groupvars=c("GroupX"))
+df5B2<- summarySE(GR_Corr_Sig, measurevar="Short_Corr", groupvars=c("CompType"))
+df5B3<- summarySE(GR_Corr_Sig, measurevar="Short_Corr", groupvars=c("GroupX","CompType"))
+
+ggplot(data=df5A1, aes(x=GroupX, y=Short_Corr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Short_Corr for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df5A2, aes(x=CompType, y=Short_Corr, fill=CompType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Short_Corr for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df5A3, aes(x=CompType, y=Short_Corr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Short_Corr for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df5B1, aes(x=GroupX, y=Short_Corr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Short_Corr for sig responding GCaMP") +
+  max.theme
+
+ggplot(data=df5B2, aes(x=CompType, y=Short_Corr, fill=CompType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Short_Corr for sig responding GCaMP") +
+  max.theme
+
+ggplot(data=df5B3, aes(x=CompType, y=Short_Corr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Short_Corr-se, ymax=Short_Corr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Short_Corr") +
+  ggtitle("Short_Corr for sig responding GCaMP") +
+  max.theme
+
+
+df6A1<- summarySE(GCaMP_RCaMP.groups, measurevar="xCorr", groupvars=c("GroupX"))
+df6A2<- summarySE(GCaMP_RCaMP.groups, measurevar="xCorr", groupvars=c("CompType"))
+df6A3<- summarySE(GCaMP_RCaMP.groups, measurevar="xCorr", groupvars=c("GroupX","CompType"))
+
+df6B1<- summarySE(GR_Corr_Sig, measurevar="xCorr", groupvars=c("GroupX"))
+df6B2<- summarySE(GR_Corr_Sig, measurevar="xCorr", groupvars=c("CompType"))
+df6B3<- summarySE(GR_Corr_Sig, measurevar="xCorr", groupvars=c("GroupX","CompType"))
+
+ggplot(data=df6A1, aes(x=GroupX, y=xCorr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("xCorr") +
+  ggtitle("xCorr for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df6A2, aes(x=CompType, y=xCorr, fill=CompType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("xCorr") +
+  ggtitle("xCorr for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df6A3, aes(x=CompType, y=xCorr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("xCorr") +
+  ggtitle("xCorr for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df6B1, aes(x=GroupX, y=xCorr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("xCorr") +
+  ggtitle("xCorr for sig responding GCaMP") +
+  max.theme
+
+ggplot(data=df6B2, aes(x=CompType, y=xCorr, fill=CompType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("xCorr") +
+  ggtitle("xCorr for sig responding GCaMP") +
+  max.theme
+
+ggplot(data=df6B3, aes(x=CompType, y=xCorr, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=xCorr-se, ymax=xCorr+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("xCorr") +
+  ggtitle("xCorr for sig responding GCaMP") +
+  max.theme
+
+
+df7A1<- summarySE(GCaMP_RCaMP.groups, measurevar="Lag", groupvars=c("GroupX"))
+df7A2<- summarySE(GCaMP_RCaMP.groups, measurevar="Lag", groupvars=c("CompType"))
+df7A3<- summarySE(GCaMP_RCaMP.groups, measurevar="Lag", groupvars=c("GroupX","CompType"))
+
+df7B1<- summarySE(GR_Corr_Sig, measurevar="Lag", groupvars=c("GroupX"))
+df7B2<- summarySE(GR_Corr_Sig, measurevar="Lag", groupvars=c("CompType"))
+df7B3<- summarySE(GR_Corr_Sig, measurevar="Lag", groupvars=c("GroupX","CompType"))
+
+ggplot(data=df7A1, aes(x=GroupX, y=Lag, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Lag") +
+  ggtitle("Lag for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df7A2, aes(x=CompType, y=Lag, fill=CompType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Lag") +
+  ggtitle("Lag for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df7A3, aes(x=CompType, y=Lag, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Lag") +
+  ggtitle("Lag for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df7B1, aes(x=GroupX, y=Lag, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Lag") +
+  ggtitle("Lag for sig responding GCaMP") +
+  max.theme
+
+ggplot(data=df7B2, aes(x=CompType, y=Lag, fill=CompType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Lag") +
+  ggtitle("Lag for sig responding GCaMP") +
+  max.theme
+
+ggplot(data=df7B3, aes(x=CompType, y=Lag, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Lag-se, ymax=Lag+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("Lag") +
+  ggtitle("Lag for sig responding GCaMP") +
+  max.theme
 
 #######
-# stats for fast vs delayed
+# distance to the nearest active neuron
 
+respGC$minDistance=NA
+for (ii in 1:nrow(respGC))
+{
+  ROIx=respGC$ROIs_trial[ii]
+  subset1=subset(GCaMP_RCaMP.groups, ROIs_trial==ROIx)
+  if (nrow(subset1)>0)
+  {
+    respGC$minDistance[ii]=min(subset1$MinDistance)
+  }
+}
 
+dfDis<- summarySE(respGC, measurevar="minDistance", groupvars=c("Group"))
 
+df.Rarea1<-summarySE(stim.both.alldata[stim.both.alldata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel", "Condition"))
+df.Rarea2<-summarySE(stim.both.alldata[stim.both.alldata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel", "Group","Condition"))
+df.Rarea3<- summarySE(stim.lck.compdata[stim.lck.compdata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel_Group","Condition"))
+df.Rarea4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel_Group"))
+
+ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="lck_GCaMP.fast",], aes(x=area, y=..density..,fill=Condition)) +
+  geom_histogram(binwidth=5, position="dodge")+
+  ylab("density") +
+  xlim(-2,200)+
+  ggtitle("lck data- fast no stim vs stim")+
+  max.theme
+######
 
 Condition_ROIType=interaction(all.lck.OT$Condition,all.lck.OT$ROIType)
 # stats for onset times- neurons vs astrocytes

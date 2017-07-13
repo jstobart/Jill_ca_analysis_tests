@@ -755,7 +755,7 @@ for xROI= 1:length(GrespOT_sort)
     tempOnset = GrespOT_sort{xROI,16}; % individual onset time
     tempY = GrespOT_sort{xROI,8}; % individual trace
     
-    tempY=tempY(1:round(25*FrameRate)); % only first 15 seconds of trial (plus 5 sec baseline)
+    tempY=tempY(1:round(60*FrameRate)); % only first 15 seconds of trial (plus 5 sec baseline)
     
     temp=vertcat(tempOnset,tempY);
     AC_traces=vertcat(AC_traces,temp');
@@ -767,7 +767,7 @@ for xROI= 1:length(RrespOT_sort)
     tempOnset = RrespOT_sort{xROI,16}; % individual onset time
     tempY = RrespOT_sort{xROI,8}; % individual trace
     
-    tempY=tempY(1:round(25*FrameRate)); % only first 15 seconds of trial (plus 5 sec baseline)
+    tempY=tempY(1:round(60*FrameRate)); % only first 15 seconds of trial (plus 5 sec baseline)
     
     temp=vertcat(tempOnset,tempY);
     N_traces=vertcat(N_traces,temp');
@@ -825,7 +825,7 @@ RC_SEM=RC_SDTrace/sqrt(size(OT_RCaMP_traces,2));
 figure('name', 'Lck short stim all means- plus SEM')
 hold on
 axis off
-xlim([-1 25]);
+xlim([-1 60]);
 lineProps.width = 1;
 lineProps.edgestyle = ':';
 
@@ -844,7 +844,7 @@ plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 figure('name', 'Lck short stim all means- plus SD')
 hold on
 axis off
-xlim([-1 25]);
+xlim([-1 60]);
 lineProps.width = 1;
 lineProps.edgestyle = ':';
 %ylim([-0.2 3]);
@@ -871,7 +871,7 @@ plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
     P_str= strfind(fastAC{xROI, 13},'Process');
      
      tempY= fastAC{xROI,8};
-     tempY=tempY(3:round(25*FrameRate));
+     tempY=tempY(3:round(60*FrameRate));
      if ~isempty(EF_str)
             Resp_EF_traces= horzcat(Resp_EF_traces, tempY);
      elseif ~isempty(P_str)
@@ -893,15 +893,15 @@ RespPSEMTrace = std(Resp_processes_traces')/sqrt(size(Resp_processes_traces,2));
 figure('name', 'Lck FAST endfeet vs processes- plus SEM')
 hold on
 axis off
-xlim([-1 25]);
+xlim([-1 60]);
 lineProps.width = 1;
 lineProps.edgestyle = ':';
 
 %ylim([-0.2 3]);
 lineProps.col = {blue};
-mseb(TimeX(3:round(25*FrameRate)),RespEFmeanTrace,RespEFSEMTrace,lineProps)
+mseb(TimeX(3:round(60*FrameRate)),RespEFmeanTrace,RespEFSEMTrace,lineProps)
 lineProps.col = {green};
-mseb(TimeX(3:round(25*FrameRate)),(RespPmeanTrace+2.5),RespPSEMTrace,lineProps)
+mseb(TimeX(3:round(60*FrameRate)),(RespPmeanTrace+2.5),RespPSEMTrace,lineProps)
 rectangle('Position', [5 -1 8 5.5])
 plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 
