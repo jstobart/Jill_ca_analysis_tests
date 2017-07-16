@@ -1557,7 +1557,9 @@ scatter3D(-(y2),x2, z2,phi= 10, main="fast lck data only",expand =0.5,#bty = "u"
 ##### 
 # correlation data 
 
-CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+CorrData <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
+
 
 CorrData$ROI_Y_type<-as.character(CorrData$ROI_Y_type)
 CorrData$ROI_Y_type[grepl("D",CorrData$ROI_Y)]="Dendrite"
@@ -1826,7 +1828,51 @@ ggplot(data=df7B3, aes(x=CompType, y=Lag, fill=GroupX)) +
   max.theme
 
 #######
+# mean distance
+df8A1<- summarySE(GCaMP_RCaMP.groups, measurevar="MinDistance", groupvars=c("GroupX"))
+df8A2<- summarySE(GCaMP_RCaMP.groups, measurevar="MinDistance", groupvars=c("CompType"))
+df8A3<- summarySE(GCaMP_RCaMP.groups, measurevar="MinDistance", groupvars=c("GroupX","CompType"))
+
+df8B1<- summarySE(GR_Corr_Sig, measurevar="MinDistance", groupvars=c("GroupX"))
+df8B2<- summarySE(GR_Corr_Sig, measurevar="MinDistance", groupvars=c("CompType"))
+df8B3<- summarySE(GR_Corr_Sig, measurevar="MinDistance", groupvars=c("GroupX","CompType"))
+
+ggplot(data=df8A1, aes(x=GroupX, y=MinDistance, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=MinDistance-se, ymax=MinDistance+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("MinDistance") +
+  ggtitle("MinDistance for all responding GCaMP") +
+  max.theme
+
+ggplot(data=df8B1, aes(x=GroupX, y=MinDistance, fill=GroupX)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=MinDistance-se, ymax=MinDistance+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  xlab("Astrocyte Group") +
+  ylab("MinDistance") +
+  ggtitle("MinDistance for all sig GCaMP") +
+  max.theme
+
+
+# stats 
+minDis.lck.null = lmer(MinDistance ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP_RCaMP.groups,REML=FALSE)
+minDis.lck.model1 = lmer(MinDistance ~ GroupX + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP_RCaMP.groups,REML=FALSE)
+minDis.lck.anova <- anova(minDis.lck.null, minDis.lck.model1)
+print(minDis.lck.anova)
+
+#sig ROIs
+minDis.lck.null = lmer(MinDistance ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), GR_Corr_Sig,REML=FALSE)
+minDis.lck.model1 = lmer(MinDistance ~ GroupX + (1|Animal) + (1|Spot) + (1|ROIs_trial), GR_Corr_Sig,REML=FALSE)
+minDis.lck.anova <- anova(minDis.lck.null, minDis.lck.model1)
+print(minDis.lck.anova)
+
+minDis.lck.groupX<- glht(minDis.lck.model1, mcp(GroupX= "Tukey"))
+summary(minDis.lck.groupX)
+
+
+######
 # distance to the nearest active neuron
+# NOTE: no effect (see below)- distance is similar between groups and ROI types
 
 respGC$minDistance=NA
 for (ii in 1:nrow(respGC))
@@ -1839,12 +1885,10 @@ for (ii in 1:nrow(respGC))
   }
 }
 
-dfDis<- summarySE(respGC, measurevar="minDistance", groupvars=c("Group"))
+dfDis<- summarySE(respGC, measurevar="minDistance", groupvars=c("Group"),na.rm = TRUE)
+dfDis2<- summarySE(respGC, measurevar="minDistance", groupvars=c("ROIType"),na.rm = TRUE)
+dfDis3<- summarySE(respGC, measurevar="minDistance", groupvars=c("ROIType","Group"),na.rm = TRUE)
 
-df.Rarea1<-summarySE(stim.both.alldata[stim.both.alldata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel", "Condition"))
-df.Rarea2<-summarySE(stim.both.alldata[stim.both.alldata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel", "Group","Condition"))
-df.Rarea3<- summarySE(stim.lck.compdata[stim.lck.compdata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel_Group","Condition"))
-df.Rarea4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel_Group"))
 
 ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="lck_GCaMP.fast",], aes(x=area, y=..density..,fill=Condition)) +
   geom_histogram(binwidth=5, position="dodge")+
@@ -1852,30 +1896,136 @@ ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="lck_GCaMP.fast",], aes(
   xlim(-2,200)+
   ggtitle("lck data- fast no stim vs stim")+
   max.theme
-######
 
-Condition_ROIType=interaction(all.lck.OT$Condition,all.lck.OT$ROIType)
+Group_ROIType=interaction(respGC$Group, respGC$ROIType)
 # stats for onset times- neurons vs astrocytes
-OT.lck.type.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
-OT.lck.type.model1 = lmer(OnsetTime ~ ROIType + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
-OT.lck.type.model2 = lmer(OnsetTime ~ Condition + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
-OT.lck.type.model4 = lmer(OnsetTime ~ ROIType+Condition + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
-OT.lck.type.model5 = lmer(OnsetTime ~ Condition_ROIType + (1|Animal) + (1|Spot) + (1|Spot_trial), all.lck.OT,REML=FALSE)
-OT.lck.type.anova <- anova(OT.lck.type.null, OT.lck.type.model1, OT.lck.type.model2, 
-                           OT.lck.type.model4, OT.lck.type.model5)
-print(OT.lck.type.anova)
-
-OT.lck.Cond_ROIType<- glht(OT.lck.type.model5, mcp(Condition_ROIType= "Tukey"))
-summary(OT.lck.Cond_ROIType)
+minDis.lck.type.null = lmer(minDistance ~ (1|Animal) + (1|Spot) + (1|trials), respGC,REML=FALSE)
+minDis.lck.type.model1 = lmer(minDistance ~ Group + (1|Animal) + (1|Spot) + (1|trials), respGC,REML=FALSE)
+minDis.lck.type.model2 = lmer(minDistance ~ ROIType + (1|Animal) + (1|Spot) + (1|trials), respGC,REML=FALSE)
+minDis.lck.type.model3 = lmer(minDistance ~ Group_ROIType + (1|Animal) + (1|Spot) + (1|trials),respGC,REML=FALSE)
+minDis.lck.type.anova <- anova(minDis.lck.type.null, minDis.lck.type.model1, 
+                               minDis.lck.type.model2,minDis.lck.type.model3)
+print(minDis.lck.type.anova)
 
 
-#AUC vs onset time scatter plot
-ggplot(stim.lck.OT, aes(x=OnsetTime,y=TraceAUC10, colour=Group)) +
-  geom_point() +
-  scale_colour_manual(values=cbbPalette)+
+########
+
+# histograms for onset time comparison RASTERs
+AvsN.Space.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
+AvsN.Time.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_AvsN_TimeOnsets.csv", header=TRUE, sep = ",")
+NvsA.Space.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_NvsA_SpaceOnsets.csv", header=TRUE, sep = ",")
+NvsA.Time.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_NvsA_TimeOnsets.csv", header=TRUE, sep = ",")
+
+AvsN.Space.Nostim<-AvsN.Space.Nostim[-1,]
+
+AvsN.Space.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
+AvsN.Time.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_AvsN_TimeOnsets.csv", header=TRUE, sep = ",")
+NvsA.Space.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_NvsA_SpaceOnsets.csv", header=TRUE, sep = ",")
+NvsA.Time.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_NvsA_TimeOnsets.csv", header=TRUE, sep = ",")
+
+
+AvsN.Space.Nostim$Group<-"other"
+AvsN.Space.Nostim$AOnset<-as.numeric(as.character(AvsN.Space.Nostim$AOnset))
+AvsN.Space.Nostim$TimeDiff<-as.numeric(as.character(AvsN.Space.Nostim$TimeDiff))
+AvsN.Space.Nostim$Group[AvsN.Space.Nostim$AOnset<1]<-"fast"
+AvsN.Space.Nostim$Group[(AvsN.Space.Nostim$AOnset>=1 & AvsN.Space.Nostim$AOnset<12)]<-"delayed"
+
+AvsN.Time.Nostim$Group<-"other"
+AvsN.Time.Nostim$AOnset<-as.numeric(as.character(AvsN.Time.Nostim$AOnset))
+AvsN.Time.Nostim$TimeDiff<-as.numeric(as.character(AvsN.Time.Nostim$TimeDiff))
+AvsN.Time.Nostim$Group[AvsN.Time.Nostim$AOnset<1]<-"fast"
+AvsN.Time.Nostim$Group[(AvsN.Time.Nostim$AOnset>=1 & AvsN.Time.Nostim$AOnset<12)]<-"delayed"
+
+
+NvsA.Space.Nostim$Group<-"other"
+NvsA.Space.Nostim$AOnset<-as.numeric(as.character(NvsA.Space.Nostim$AOnset))
+NvsA.Space.Nostim$TimeDiff<-as.numeric(as.character(NvsA.Space.Nostim$TimeDiff))
+NvsA.Space.Nostim$Group[NvsA.Space.Nostim$AOnset<1]<-"fast"
+NvsA.Space.Nostim$Group[(NvsA.Space.Nostim$AOnset>=1 & NvsA.Space.Nostim$AOnset<12)]<-"delayed"
+
+
+NvsA.Time.Nostim$Group<-"other"
+NvsA.Time.Nostim$AOnset<-as.numeric(as.character(NvsA.Time.Nostim$AOnset))
+NvsA.Time.Nostim$TimeDiff<-as.numeric(as.character(NvsA.Time.Nostim$TimeDiff))
+NvsA.Time.Nostim$Group[NvsA.Time.Nostim$AOnset<1]<-"fast"
+NvsA.Time.Nostim$Group[(NvsA.Time.Nostim$AOnset>=1 & NvsA.Time.Nostim$AOnset<12)]<-"delayed"
+
+
+AvsN.Space.Stim$Group<-"other"
+AvsN.Space.Stim$AOnset<-as.numeric(as.character(AvsN.Space.Stim$AOnset))
+AvsN.Space.Stim$TimeDiff<-as.numeric(as.character(AvsN.Space.Stim$TimeDiff))
+AvsN.Space.Stim$Group[AvsN.Space.Stim$AOnset<1]<-"fast"
+AvsN.Space.Stim$Group[(AvsN.Space.Stim$AOnset>=1 & AvsN.Space.Stim$AOnset<12)]<-"delayed"
+
+AvsN.Time.Stim$Group<-"other"
+AvsN.Time.Stim$AOnset<-as.numeric(as.character(AvsN.Time.Stim$AOnset))
+AvsN.Time.Stim$TimeDiff<-as.numeric(as.character(AvsN.Time.Stim$TimeDiff))
+AvsN.Time.Stim$Group[AvsN.Time.Stim$AOnset<1]<-"fast"
+AvsN.Time.Stim$Group[(AvsN.Time.Stim$AOnset>=1 & AvsN.Time.Stim$AOnset<12)]<-"delayed"
+
+
+NvsA.Space.Stim$Group<-"other"
+NvsA.Space.Stim$AOnset<-as.numeric(as.character(NvsA.Space.Stim$AOnset))
+NvsA.Space.Stim$TimeDiff<-as.numeric(as.character(NvsA.Space.Stim$TimeDiff))
+NvsA.Space.Stim$Group[NvsA.Space.Stim$AOnset<1]<-"fast"
+NvsA.Space.Stim$Group[(NvsA.Space.Stim$AOnset>=1 & NvsA.Space.Stim$AOnset<12)]<-"delayed"
+
+
+NvsA.Time.Stim$Group<-"other"
+NvsA.Time.Stim$AOnset<-as.numeric(as.character(NvsA.Time.Stim$AOnset))
+NvsA.Time.Stim$TimeDiff<-as.numeric(as.character(NvsA.Time.Stim$TimeDiff))
+NvsA.Time.Stim$Group[NvsA.Time.Stim$AOnset<1]<-"fast"
+NvsA.Time.Stim$Group[(NvsA.Time.Stim$AOnset>=1 & NvsA.Time.Stim$AOnset<12)]<-"delayed"
+
+
+# histograms
+ggplot(AvsN.Space.Nostim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("AvsN Space Nostim")+
+  ylim(0,400)+
   max.theme
 
+ggplot(AvsN.Space.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("AvsN Space Stim")+
+  ylim(0,400)+
+  max.theme
 
+ggplot(AvsN.Time.Nostim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("AvsN Time Nostim")+
+  ylim(0,1200)+
+  max.theme
+
+ggplot(AvsN.Time.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("AvsN Time Stim")+
+  ylim(0,1200)+
+  max.theme
+
+ggplot(NvsA.Time.Nostim, aes(x=TimeDiff,fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("NvsA Time Nostim")+
+  ylim(0,2000)+
+  max.theme
+
+ggplot(NvsA.Time.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("NvsA Time Stim")+
+  ylim(0,2000)+
+  max.theme
+
+ggplot(NvsA.Space.Nostim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("NvsA Space Nostim")+
+  ylim(0,800)+
+  max.theme
+
+ggplot(NvsA.Space.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(binwidth=1)+#, position="dodge")+
+  ggtitle("NvsA Space Stim")+
+  ylim(0,800)+
+  max.theme
 
 ###########################
 
@@ -1999,37 +2149,6 @@ ggplot(df.OT3, aes(x=Channel,y=OnsetTime, fill= interaction(Channel,treatment)))
 
 
 ####
-#compare cyto to lck peak times
-
-cyto<-subset(all.cyto.peaks.short, Channel=="GCaMP" & Condition!="Nostim")
-lck<-subset(all.lck.peaks.short, Channel=="GCaMP"& Condition!="Nostim")
-
-cyto$Channel="cyto"
-lck$Channel="lck"
-lck$Group=NULL
-GCaMP.pT<-rbind(cyto,lck)
-
-df.pT2C1<- summarySE(GCaMP.pT, measurevar = "peakTime", groupvars = c("Channel"))
-df.pT2C2<- summarySE(GCaMP.pT, measurevar = "peakTime", groupvars = c("Channel", "Condition"))
-df.pT2D<- summarySE(GCaMP.pT, measurevar = "peakTime", groupvars = c("Channel", "Condition","ROIType"))
-
-Condition_Channel=interaction(GCaMP.pT$Condition,GCaMP.pT$Channel)
-# stats for onset times- neurons vs astrocytes
-pT.cytovslck.type.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
-pT.cytovslck.type.model1 = lmer(peakTime ~ Channel + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
-pT.cytovslck.type.model2 = lmer(peakTime ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
-pT.cytovslck.type.model4 = lmer(peakTime ~ Channel+Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
-pT.cytovslck.type.model5 = lmer(peakTime ~ Condition_Channel + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP.pT,REML=FALSE)
-pT.cytovslck.type.anova <- anova(pT.cytovslck.type.null, pT.cytovslck.type.model1, pT.cytovslck.type.model2, 
-                            pT.cytovslck.type.model4, pT.cytovslck.type.model5)
-print(pT.cytovslck.type.anova)
-
-pT.cytovslck.channel<- glht(pT.cytovslck.type.model1, mcp(Channel= "Tukey"))
-summary(pT.cytovslck.channel)
-
-pT.cytovslck.Cond_Ch<- glht(pT.cytovslck.type.model5, mcp(Condition_Channel= "Tukey"))
-summary(pT.cytovslck.Cond_Ch)
-
 #####
 # cyto DSP4 peak time data
 
@@ -2838,187 +2957,6 @@ amp.cytovsDSP.treatment_Condition3<- glht(amp.cytovsDSP2.model4, mcp(Drug_Condit
 summary(amp.cytovsDSP.treatment_Condition3)
 
 ######
-#  Lck ROI area
-
-lck.ROIarea<-subset(all.lck.peaks, (ROIType=="Dendrite" |ROIType=="Process"))
-lck.ROIarea.group<-subset(all.lck.peaks.group, ROIType=="Dendrite" |ROIType=="Process")
-
-lck.ROIarea$Condition<- factor(lck.ROIarea$Condition, levels=c("Nostim","shortstim","Stim"))
-lck.ROIarea$Group<- factor(lck.ROIarea$Condition, levels=c("fast","delayed"))
-
-#boxplot
-ggplot(data=lck.ROIarea, aes(x=Condition, y= area, colour=ROIType)) + 
-  geom_boxplot(size=1)+
-  ylab("area (sq m)")+
-  ggtitle("Astrocytes- roi area- - lck data") + 
-  scale_colour_manual(values=cbbPalette)+
-  max.theme
-
-df.area1<- summarySE(lck.ROIarea, measurevar="area", groupvars=c("Condition","ROIType"))
-df.area2<- summarySE(lck.ROIarea.group, measurevar="area", groupvars=c("Condition","ROIType", "Group"))
-df.area3<- summarySE(lck.ROIarea.group[lck.ROIarea.group$Condition!="Nostim",], measurevar="area", groupvars=c("ROIType", "Group"))
-
-ggplot(data=df.area1, aes(x=ROIType, y= area, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.area2, aes(x=interaction(ROIType,Group), y= area, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.area3, aes(x=ROIType, y= area, fill=Group)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.area3[df.area3$ROIType!="Dendrite",], aes(x=Group, y= area, fill=Group)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-lck.ROIarea$Condition_type<-interaction(lck.ROIarea$Condition,lck.ROIarea$ROIType)
-# stats for astrocyte amplitudes
-lck.area.null = lmer(area ~ (1|Animal) + (1|Spot) + (1|trials), lck.ROIarea,REML=FALSE)
-lck.area.model1 = lmer(area ~ Condition + (1|Animal) + (1|Spot) + (1|trials),lck.ROIarea ,REML=FALSE)
-lck.area.model2= lmer(area~ Condition_type + (1|Animal) + (1|Spot) + (1|trials), lck.ROIarea, REML=FALSE)
-lck.area.anova <- anova(lck.area.null, lck.area.model1, lck.area.model2)
-print(lck.area.anova)
-
-lck.area.Condition_type<- glht(lck.area.model2, mcp(Condition_type= "Tukey"))
-summary(lck.area.Condition_type)
-
-lck.ROIarea.group$Condition_type<-interaction(lck.ROIarea.group$Condition,lck.ROIarea.group$ROIType)
-lck.ROIarea.group$Condition_type_group<-interaction(lck.ROIarea.group$Condition,lck.ROIarea.group$ROIType, lck.ROIarea.group$Group)
-lck.ROIarea.group$type_group<-interaction(lck.ROIarea.group$ROIType, lck.ROIarea.group$Group)
-
-lck.area.group.null = lmer(area ~ (1|Animal) + (1|Spot) + (1|trials), lck.ROIarea.group,REML=FALSE)
-lck.area.group.model1 = lmer(area ~ Condition + (1|Animal) + (1|Spot) + (1|trials),lck.ROIarea.group ,REML=FALSE)
-lck.area.group.model2= lmer(area~ Condition_type + (1|Animal) + (1|Spot) + (1|trials), lck.ROIarea.group, REML=FALSE)
-lck.area.group.model3= lmer(area~ type_group + (1|Animal) + (1|Spot) + (1|trials), lck.ROIarea.group, REML=FALSE)
-lck.area.group.model4= lmer(area~ Condition_type_group + (1|Animal) + (1|Spot) + (1|trials), lck.ROIarea.group, REML=FALSE)
-lck.area.group.anova <- anova(lck.area.group.null, lck.area.group.model1, 
-                              lck.area.group.model2,lck.area.group.model3,
-                              lck.area.group.model4)
-print(lck.area.group.anova)
-
-lck.area.group.type<- glht(lck.area.group.model3, mcp(type_group= "Tukey"))
-summary(lck.area.group.type)
-
-lck.area.group.Condition_type<- glht(lck.area.group.model4, mcp(Condition_type_group= "Tukey"))
-summary(lck.area.group.Condition_type)
-
-
-######
-# cyto and DSP4 ROI area
-
-cyto.vs.dsp4.ROIarea<-subset(control.vs.DSP4.peaks, (ROIType=="Dendrite" |ROIType=="Process"))
-cyto.vs.dsp4.ROIarea$Condition<- factor(cyto.vs.dsp4.ROIarea$Condition, levels=c("Nostim","shortstim","Stim"))
-
-#boxplot
-ggplot(data=cyto.vs.dsp4.ROIarea, aes(x=Condition, y= area, colour=interaction(ROIType,treatment))) + 
-  geom_boxplot(size=1)+
-  ylab("area (sq m)")+
-  ggtitle("Astrocytes- roi area- - cyto data") + 
-  scale_colour_manual(values=cbbPalette)+
-  max.theme
-
-df.area1<- summarySE(cyto.vs.dsp4.ROIarea, measurevar="area", groupvars=c("Condition","ROIType","treatment"))
-df.area2<- summarySE(cyto.vs.dsp4.ROIarea, measurevar="area", groupvars=c("treatment","ROIType"))
-df.area3<- summarySE(cyto.vs.dsp4.ROIarea[cyto.vs.dsp4.ROIarea$treatment=="control",], measurevar="area", groupvars=c("Condition","ROIType"))
-
-ggplot(data=df.area1[df.area1$treatment=="control",], aes(x=ROIType, y= area, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.area1, aes(x=interaction(ROIType, Condition), y= area, fill=treatment)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.area2, aes(x=ROIType, y= area, fill=treatment)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.area3, aes(x=ROIType, y= area, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIarea") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-cyto.vs.dsp4.ROIarea$Condition_type<-interaction(cyto.vs.dsp4.ROIarea$Condition,cyto.vs.dsp4.ROIarea$ROIType)
-cyto.vs.dsp4.ROIarea$treatment_type<-interaction(cyto.vs.dsp4.ROIarea$treatment,cyto.vs.dsp4.ROIarea$ROIType)
-cyto.vs.dsp4.ROIarea$Condition_type_treatment<-interaction(cyto.vs.dsp4.ROIarea$Condition,cyto.vs.dsp4.ROIarea$ROIType,cyto.vs.dsp4.ROIarea$treatment)
-
-# stats for astrocyte amplitudes
-cyto.vs.dsp4.ROIarea.null = lmer(area ~ (1|Animal) + (1|Spot) + (1|trials), cyto.vs.dsp4.ROIarea,REML=FALSE)
-cyto.vs.dsp4.ROIarea.model1 = lmer(area ~ Condition + (1|Animal) + (1|Spot) + (1|trials), cyto.vs.dsp4.ROIarea,REML=FALSE)
-cyto.vs.dsp4.ROIarea.model2= lmer(area~ Condition_type + (1|Animal) + (1|Spot) + (1|trials), cyto.vs.dsp4.ROIarea, REML=FALSE)
-cyto.vs.dsp4.ROIarea.model3= lmer(area~ treatment_type + (1|Animal) + (1|Spot) + (1|trials), cyto.vs.dsp4.ROIarea, REML=FALSE)
-cyto.vs.dsp4.ROIarea.model4= lmer(area~ Condition_type_treatment + (1|Animal) + (1|Spot) + (1|trials), cyto.vs.dsp4.ROIarea, REML=FALSE)
-cyto.vs.dsp4.ROIarea.anova <- anova(cyto.vs.dsp4.ROIarea.null, cyto.vs.dsp4.ROIarea.model1, cyto.vs.dsp4.ROIarea.model2,
-                                    cyto.vs.dsp4.ROIarea.model3,cyto.vs.dsp4.ROIarea.model4)
-print(cyto.vs.dsp4.ROIarea.anova)
-
-cyto.vs.dsp4.ROIarea.treatment_type<- glht(cyto.vs.dsp4.ROIarea.model3, mcp(treatment_type= "Tukey"))
-summary(cyto.vs.dsp4.ROIarea.treatment_type)
-
-cyto.vs.dsp4.ROIarea.Condition_type_treatment <- glht(cyto.vs.dsp4.ROIarea.model4, mcp(Condition_type_treatment = "Tukey"))
-summary(cyto.vs.dsp4.ROIarea.Condition_type_treatment )
-
-######
-
-# peaks per trial
-lck.trials<-ddply(all.lck.peaks, c("Animal","Spot","trials","Condition","Channel"), summarise, nPeaks=length(amplitude))
-lck.trials.type<-ddply(all.lck.peaks, c("Animal","Spot","trials","Condition","Channel","ROIType"), summarise, nPeaks=length(amplitude))
-
-df.lck.numPeaks1<-summarySE(lck.trials, measurevar="nPeaks", groupvars=c("Condition","Channel"))
-
-ggplot(data=df.lck.numPeaks1, aes(x=Channel, y= nPeaks, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=nPeaks-se, ymax=nPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("nPeaks") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-lck.trials$Condition_channel<-interaction(lck.trials$Condition,lck.trials$Channel)
-# stats for astrocyte amplitudes
-lck.nPeak.null = lmer(nPeaks ~ (1|Animal) + (1|Spot), lck.trials,REML=FALSE)
-lck.nPeak.model1 = lmer(nPeaks ~ Condition + (1|Animal) + (1|Spot),lck.trials,REML=FALSE)
-lck.nPeak.model2= lmer(nPeaks~ Condition_channel + (1|Animal) + (1|Spot),lck.trials, REML=FALSE)
-lck.nPeak.anova <- anova(lck.nPeak.null, lck.nPeak.model1, lck.nPeak.model2)
-print(lck.nPeak.anova)
-
-lck.nPeak.Condition_channel<- glht(lck.nPeak.model2, mcp(Condition_channel= "Tukey"))
-summary(lck.nPeak.Condition_channel)
-
-#ROITypes
-df.lck.numPeaks2<-summarySE(lck.trials.type, measurevar="nPeaks", groupvars=c("Condition","Channel","ROIType"))
-
-ggplot(data=df.lck.numPeaks2, aes(x=interaction(Channel,ROIType), y= nPeaks, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=nPeaks-se, ymax=nPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("nPeaks") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 
 ######
