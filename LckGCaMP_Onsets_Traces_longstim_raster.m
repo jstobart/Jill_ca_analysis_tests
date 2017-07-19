@@ -875,82 +875,226 @@ end
 % xlabel('time from neuronal event')
 
 %% colour code raster by fast or delayed astrocytes
+% 
+% figure('name', 'Raster plot AvsN_SpaceOnsets- coloured by group')
+% hold on
+% set(gca,'ytick',[])
+% set(gca,'YColor',get(gcf,'Color'))
+% set(gca, 'XScale', 'log')
+% for iComp=1:length(AvsN_SpaceOnsets)
+%     if AvsN_SpaceOnsets{iComp,11}<1
+%     scatter(AvsN_SpaceOnsets{iComp,13}, iComp, 5, 'filled','b')
+%     elseif (AvsN_SpaceOnsets{iComp,11}>=1 && AvsN_SpaceOnsets{iComp,11}<12)
+%         scatter(AvsN_SpaceOnsets{iComp,13}, iComp, 5, 'filled','g')
+%     end
+% %     else
+% %         scatter(AvsN_SpaceOnsets{iComp,13}, iComp, 5, 'filled','m')
+% %     end
+% 
+%         xlim([-20 20])
+% end
+% plot([0 0],[0 length(AvsN_SpaceOnsets)], 'r--','LineWidth', 1)
+% xlabel('time from neuronal event')
 
-figure('name', 'Raster plot AvsN_SpaceOnsets- coloured by group')
+
+%% sort by distance and make separate plots for delayed/fast
+
+% astrocytes space
+[~, Dis_idx] = sort([AvsN_SpaceOnsets{:,10}], 'ascend');
+AvsN_SpaceOnsetsD=AvsN_SpaceOnsets(Dis_idx,:);
+clearvars Dis_idx
+
+% sort out fast
+for iComp=1:length(AvsN_SpaceOnsetsD)
+     Dis_idxF(iComp) = ~isempty(find(AvsN_SpaceOnsetsD{iComp,11}<1,1));
+end
+AvsN_SpaceOnsetsD_F=AvsN_SpaceOnsetsD(Dis_idxF,:);
+clearvars Dis_idxF
+
+% sort out delayed
+for iComp=1:length(AvsN_SpaceOnsetsD)
+     Dis_idxD(iComp) = ~isempty(find((AvsN_SpaceOnsetsD{iComp,11}>=1 && AvsN_SpaceOnsetsD{iComp,11}<12),1));
+end
+AvsN_SpaceOnsetsD_D=AvsN_SpaceOnsetsD(Dis_idxD,:);
+clearvars Dis_idxD
+
+
+figure('name', 'Raster plot AvsN_SpaceOnsets, distance- fast')
 hold on
 set(gca,'ytick',[])
 set(gca,'YColor',get(gcf,'Color'))
-set(gca, 'XScale', 'log')
-for iComp=1:length(AvsN_SpaceOnsets)
-    if AvsN_SpaceOnsets{iComp,11}<1
-    scatter(AvsN_SpaceOnsets{iComp,13}, iComp, 5, 'filled','b')
-    elseif (AvsN_SpaceOnsets{iComp,11}>=1 && AvsN_SpaceOnsets{iComp,11}<12)
-        scatter(AvsN_SpaceOnsets{iComp,13}, iComp, 5, 'filled','g')
-    else
-        scatter(AvsN_SpaceOnsets{iComp,13}, iComp, 5, 'filled','m')
-    end
-
-    
+%set(gca, 'XScale', 'log')
+ylim([0 (length(AvsN_SpaceOnsetsD_F)+1)])
+for iComp=1:length(AvsN_SpaceOnsetsD_F)
+    scatter(AvsN_SpaceOnsetsD_F{iComp,13}, iComp, 5, 'filled','b')
+    xlim([-15 15])
 end
-plot([0 0],[0 length(AvsN_SpaceOnsets)], 'r--','LineWidth', 1)
+plot([0 0],[0 length(AvsN_SpaceOnsetsD_F)], 'k--','LineWidth', 1)
 xlabel('time from neuronal event')
 
-figure('name', 'Raster plot AvsN_TimeOnsets- coloured by group')
+
+figure('name', 'Raster plot AvsN_SpaceOnsets, distance- delayed')
 hold on
 set(gca,'ytick',[])
 set(gca,'YColor',get(gcf,'Color'))
-for iComp=1:length(AvsN_TimeOnsets)
-    if AvsN_TimeOnsets{iComp,11}<1
-    scatter(AvsN_TimeOnsets{iComp,13}, iComp, 5, 'filled','b')
-    elseif (AvsN_TimeOnsets{iComp,11}>=1 && AvsN_TimeOnsets{iComp,11}<12)
-        scatter(AvsN_TimeOnsets{iComp,13}, iComp, 5, 'filled','g')
-    else
-        scatter(AvsN_TimeOnsets{iComp,13}, iComp, 5, 'filled','m')
-    end
-    xlim([-20 20])
-    
+%set(gca, 'XScale', 'log')
+ylim([0 (length(AvsN_SpaceOnsetsD_D)+1)])
+for iComp=1:length(AvsN_SpaceOnsetsD_D)
+    scatter(AvsN_SpaceOnsetsD_D{iComp,13}, iComp, 5, 'filled','g')
+    xlim([-15 15])
 end
-plot([0 0],[0 length(AvsN_TimeOnsets)], 'r--','LineWidth', 1)
+plot([0 0],[0 length(AvsN_SpaceOnsetsD_D)], 'k--','LineWidth', 1)
 xlabel('time from neuronal event')
 
 
 
-figure('name', 'Raster plot NvsA_TimeOnsets- coloured by group')
+% astrocytes time
+
+[~, Dis_idx] = sort([AvsN_TimeOnsets{:,10}], 'ascend');
+AvsN_TimeOnsetsD=AvsN_TimeOnsets(Dis_idx,:);
+clearvars Dis_idx
+
+% sort out fast
+for iComp=1:length(AvsN_TimeOnsetsD)
+     Dis_idxF(iComp) = ~isempty(find(AvsN_TimeOnsetsD{iComp,11}<1,1));
+end
+AvsN_TimeOnsetsD_F=AvsN_TimeOnsetsD(Dis_idxF,:);
+clearvars Dis_idxF
+
+% sort out delayed
+for iComp=1:length(AvsN_TimeOnsetsD)
+     Dis_idxD(iComp) = ~isempty(find((AvsN_TimeOnsetsD{iComp,11}>=1 && AvsN_TimeOnsetsD{iComp,11}<12),1));
+end
+AvsN_TimeOnsetsD_D=AvsN_TimeOnsetsD(Dis_idxD,:);
+clearvars Dis_idxD
+
+
+figure('name', 'Raster plot AvsN_TimeOnsets, distance- fast')
 hold on
 set(gca,'ytick',[])
 set(gca,'YColor',get(gcf,'Color'))
-for iComp=1:length(NvsA_TimeOnsets)
-    if NvsA_TimeOnsets{iComp,12}<1
-    scatter(NvsA_TimeOnsets{iComp,13}, iComp, 5, 'filled','b')
-    elseif (NvsA_TimeOnsets{iComp,12}>=1 && NvsA_TimeOnsets{iComp,12}<12)
-        scatter(NvsA_TimeOnsets{iComp,13}, iComp, 5, 'filled','g')
-    else
-        scatter(NvsA_TimeOnsets{iComp,13}, iComp, 5, 'filled','m')
-    end
-    xlim([-20 20])
-    
+%set(gca, 'XScale', 'log')
+ylim([0 (length(AvsN_TimeOnsetsD_F)+1)])
+for iComp=1:length(AvsN_TimeOnsetsD_F)
+    scatter(AvsN_TimeOnsetsD_F{iComp,13}, iComp, 5, 'filled','b')
+    xlim([-15 15])
 end
-plot([0 0],[0 length(NvsA_TimeOnsets)], 'r--','LineWidth', 1)
+plot([0 0],[0 length(AvsN_TimeOnsetsD_F)], 'k--','LineWidth', 1)
 xlabel('time from neuronal event')
 
 
-figure('name', 'Raster plot NvsA_SpaceOnsets- coloured by group')
+figure('name', 'Raster plot AvsN_TimeOnsets, distance- delayed')
 hold on
 set(gca,'ytick',[])
 set(gca,'YColor',get(gcf,'Color'))
-for iComp=1:length(NvsA_SpaceOnsets)
-    if NvsA_SpaceOnsets{iComp,12}<1
-    scatter(NvsA_SpaceOnsets{iComp,13}, iComp, 5, 'filled','b')
-    elseif (NvsA_SpaceOnsets{iComp,12}>=1 && NvsA_SpaceOnsets{iComp,12}<12)
-        scatter(NvsA_SpaceOnsets{iComp,13}, iComp, 5, 'filled','g')
-    else
-        scatter(NvsA_SpaceOnsets{iComp,13}, iComp, 5, 'filled','m')
-    end
-    xlim([-20 20])
-    
+%set(gca, 'XScale', 'log')
+ylim([0 (length(AvsN_TimeOnsetsD_D)+1)])
+for iComp=1:length(AvsN_TimeOnsetsD_D)
+    scatter(AvsN_TimeOnsetsD_D{iComp,13}, iComp, 5, 'filled','g')
+    xlim([-15 15])
 end
-plot([0 0],[0 length(NvsA_SpaceOnsets)], 'r--','LineWidth', 1)
+plot([0 0],[0 length(AvsN_TimeOnsetsD_D)], 'k--','LineWidth', 1)
 xlabel('time from neuronal event')
+
+
+% neurons time
+
+[~, Dis_idx] = sort([NvsA_TimeOnsets{:,10}], 'ascend');
+NvsA_TimeOnsetsD=NvsA_TimeOnsets(Dis_idx,:);
+clearvars Dis_idx
+
+% sort out fast
+for iComp=1:length(NvsA_TimeOnsetsD)
+     Dis_idxF(iComp) = ~isempty(find(NvsA_TimeOnsetsD{iComp,12}<1,1));
+end
+NvsA_TimeOnsetsD_F=NvsA_TimeOnsetsD(Dis_idxF,:);
+clearvars Dis_idxF
+
+% sort out delayed
+for iComp=1:length(NvsA_TimeOnsetsD)
+     Dis_idxD(iComp) = ~isempty(find((NvsA_TimeOnsetsD{iComp,12}>=1 && NvsA_TimeOnsetsD{iComp,12}<12),1));
+end
+NvsA_TimeOnsetsD_D=NvsA_TimeOnsetsD(Dis_idxD,:);
+clearvars Dis_idxD
+
+
+figure('name', 'Raster plot NvsA_TimeOnsets, distance- fast')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+%set(gca, 'XScale', 'log')
+ylim([0 (length(NvsA_TimeOnsetsD_F)+1)])
+for iComp=1:length(NvsA_TimeOnsetsD_F)
+    scatter(NvsA_TimeOnsetsD_F{iComp,13}, iComp, 5, 'filled','b')
+    xlim([-15 15])
+end
+plot([0 0],[0 length(NvsA_TimeOnsetsD_F)], 'k--','LineWidth', 1)
+xlabel('time from neuronal event')
+
+
+figure('name', 'Raster plot NvsA_TimeOnsets, distance- delayed')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+%set(gca, 'XScale', 'log')
+ylim([0 (length(NvsA_TimeOnsetsD_D)+1)])
+for iComp=1:length(NvsA_TimeOnsetsD_D)
+    scatter(NvsA_TimeOnsetsD_D{iComp,13}, iComp, 5, 'filled','g')
+    xlim([-15 15])
+end
+plot([0 0],[0 length(NvsA_TimeOnsetsD_D)], 'k--','LineWidth', 1)
+xlabel('time from neuronal event')
+
+
+
+% neurons space
+
+[~, Dis_idx] = sort([NvsA_SpaceOnsets{:,10}], 'ascend');
+NvsA_SpaceOnsetsD=NvsA_SpaceOnsets(Dis_idx,:);
+clearvars Dis_idx
+
+% sort out fast
+for iComp=1:length(NvsA_SpaceOnsetsD)
+     Dis_idxF(iComp) = ~isempty(find(NvsA_SpaceOnsetsD{iComp,12}<1,1));
+end
+NvsA_SpaceOnsetsD_F=NvsA_SpaceOnsetsD(Dis_idxF,:);
+clearvars Dis_idxF
+
+% sort out delayed
+for iComp=1:length(NvsA_SpaceOnsetsD)
+     Dis_idxD(iComp) = ~isempty(find((NvsA_SpaceOnsetsD{iComp,12}>=1 && NvsA_SpaceOnsetsD{iComp,12}<12),1));
+end
+NvsA_SpaceOnsetsD_D=NvsA_SpaceOnsetsD(Dis_idxD,:);
+clearvars Dis_idxD
+
+
+figure('name', 'Raster plot NvsA_SpaceOnsets, distance- fast')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+%set(gca, 'XScale', 'log')
+ylim([0 (length(NvsA_SpaceOnsetsD_F)+1)])
+for iComp=1:length(NvsA_SpaceOnsetsD_F)
+    scatter(NvsA_SpaceOnsetsD_F{iComp,13}, iComp, 5, 'filled','b')
+    xlim([-15 15])
+end
+plot([0 0],[0 length(NvsA_SpaceOnsetsD_F)], 'k--','LineWidth', 1)
+xlabel('time from neuronal event')
+
+
+figure('name', 'Raster plot NvsA_SpaceOnsets, distance- delayed')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+%set(gca, 'XScale', 'log')
+ylim([0 (length(NvsA_SpaceOnsetsD_D)+1)])
+for iComp=1:length(NvsA_SpaceOnsetsD_D)
+    scatter(NvsA_SpaceOnsetsD_D{iComp,13}, iComp, 5, 'filled','g')
+    xlim([-15 15])
+end
+plot([0 0],[0 length(NvsA_SpaceOnsetsD_D)], 'k--','LineWidth', 1)
+xlabel('time from neuronal event')
+
 
 
 % %% sort by distance
@@ -1355,23 +1499,23 @@ xlabel('time from neuronal event')
 
 
 %% Save data
-Anames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
-    'A_area', 'N_ROI', 'N_ROIType','N_area','Distance','AOnset','NOnset','TimeDiff',...
-    'Atrace','Ntrace','amplitude','peakTime','Duration'};
-Nnames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
-    'A_area', 'N_ROI', 'N_ROIType','N_area','Distance','NOnset','AOnset','TimeDiff',...
-    'Atrace','Ntrace','amplitude','peakTime','Duration'};
-
-AvsN_SpaceOnsets=vertcat(Anames,AvsN_SpaceOnsets);
-AvsN_TimeOnsets=vertcat(Anames,AvsN_TimeOnsets);
-
-NvsA_SpaceOnsets=vertcat(Nnames,NvsA_SpaceOnsets);
-NvsA_TimeOnsets=vertcat(Nnames,NvsA_TimeOnsets);
-
-cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_AvsN_SpaceOnsets.csv',AvsN_SpaceOnsets);
-cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_AvsN_TimeOnsets.csv',AvsN_TimeOnsets);
-cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_NvsA_SpaceOnsets.csv',NvsA_SpaceOnsets);
-cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_NvsA_TimeOnsets.csv',NvsA_TimeOnsets);
+% Anames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
+%     'A_area', 'N_ROI', 'N_ROIType','N_area','Distance','AOnset','NOnset','TimeDiff',...
+%     'Atrace','Ntrace','amplitude','peakTime','Duration'};
+% Nnames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
+%     'A_area', 'N_ROI', 'N_ROIType','N_area','Distance','NOnset','AOnset','TimeDiff',...
+%     'Atrace','Ntrace','amplitude','peakTime','Duration'};
+% 
+% AvsN_SpaceOnsets=vertcat(Anames,AvsN_SpaceOnsets);
+% AvsN_TimeOnsets=vertcat(Anames,AvsN_TimeOnsets);
+% 
+% NvsA_SpaceOnsets=vertcat(Nnames,NvsA_SpaceOnsets);
+% NvsA_TimeOnsets=vertcat(Nnames,NvsA_TimeOnsets);
+% 
+% cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_AvsN_SpaceOnsets.csv',AvsN_SpaceOnsets);
+% cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_AvsN_TimeOnsets.csv',AvsN_TimeOnsets);
+% cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_NvsA_SpaceOnsets.csv',NvsA_SpaceOnsets);
+% cell2csv('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\OnsetTimeComps\Stim\Stim_NvsA_TimeOnsets.csv',NvsA_TimeOnsets);
  %% combine nostim and stim
 % Stim=NvsA_SpaceOnsets;
 % Stim(:,16)={'Stim'};

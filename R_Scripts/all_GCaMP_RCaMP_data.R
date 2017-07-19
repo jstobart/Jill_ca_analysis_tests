@@ -1911,6 +1911,11 @@ print(minDis.lck.type.anova)
 ########
 
 # histograms for onset time comparison RASTERs
+AvsN.Space.Nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Nostim/Nostim_AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
+AvsN.Time.Nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Nostim/Nostim_AvsN_TimeOnsets.csv", header=TRUE, sep = ",")
+NvsA.Space.Nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Nostim/Nostim_NvsA_SpaceOnsets.csv", header=TRUE, sep = ",")
+NvsA.Time.Nostim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Nostim/Nostim_NvsA_TimeOnsets.csv", header=TRUE, sep = ",")
+
 AvsN.Space.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
 AvsN.Time.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_AvsN_TimeOnsets.csv", header=TRUE, sep = ",")
 NvsA.Space.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Nostim/Nostim_NvsA_SpaceOnsets.csv", header=TRUE, sep = ",")
@@ -1918,11 +1923,15 @@ NvsA.Time.Nostim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime
 
 AvsN.Space.Nostim<-AvsN.Space.Nostim[-1,]
 
+AvsN.Space.Stim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Stim/Stim_AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
+AvsN.Time.Stim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Stim/Stim_AvsN_TimeOnsets.csv", header=TRUE, sep = ",")
+NvsA.Space.Stim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Stim/Stim_NvsA_SpaceOnsets.csv", header=TRUE, sep = ",")
+NvsA.Time.Stim <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/OnsetTimeComps/Stim/Stim_NvsA_TimeOnsets.csv", header=TRUE, sep = ",")
+
 AvsN.Space.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
 AvsN.Time.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_AvsN_TimeOnsets.csv", header=TRUE, sep = ",")
 NvsA.Space.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_NvsA_SpaceOnsets.csv", header=TRUE, sep = ",")
 NvsA.Time.Stim <- read.table("D:/Data/GCaMP_RCaMP/Manuscript/Figures/OnsetTime_histograms/OnsetTimeComps/Stim/Stim_NvsA_TimeOnsets.csv", header=TRUE, sep = ",")
-
 
 AvsN.Space.Nostim$Group<-"other"
 AvsN.Space.Nostim$AOnset<-as.numeric(as.character(AvsN.Space.Nostim$AOnset))
@@ -1979,53 +1988,63 @@ NvsA.Time.Stim$Group[(NvsA.Time.Stim$AOnset>=1 & NvsA.Time.Stim$AOnset<12)]<-"de
 
 
 # histograms
-ggplot(AvsN.Space.Nostim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(AvsN.Space.Nostim[AvsN.Space.Nostim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
   ggtitle("AvsN Space Nostim")+
-  ylim(0,400)+
+  ylim(0,0.4)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(AvsN.Space.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(AvsN.Space.Stim[AvsN.Space.Stim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("AvsN Space Stim")+
-  ylim(0,400)+
+  ylim(0,0.4)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(AvsN.Time.Nostim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(AvsN.Time.Nostim[AvsN.Time.Nostim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("AvsN Time Nostim")+
-  ylim(0,1200)+
+  ylim(0,0.8)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(AvsN.Time.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(AvsN.Time.Stim[AvsN.Time.Stim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("AvsN Time Stim")+
-  ylim(0,1200)+
+  ylim(0,0.8)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(NvsA.Time.Nostim, aes(x=TimeDiff,fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(NvsA.Time.Nostim[NvsA.Time.Nostim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("NvsA Time Nostim")+
-  ylim(0,2000)+
+  ylim(0,0.7)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(NvsA.Time.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(NvsA.Time.Stim[NvsA.Time.Stim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("NvsA Time Stim")+
-  ylim(0,2000)+
+  ylim(0,0.7)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(NvsA.Space.Nostim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(NvsA.Space.Nostim[NvsA.Space.Nostim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("NvsA Space Nostim")+
-  ylim(0,800)+
+  ylim(0,0.4)+
+  xlim(-15,15)+
   max.theme
 
-ggplot(NvsA.Space.Stim, aes(x=TimeDiff, fill=Group)) + #y=..density..,
-  geom_histogram(binwidth=1)+#, position="dodge")+
+ggplot(NvsA.Space.Stim[NvsA.Space.Stim$Group!="other",], aes(x=TimeDiff, fill=Group)) + #y=..density..,
+  geom_histogram(aes(y = ..density..),binwidth=1, position="dodge")+
   ggtitle("NvsA Space Stim")+
-  ylim(0,800)+
+  ylim(0,0.4)+
+  xlim(-15,15)+
   max.theme
+
 
 ###########################
 
