@@ -1,4 +1,4 @@
-function tOnset = find_onset_times(tt, traces, nSDs, nMA, varargin)
+function tOnset = find_first_onset_time(tt, traces, nSDs, nMA, varargin)
 
 % Determine the threshold each trace must exceed
 blFrames = find(tt < 0, 1, 'last');

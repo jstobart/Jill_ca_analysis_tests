@@ -151,7 +151,7 @@ Shortstim = Shortstim(nonOverlapIdx2',:);
 
 %% Calculate the first peak onset time and AUC after stim
 
-baselineCorrectedTime=TimeX-5;
+baselineCorrectedTime=TimeX-(24*0.084);
 
 % peak onsets and AUC in the first second after stim for each ROI
 for iROI= 1:length(Shortstim)
@@ -699,8 +699,8 @@ scatter(cell2mat(Shortstim(:,16)), cell2mat(Shortstim(:,17)));
 % scatter(cell2mat(Shortstim(:,16)), cell2mat(Shortstim(:,18)));
 
 for iROI=1:length(GrespOT)
-    fastIdx(iROI)=~isempty(find(GrespOT{iROI,16}>0 && GrespOT{iROI,16}<=1));
-    slowIdx(iROI)=~isempty(find(GrespOT{iROI,16}>1));
+    fastIdx(iROI)=~isempty(find(GrespOT{iROI,16}>0 && GrespOT{iROI,16}<=2));
+    slowIdx(iROI)=~isempty(find(GrespOT{iROI,16}>2));
 end
 fastAC=GrespOT(fastIdx',:);
 slowAC=GrespOT(slowIdx',:);

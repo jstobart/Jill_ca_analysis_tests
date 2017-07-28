@@ -57,8 +57,10 @@ nostim.cyto.DSP4<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/
 #nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 
 longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+longstim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_longstim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
 shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
 nostim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+nostim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_nostim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
 
 longstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
 shortstim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
@@ -101,14 +103,24 @@ lsm.options(pbkrtest.limit = 100000)
 
 all.lck.peaks<-rbind(nostim.lck,long.lck,short.lck)
 all.lck.OT<-rbind(nostim.lck.OT,longstim.lck.OT,shortstim.lck.OT)
+all.lck.OT.2s<-rbind(nostim.lck.OT.2s,longstim.lck.OT.2s)
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
+all.lck.OT.2s$Spot_trial_Cond<-paste(all.lck.OT.2s$Spot_trial, all.lck.OT.2s$Condition, sep="_")
+all.lck.OT.2s$ROIs_Cond<-paste(all.lck.OT.2s$ROIs_trial, all.lck.OT.2s$Condition, sep="_")
+
+
+
+# count number of trials per spot
+Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Spot","Condition"), summarise, nTrials=length(unique(Trial)))
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
 all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="np"),]
-all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="none"),] # remove trials with NO Peaks
 
-# no stim peak data
+# remove trials with no ROIs
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="none"),]
+
+
 all.lck.peaks$ROIType= 0
 all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
 all.lck.peaksB<- subset(all.lck.peaks, Channel=="RCaMP")
@@ -130,6 +142,7 @@ all.lck.peaks$trials_Cond<-paste(all.lck.peaks$trials, all.lck.peaks$Condition, 
 
 all.lck.peaks$ROIs_Cond<-paste(all.lck.peaks$ROIs_trial, all.lck.peaks$Condition, sep= "_")
 
+
 # remove matching astrocyte process and soma ROIs
 Overlap= all.lck.peaks$overlap!=0
 all.lck.peaks<-all.lck.peaks[!Overlap,]
@@ -147,15 +160,22 @@ all.lck.peaks2<-subset(all.lck.peaks,peakTime>0)
 # REMOVE duplicate entries from onset time and peak time data frames 
 # only the first entry will be used
 all.lck.OT2=all.lck.OT[order(all.lck.OT$OnsetTime),] # sort by ascending onset time
+all.lck.OT2.2s=all.lck.OT.2s[order(all.lck.OT.2s$OnsetTime),] # sort by ascending onset time
 
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.lck.OT<-distinct(all.lck.OT2, ROIs_Cond, .keep_all = TRUE)
+all.lck.OT.2s<-distinct(all.lck.OT2.2s, ROIs_Cond, .keep_all = TRUE)
 
 # only the first entry will be used
 all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascending onset time
 
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
+
+
+#adjust onset time for the data with 2 s before stimulation included:
+all.lck.OT.2s$OnsetTimeAdjust<-all.lck.OT.2s$OnsetTime-(24*0.084);
+
 
 ##### 
 # cytoGCaMP6s data
@@ -290,10 +310,15 @@ all.cyto.DSP4.peaks<-distinct(all.cyto.DSP4.peaks3, ROIs_Cond,.keep_all = TRUE)
 
 stimwindow=15
 
+
+
 stim.lck.OT.dist<-subset(all.lck.OT,Condition!="shortstim" & OnsetTime<stimwindow)
 short.lck.OT.dist<-subset(all.lck.OT,Condition!="Stim" & OnsetTime<stimwindow)
+stim.lck.OT.dist.2s<-subset(all.lck.OT.2s,Condition!="shortstim" & OnsetTime<stimwindow)
+
 stim.cyto.OT.dist<-subset(all.cyto.OT,Condition!="shortstim" & OnsetTime<stimwindow)
 short.cyto.OT.dist<-subset(all.cyto.OT,Condition!="Stim" & OnsetTime<stimwindow)
+
 stim.cyto.DSP4.OT.dist<-subset(all.cyto.DSP4.OT,Condition!="shortstim" & OnsetTime<stimwindow)
 short.cyto.DSP4.OT.dist<-subset(all.cyto.DSP4.OT,Condition!="Stim" & OnsetTime<stimwindow)
 
@@ -402,6 +427,192 @@ short.cyto.DSP4.peaks.window<-rbind(short.cyto.DSP4.PT.R, short.cyto.DSP4.PT.G)
 
 
 ######
+# Lck data fast ROIS
+
+# considering 2 s before and 2 s after stimulation 
+
+lck.eitherside.stim<-subset(stim.lck.OT.dist.2s, OnsetTimeAdjust<5)
+
+# group the responses
+lck.eitherside.stim$either2s="other"
+lck.eitherside.stim$either2s[lck.eitherside.stim$OnsetTimeAdjust<0]="before"
+lck.eitherside.stim$either2s[lck.eitherside.stim$OnsetTimeAdjust>0]="after"
+
+# distribution plot
+
+lck.eitherside.stim3<-subset(lck.eitherside.stim, Condition=="Stim")
+
+ggplot(NULL, aes(x=OnsetTimeAdjust))+
+  geom_freqpoly(data=lck.eitherside.stim3[lck.eitherside.stim3$Channel=="RCaMP",], binwidth=0.168,aes(y=..density.., color="blue"))+
+  geom_freqpoly(data=lck.eitherside.stim3[lck.eitherside.stim3$Channel=="GCaMP",], binwidth=0.168, aes(y=..density..*2, color="green"))+
+  #geom_vline(xintercept = 0)+
+  scale_y_continuous(sec.axis = sec_axis(~./2, name = "Astrocyte density")) + # secondary axis
+  max.theme
+
+
+# long stim vs no stim
+ntrials.lck.eitherside.R<- ddply(lck.eitherside.stim3[lck.eitherside.stim3$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.lck.eitherside.G<- ddply(lck.eitherside.stim3[lck.eitherside.stim3$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+
+#histogram bins
+histseq= seq(-2,2,0.168)
+
+
+# neuronal lck onset histogram
+# counts for each condition in the histogram
+Nostim.N=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="RCaMP" & stim.lck.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.N=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="RCaMP" & stim.lck.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+Nostim.A=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="GCaMP" & stim.lck.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.A=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="GCaMP" & stim.lck.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim.N=Nostim.N/ntrials.lck.OT.long.R.dis$ntrials[(ntrials.lck.OT.long.R.dis$Condition=="Nostim")]
+Stim.N=Stim.N/ntrials.lck.OT.long.R.dis$ntrials[(ntrials.lck.OT.long.R.dis$Condition=="Stim")]
+
+Nostim.A=Nostim.A/ntrials.lck.OT.long.G.dis$ntrials[(ntrials.lck.OT.long.G.dis$Condition=="Nostim")]
+Stim.A=Stim.A/ntrials.lck.OT.long.G.dis$ntrials[(ntrials.lck.OT.long.G.dis$Condition=="Stim")]
+
+#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+lck.long.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
+lck.long.histo2<-rbind(zeroRow,lck.long.histo)
+lck.long.histo2$time<-histseq
+
+ggplot(NULL, aes(x=time))+
+  geom_line(data=lck.long.histo2, aes(y=Nostim.N, color="Nostim.N")) +
+  geom_line(data=lck.long.histo2, aes(y=Stim.N, color="Stim.N")) +
+  geom_line(data=lck.long.histo2, aes(y=Nostim.A*7, color="Nostim.A")) +
+  geom_line(data=lck.long.histo2, aes(y=Stim.A*7, color="Stim.A")) +
+  scale_y_continuous(sec.axis = sec_axis(~./7, name = "Astrocyte peaks/trial")) + # secondary axis
+  ggtitle("stim- neurons vs astrocytes-lck data") + 
+  xlab("Onset Time (s)") + 
+  ylab("Neuron peaks/trial") + 
+  xlim(-0.5,15) +
+  max.theme
+
+
+
+# greater number ROIs with fast onset than Nostim?
+ROInum.eitherside.1s<-ddply(lck.eitherside.stim2, c("Animal","Spot","Condition","Channel","either1s"), summarise, nROIs=length(OnsetTime))
+ROInum.eitherside.2s<-ddply(lck.eitherside.stim, c("Animal","Spot","Condition","Channel","either2s"), summarise, nROIs=length(OnsetTime))
+
+
+# add in number of trials
+Spot.lck.ntrials$Ani_Spot_Cond<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot, Spot.lck.ntrials$Condition, sep="_")
+ROInum.eitherside.1s$Ani_Spot_Cond<-paste(ROInum.eitherside.1s$Animal, ROInum.eitherside.1s$Spot, ROInum.eitherside.1s$Condition, sep="_")
+ROInum.eitherside.2s$Ani_Spot_Cond<-paste(ROInum.eitherside.2s$Animal, ROInum.eitherside.2s$Spot, ROInum.eitherside.2s$Condition, sep="_")
+
+ROInum.eitherside.1s<-merge(ROInum.eitherside.1s, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+ROInum.eitherside.2s<-merge(ROInum.eitherside.2s, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+
+#ROInum.eitherside.1s$nTrials=Spot.lck.ntrials$nTrials[match(ROInum.eitherside.1s$Ani_Spot_Cond,Spot.lck.ntrials$Ani_Spot_Cond)]
+
+ROInum.eitherside.1s$ROIsPerTrial<-ROInum.eitherside.1s$nROIs/ROInum.eitherside.1s$nTrials
+ROInum.eitherside.2s$ROIsPerTrial<-ROInum.eitherside.2s$nROIs/ROInum.eitherside.2s$nTrials
+
+ROInum.eitherside.1s$either1s<-factor(ROInum.eitherside.1s$either1s, levels=c("before","after"))
+ROInum.eitherside.2s$either2s<-factor(ROInum.eitherside.2s$either2s, levels=c("before","after"))
+
+# only consider GCaMP
+ROInum.eitherside.1s.GC<-subset(ROInum.eitherside.1s, Channel=="GCaMP")
+ROInum.eitherside.2s.GC<-subset(ROInum.eitherside.2s, Channel=="GCaMP")
+
+df.ROInum.either1s.GC<-summarySE(ROInum.eitherside.1s.GC, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","either1s"))
+df.ROInum.either2s.GC<-summarySE(ROInum.eitherside.2s.GC, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","either2s"))
+
+ggplot(df.ROInum.either1s.GC, aes(x=either1s,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ggtitle("num ROIs per field of view- 1 s before vs 1 s after") +
+  max.theme
+
+ggplot(df.ROInum.either2s.GC, aes(x=either2s,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ggtitle("num ROIs per field of view- 2 s before vs 2 s after") +
+  max.theme
+
+ROInum.eitherside.1s.GC$either1s<-as.factor(ROInum.eitherside.1s.GC$either1s)
+Condition_either1s= interaction(ROInum.eitherside.1s.GC$Condition,ROInum.eitherside.1s.GC$either1s)
+
+nROI.either1s.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.eitherside.1s.GC,REML=FALSE)
+nROI.either1s.model1 = lmer(ROIsPerTrial ~ either1s + (1|Animal), ROInum.eitherside.1s.GC,REML=FALSE)
+nROI.either1s.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.eitherside.1s.GC,REML=FALSE)
+nROI.either1s.model3 = lmer(ROIsPerTrial ~ Condition_either1s + (1|Animal), ROInum.eitherside.1s.GC,REML=FALSE)
+nROI.either1s.anova <- anova(nROI.either1s.null,nROI.either1s.model1,nROI.either1s.model2,nROI.either1s.model3)
+print(nROI.either1s.anova)
+
+nROI.either1s.Cond_Gr<- glht(nROI.either1s.model3, mcp(Condition_either1s= "Tukey"))
+summary(nROI.either1s.Cond_Gr)
+
+# 2 s 
+ROInum.eitherside.2s.GC$either2s<-as.factor(ROInum.eitherside.2s.GC$either2s)
+Condition_Channel_either2s= interaction(ROInum.eitherside.2s.GC$Condition,ROInum.eitherside.2s.GC$either2s)
+
+nROI.either2s.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.eitherside.2s.GC,REML=FALSE)
+nROI.either2s.model1 = lmer(ROIsPerTrial~ either2s + (1|Animal), ROInum.eitherside.2s.GC,REML=FALSE)
+nROI.either2s.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.eitherside.2s.GC,REML=FALSE)
+nROI.either2s.model3 = lmer(ROIsPerTrial ~ Condition_Channel_either2s + (1|Animal), ROInum.eitherside.2s.GC,REML=FALSE)
+nROI.either2s.anova <- anova(nROI.either2s.null, nROI.either2s.model1,nROI.either2s.model2,nROI.either2s.model3)
+print(nROI.either2s.anova)
+
+nROI.either2s.Cond_Channel_Gr<- glht(nROI.either2s.model3, mcp(Condition_Channel_either2s= "Tukey"))
+summary(nROI.either2s.Cond_Channel_Gr)
+
+
+
+# only consider RCaMP
+ROInum.eitherside.1s.RC<-subset(ROInum.eitherside.1s, Channel=="RCaMP")
+ROInum.eitherside.2s.RC<-subset(ROInum.eitherside.2s, Channel=="RCaMP")
+
+df.ROInum.either1s.RC<-summarySE(ROInum.eitherside.1s.RC, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","either1s"))
+df.ROInum.either2s.RC<-summarySE(ROInum.eitherside.2s.RC, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","either2s"))
+
+ggplot(df.ROInum.either1s.RC, aes(x=either1s,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ggtitle("num ROIs per field of view- 1 s before vs 1 s after") +
+  max.theme
+
+ggplot(df.ROInum.either2s.RC, aes(x=either2s,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ggtitle("num ROIs per field of view- 2 s before vs 2 s after") +
+  max.theme
+
+ROInum.eitherside.1s.RC$either1s<-as.factor(ROInum.eitherside.1s.RC$either1s)
+Condition_either1s= interaction(ROInum.eitherside.1s.RC$Condition,ROInum.eitherside.1s.RC$either1s)
+
+nROI.either1s.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.eitherside.1s.RC,REML=FALSE)
+nROI.either1s.model1 = lmer(ROIsPerTrial ~ either1s + (1|Animal), ROInum.eitherside.1s.RC,REML=FALSE)
+nROI.either1s.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.eitherside.1s.RC,REML=FALSE)
+nROI.either1s.model3 = lmer(ROIsPerTrial ~ Condition_either1s + (1|Animal), ROInum.eitherside.1s.RC,REML=FALSE)
+nROI.either1s.anova <- anova(nROI.either1s.null,nROI.either1s.model1,nROI.either1s.model2,nROI.either1s.model3)
+print(nROI.either1s.anova)
+
+nROI.either1s.Cond_Gr<- glht(nROI.either1s.model3, mcp(Condition_either1s= "Tukey"))
+summary(nROI.either1s.Cond_Gr)
+
+# 2 s 
+ROInum.eitherside.2s.RC$either2s<-as.factor(ROInum.eitherside.2s.RC$either2s)
+Condition_Channel_either2s= interaction(ROInum.eitherside.2s.RC$Condition,ROInum.eitherside.2s.RC$either2s)
+
+nROI.either2s.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.eitherside.2s.RC,REML=FALSE)
+nROI.either2s.model1 = lmer(ROIsPerTrial~ either2s + (1|Animal), ROInum.eitherside.2s.RC,REML=FALSE)
+nROI.either2s.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.eitherside.2s.RC,REML=FALSE)
+nROI.either2s.model3 = lmer(ROIsPerTrial ~ Condition_Channel_either2s + (1|Animal), ROInum.eitherside.2s.RC,REML=FALSE)
+nROI.either2s.anova <- anova(nROI.either2s.null, nROI.either2s.model1,nROI.either2s.model2,nROI.either2s.model3)
+print(nROI.either2s.anova)
+
+nROI.either2s.Cond_Channel_Gr<- glht(nROI.either2s.model3, mcp(Condition_Channel_either2s= "Tukey"))
+summary(nROI.either2s.Cond_Channel_Gr)
+
+
+#########
 # LCK DATA
 # Onset time histograms- normalized to the number of trials
 
@@ -457,7 +668,7 @@ ggplot(NULL, aes(x=time))+
 
 
 ######
-# number of ROIs per trial per field of view?
+# number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
 
 stim.lck.OT.window$Channel <- factor(stim.lck.OT.window$Channel, levels = c("RCaMP","GCaMP"))
 
@@ -863,24 +1074,8 @@ print(PT.both.NSvsNS.adtest)
 #######
 # peak times only for ROIs with onset times?
 
-stim.both.alldata=data.frame()
-for (ii in 1:nrow(stim.both.OT.window))
-{
-  ROIx=stim.both.OT.window$ROIs_Cond[ii]
-  Onsetx=stim.both.OT.window$OnsetTime[ii]
-  AUCx1=stim.both.OT.window$TraceAUC1[ii]
-  AUCx2=stim.both.OT.window$TraceAUC10[ii]
-  subset1=subset(stim.both.peaks.window, ROIs_Cond==ROIx)
-if (nrow(subset1)>0)
-{
-  peakData=subset1[1,]
-  peakData$OnsetTime=Onsetx
-  peakData$TraceAUC1=AUCx1
-  peakData$TraceAUC10=AUCx2
-  stim.both.alldata<-rbind(stim.both.alldata, peakData) 
-}
+stim.both.alldata<-merge(stim.both.peaks.window, stim.both.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
 
-}
 
 # onset times
 ggplot(stim.both.alldata, aes(x=Channel,y=OnsetTime, fill= Condition)) +
@@ -902,14 +1097,10 @@ ggplot(stim.both.alldata, aes(x=Channel,y=peakTime, fill= Condition)) +
 
 ######
 
-
-# how to prove that lck data is truly FAST????   -cytosolic start earlier?.... heat maps?
-
-
 # identify "FAST" astrocytes
 stim.both.alldata$Group<-0
-stim.both.alldata$Group[stim.both.alldata$OnsetTime<1]<-"fast"
-stim.both.alldata$Group[stim.both.alldata$OnsetTime>=1]<-"delayed"
+stim.both.alldata$Group[stim.both.alldata$OnsetTime<1.5]<-"fast"
+stim.both.alldata$Group[stim.both.alldata$OnsetTime>=1.5]<-"delayed"
 
 stim.both.alldata$Group <- factor(stim.both.alldata$Group, levels = c("fast","delayed"))
 stim.both.alldata$Channel <- factor(stim.both.alldata$Channel, levels = c("cyto_RCaMP","cyto_GCaMP","lck_RCaMP","lck_GCaMP"))
@@ -938,38 +1129,6 @@ ggpairs(data=pairsData[pairsData$Condition=="Stim",c(1:3,5,6,14)],mapping=aes(co
 ggpairs(data=pairsData[pairsData$Condition=="Stim",c(7:12,14)],mapping=aes(color = Channel_Group))
 
 
-
-#######
-# greater number ROIs with fast onset than Nostim?
-ROInum.both.stim1<-ddply(stim.both.alldata, c("Animal","Spot","trials","Condition","Channel","Group"), summarise, nROIs=length(OnsetTime))
-
-ROInum.both.stim2<-ddply(stim.lck.alldata, c("Animal","Spot","trials","Condition","Channel","Group"), summarise, nROIs=length(OnsetTime))
-
-df.ROInum.mean1<-summarySE(ROInum.both.stim1, measurevar = "nROIs", groupvars = c("Channel", "Condition","Group"))
-df.ROInum.mean.lck<-summarySE(ROInum.both.stim2, measurevar = "nROIs", groupvars = c("Channel", "Condition","Group"))
-
-ggplot(df.ROInum.mean1, aes(x=interaction(Channel,Group),y=nROIs, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=nROIs-se, ymax=nROIs+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view") +
-  max.theme
-
-ggplot(df.ROInum.mean.lck, aes(x=interaction(Channel,Group),y=nROIs, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=nROIs-se, ymax=nROIs+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view") +
-  max.theme
-
-Condition_Channel_Group= interaction(ROInum.both.stim1$Condition,ROInum.both.stim1$Channel,ROInum.both.stim1$Group)
-nROI.group.null = lmer(nROIs ~ (1|Animal) + (1|Spot), ROInum.both.stim1,REML=FALSE)
-nROI.group.model1 = lmer(nROIs~ Channel + (1|Animal) + (1|Spot), ROInum.both.stim1,REML=FALSE)
-nROI.group.model2 = lmer(nROIs ~ Condition + (1|Animal) + (1|Spot), ROInum.both.stim1,REML=FALSE)
-nROI.group.model3 = lmer(nROIs ~ Condition_Channel_Group + (1|Animal) + (1|Spot), ROInum.both.stim1,REML=FALSE)
-nROI.group.anova <- anova(nROI.group.null, nROI.group.model1,nROI.group.model2,nROI.group.model3)
-print(nROI.group.anova)
-
-nROI.group.Cond_Channel_Gr<- glht(nROI.group.model3, mcp(Condition_Channel_Group= "Tukey"))
-summary(nROI.group.Cond_Channel_Gr)
 
 
 
@@ -1022,12 +1181,6 @@ ggplot(stim.lck.alldata, aes(x=Channel_Group,y=OnsetTime, fill=Channel_Group)) +
   ggtitle("lck data- fast vs delayed")+
   max.theme
 
-ggplot(stim.lck.compdata, aes(x=OnsetTime, fill=Channel_Group)) +
-  geom_histogram(binwidth=0.085, position="dodge")+
-  ylab("density") +
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
-
 # stats
 Group_Channel_Cond_Type=interaction(stim.lck.alldata$Group,stim.lck.alldata$Channel,stim.lck.alldata$Condition,stim.lck.alldata$ROIType)
 Group_Channel_Cond=interaction(stim.lck.alldata$Channel_Group,stim.lck.alldata$Condition)
@@ -1046,12 +1199,31 @@ print(OT.anova)
 OT.Group_channel<- glht(OT.model5, mcp(Group_Channel_Cond= "Tukey"))
 summary(OT.Group_channel)
 
-OT.Group_channel_ty<- glht(OT.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
-summary(OT.Group_channel_ty)
+#OT.Group_channel_ty<- glht(OT.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
+#summary(OT.Group_channel_ty)
 
 
+# take out the effect of Condition
+# we are only interested in stim case
+stim.lck.compdata.STIM<-subset(stim.lck.compdata, Condition=="Stim")
+
+Group_Channel_Type=interaction(stim.lck.compdata.STIM$Group,stim.lck.compdata.STIM$Channel,stim.lck.compdata.STIM$ROIType)
+Group_Channel=interaction(stim.lck.compdata.STIM$Channel, stim.lck.compdata.STIM$Group)
+
+# stats for onset times- neurons vs astrocytes
+OT.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
+OT.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
+OT.model3 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
+OT.model4 = lmer(OnsetTime ~ Group_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
+OT.model6 = lmer(OnsetTime ~ Group_Channel_Type + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
+OT.anova <- anova(OT.null, OT.model1,OT.model3,OT.model4,OT.model6)
+print(OT.anova)
+
+OT.Group_channel<- glht(OT.model4, mcp(Group_Channel= "Tukey"))
+summary(OT.Group_channel)
 
 
+######
 # trace auc first s
 df.traceAUC1<-summarySE(stim.both.alldata, measurevar = "TraceAUC1", groupvars = c("Channel", "Group","Condition"))
 df.traceAUC2<- summarySE(stim.lck.alldata, measurevar = "TraceAUC1", groupvars = c("Channel_Group","Condition"))
@@ -1182,6 +1354,7 @@ summary(TAUC10.Group_channel)
 TAUC10.Group_channel_ty<- glht(TAUC10.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
 summary(TAUC10.Group_channel_ty)
 
+########
 #amplitude
 df.amp1<-summarySE(stim.both.alldata, measurevar = "amplitude", groupvars = c("Channel", "Condition"))
 df.amp2<-summarySE(stim.both.alldata, measurevar = "amplitude", groupvars = c("Channel", "Group","Condition"))
@@ -1189,13 +1362,6 @@ df.amp3<- summarySE(stim.lck.compdata, measurevar = "amplitude", groupvars = c("
 df.amp4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "amplitude", groupvars = c("Channel_Group"))
 df.amp5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="lck_GCaMP",], measurevar = "amplitude", groupvars = c("ROIType","Channel_Group"))
 
-
-ggplot(df.amp1, aes(x=Channel,y=amplitude, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
 
 ggplot(df.amp2, aes(x=interaction(Channel,Group),y=amplitude, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1278,20 +1444,13 @@ amp.Group_channel_ty<- glht(amp.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
 summary(amp.Group_channel_ty)
 
 
-
+########
 #duration
 df.Dur1<-summarySE(stim.both.alldata, measurevar = "Duration", groupvars = c("Channel", "Condition"))
 df.Dur2<-summarySE(stim.both.alldata, measurevar = "Duration", groupvars = c("Channel", "Group","Condition"))
 df.Dur3<- summarySE(stim.lck.compdata, measurevar = "Duration", groupvars = c("Channel_Group","Condition"))
 df.Dur4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "Duration", groupvars = c("Channel_Group"))
 df.Dur5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="lck_GCaMP",], measurevar = "Duration", groupvars = c("ROIType","Channel_Group"))
-
-ggplot(df.Dur1, aes(x=Channel,y=Duration, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
 
 ggplot(df.Dur2, aes(x=interaction(Channel,Group),y=Duration, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1373,7 +1532,7 @@ summary(dur.Group_channel)
 dur.Group_channel_ty<- glht(dur.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
 summary(dur.Group_channel_ty)
 
-
+######
 # peak time
 df.pT1<-summarySE(stim.both.alldata, measurevar = "peakTime", groupvars = c("Channel", "Condition"))
 df.pT2<-summarySE(stim.both.alldata, measurevar = "peakTime", groupvars = c("Channel", "Group","Condition"))
@@ -1557,7 +1716,7 @@ scatter3D(-(y2),x2, z2,phi= 10, main="fast lck data only",expand =0.5,#bty = "u"
 ##### 
 # correlation data 
 
-#CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
 CorrData <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 
 
@@ -1592,6 +1751,8 @@ GCaMP_RCaMP<-subset(GCaMP_RCaMP, ROIs_trial %in% respGC2$ROIs_trial)
 GCaMP_RCaMP<-subset(GCaMP_RCaMP, RCaMP_ROIs %in% unique(respRC$ROIs_trial))
 
 # put group information into correlation table ("fast or delayed")
+#GCaMP_RCaMP.group<-merge(GCaMP_RCaMP, respGC2[, c("ROIs_trial", "Group")], by="ROIs_trial")
+
 GCaMP_RCaMP.group=data.frame()
 for (ii in 1:nrow(respGC2))
 {

@@ -15,12 +15,13 @@ APTWindow= 15; % astrocyte longer than stimulation for peak times
 stimwindow=20; % 5 s baseline, 15 s imaging 
 
 % save files names
-saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.mat';
-saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.csv';
-saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset&AUC.csv';
+%saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.mat';
+%saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.csv';
+%saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset&AUC.csv';
+saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset_2sbeforeStim.csv';
 
-AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-AstrocyteTraces_Stim.xlsx';
-NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-NeuronalTraces_Stim.xlsx';
+%AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-AstrocyteTraces_Stim.xlsx';
+%NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-NeuronalTraces_Stim.xlsx';
 %peak data
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_05_04_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
@@ -148,7 +149,7 @@ Shortstim = Shortstim(nonOverlapIdx2',:);
 
 %% Calculate the first peak onset time and AUC after stim
 
-baselineCorrectedTime=TimeX-5;
+baselineCorrectedTime=TimeX-(24*(1/FrameRate));%1.9908;
 
 % peak onsets and AUC in the first second after stim for each ROI
 for iROI= 1:length(Shortstim)
@@ -160,7 +161,7 @@ for iROI= 1:length(Shortstim)
     x4= round(FrameRate*15);
     % onset time
     if size(trace,1)>590
-        Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:592,:),2.5,2);
+        Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:592),2.5,2);
         if isempty(Onsets)
             Onsets=nan(1,1);
         end
@@ -189,182 +190,182 @@ end
     
 
 
-%% compare peak onsets for each RCaMP and GCaMP ROIs
-
-if ~exist(saveFiles1, 'file') 
-    tic
-    TimeComparisons=[];
-    Trials= unique(Shortstim(:,14));
-    
-    % onset times comparisons
-    for itrial=1:length(Trials)
-        CurrentTrial=Trials(itrial);
-        
-        % Find the idx of paths matching trial
-        matchingTrialIdx = find(~cellfun(@isempty, regexp(Shortstim(:,14), CurrentTrial)));
-        TrialData = Shortstim(matchingTrialIdx,:);
-        
-        
-        % find neuronal onset times in this trial
-        NeuronalIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'RCaMP')));
-        NeuronalData=TrialData(NeuronalIdx,:);
-        
-        
-        % find similar astrocyte peak times
-        AstroIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'GCaMP')));
-        AstroData=TrialData(AstroIdx,:);
-        
-        
-        parfor nNeuro=1:size(NeuronalData,1)
-            for nAstro= 1:size(AstroData,1)
-                NOnset=NeuronalData{nNeuro,16};
-                AOnset=AstroData{nAstro,16};
-                
-                if ~isempty(NOnset) || ~isnan(NOnset)
-                    if ~isempty(AOnset) || ~isnan(AOnset)
-                        
-                        % masks for ROI distance calculations
-                        %create a binary image with each pair of ROIs
-                        % for the first ROI
-                        if isnumeric(NeuronalData{nNeuro,10})
-                            Image1=zeros(128,128);
-                            Image1(NeuronalData{nNeuro,10})=1;
-                            %Image1=im2bw(Image1);
-                        elseif islogical(NeuronalData{nNeuro,10})
-                            Image1= double(NeuronalData{nNeuro,10});
-                        else
-                            Image1=[];
-                        end
-                        
-                        % for the second ROI
-                        if isnumeric(AstroData{nAstro,10})
-                            Image2=zeros(128,128);
-                            Image2(AstroData{nAstro,10})=1;
-                            Image2=im2bw(Image2);
-                        elseif islogical(AstroData{nAstro,10})
-                            Image2= double(AstroData{nAstro,10});
-                        else
-                            Image2=[];
-                        end
-                        
-                        Mask=Image1+Image2;
-                        Mask=im2bw(Mask);
-                        
-                        % find the minimium distance between the edges of the two ROIs
-                        %Pythaogrean theorem method
-                        
-                        % Define object boundaries
-                        boundaries = bwboundaries(Mask);
-                        numberOfBoundaries = size(boundaries, 1);
-                        if numberOfBoundaries==1
-                            distance = 0;
-                        elseif numberOfBoundaries>1
-                            boundary1 = boundaries{1};
-                            boundary2 = boundaries{2};
-                            boundary1x = boundary1(:, 2);
-                            boundary1y = boundary1(:, 1);
-                            minDistance= zeros(length(boundary2),1);
-                            for k = 1 : length(boundary2)
-                                boundary2x = boundary2(k, 2);
-                                boundary2y = boundary2(k, 1);
-                                % For this blob, compute distances from boundaries to edge.
-                                allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
-                                % Find closest point, min distance.
-                                [minDistance(k), indexOfMin] = min(allDistances);
-                            end
-                            % Find the overall min distance
-                            distance = (min(minDistance)*cell2mat(AstroData(nAstro,11)));
-                        else
-                            distance = [];
-                        end
-                        
-                        % find the neuronal ROI area
-                        CurrentNeuron=NeuronalData(nNeuro,15);
-                        matchingROIIdx= find(~cellfun(@isempty, regexp(ShortstimPeaks(:,23), CurrentNeuron)));
-                        N_ROIarea = ShortstimPeaks(matchingROIIdx(1,1),18);
-                        
-                        % find the neuronal ROI area
-                        CurrentAstro=AstroData(nAstro,15);
-                        matchingROIIdx2= find(~cellfun(@isempty, regexp(ShortstimPeaks(:,23), CurrentAstro)));
-                        A_ROIarea = ShortstimPeaks(matchingROIIdx2(1,1),18);
-                        
-                        for iN=1:length(NOnset)
-                            OnsetTimeComparisons=cell(length(AOnset),17);
-                            for iA=1:length(AOnset)
-                                NeuronalOnset=NOnset(1,iN); % neuronal peak onset
-                                AstrocyteOnset=AOnset(1,iA); % astrocyte peak onset
-                                TimeDiff= AstrocyteOnset-NeuronalOnset;
-                                TimeDiff2 = NeuronalOnset-AstrocyteOnset
-                                %if TimeDiff>=-10 && TimeDiff<=10
-                                
-                                % generate data table with onset comparisons
-                                OnsetTimeComparisons(iA,1)=NeuronalData(nNeuro,5); % animal
-                                OnsetTimeComparisons(iA,2)=NeuronalData(nNeuro,4); % spot
-                                OnsetTimeComparisons(iA,3)=NeuronalData(nNeuro,2); % trial
-                                OnsetTimeComparisons(iA,4)=NeuronalData(nNeuro,15); % unique neuronal ROI name
-                                OnsetTimeComparisons(iA,5)=NeuronalData(nNeuro,13); % neuron ROI type
-                                OnsetTimeComparisons(iA,6)=N_ROIarea; % neuron ROI area
-                                OnsetTimeComparisons(iA,7)=AstroData(nAstro,15); % unique astrocyte ROI name
-                                OnsetTimeComparisons(iA,8)=AstroData(nAstro,13); % astrocyte ROI type
-                                OnsetTimeComparisons(iA,9)=A_ROIarea; % astrocyte ROI area
-                                OnsetTimeComparisons{iA,10} =distance;
-                                OnsetTimeComparisons{iA,11} = numberOfBoundaries; % number of ROIs in the mask
-                                
-                                
-                                % Onset times
-                                OnsetTimeComparisons{iA,12}=strcat('NPeak',num2str(iN,'%02d')); % neuronal peak number
-                                OnsetTimeComparisons{iA,13}=NeuronalOnset; % neuronal onset time
-                                OnsetTimeComparisons{iA,14}=strcat('APeak',num2str(iA,'%02d')); % astrocyte peak number
-                                OnsetTimeComparisons{iA,15}=AstrocyteOnset; % astrocyte onset time
-                                
-                                % difference between astrocyte onset and neuronal onset
-                                OnsetTimeComparisons{iA,16}=TimeDiff; %astrocytes-neurons
-                                OnsetTimeComparisons{iA,17}=strcat(OnsetTimeComparisons{iA,7},OnsetTimeComparisons{iA,14}); % astrocyte peak name
-%                                 OnsetTimeComparisons{iA,18}=TimeDiff2; %neurons-astrocytes
-%                                 OnsetTimeComparisons{iA,19}=NeuronalData{iN,8}; %neuronal trace
-%                                 OnsetTimeComparisons{iA,20}=AstroData{iA,8};
-                            end
-                            
-                            TimeComparisons=vertcat(TimeComparisons,OnsetTimeComparisons); % concatenate all data into a big matrix
-                            
-                            %clear NeuronalData AstroData boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin OnsetTimeComparisons
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    save(saveFiles1, 'TimeComparisons','-v7.3');
-    
-    names={'Animal','Spot','Trial','N_ROI','N_ROIType','N_Area','A_ROI','A_ROIType',...
-        'A_Area','distance','ROInum','NPeak','N_Onset','APeak','A_Onset','TimeDiff',...
-        'A_peak_name'};
-    TimeComp2=vertcat(names,TimeComparisons);
-    cell2csv(saveFiles2, TimeComp2);
-    
-    toc
-else
-    load(saveFiles1);
-end
-
-%% histograms
-figure('name', 'histogram: OnsetTime (A)- OnsetTime (N)')
-histogram(cell2mat(TimeComparisons(:,16)))
-
-ACIdx= find(~cellfun(@isempty, regexp(Shortstim(:,3), 'GCaMP')));
-figure('name', 'Astrocyte onset times')
-histogram(cell2mat(Shortstim(ACIdx,16)), 'binwidth',0.8450)
-
-NIdx= find(~cellfun(@isempty, regexp(Shortstim(:,3), 'RCaMP')));
-figure('name', 'Neuronal onset times')
-histogram(cell2mat(Shortstim(NIdx,16)), 'binwidth', 0.845)
-
- figure('name', 'Astrocyte AUC')
-histogram(cell2mat(Shortstim(ACIdx,17)))
-
-figure('name', 'Neuronal AUC')
-histogram(cell2mat(Shortstim(NIdx,17)))
+% %% compare peak onsets for each RCaMP and GCaMP ROIs
+% 
+% if ~exist(saveFiles1, 'file') 
+%     tic
+%     TimeComparisons=[];
+%     Trials= unique(Shortstim(:,14));
+%     
+%     % onset times comparisons
+%     for itrial=1:length(Trials)
+%         CurrentTrial=Trials(itrial);
+%         
+%         % Find the idx of paths matching trial
+%         matchingTrialIdx = find(~cellfun(@isempty, regexp(Shortstim(:,14), CurrentTrial)));
+%         TrialData = Shortstim(matchingTrialIdx,:);
+%         
+%         
+%         % find neuronal onset times in this trial
+%         NeuronalIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'RCaMP')));
+%         NeuronalData=TrialData(NeuronalIdx,:);
+%         
+%         
+%         % find similar astrocyte peak times
+%         AstroIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'GCaMP')));
+%         AstroData=TrialData(AstroIdx,:);
+%         
+%         
+%         parfor nNeuro=1:size(NeuronalData,1)
+%             for nAstro= 1:size(AstroData,1)
+%                 NOnset=NeuronalData{nNeuro,16};
+%                 AOnset=AstroData{nAstro,16};
+%                 
+%                 if ~isempty(NOnset) || ~isnan(NOnset)
+%                     if ~isempty(AOnset) || ~isnan(AOnset)
+%                         
+%                         % masks for ROI distance calculations
+%                         %create a binary image with each pair of ROIs
+%                         % for the first ROI
+%                         if isnumeric(NeuronalData{nNeuro,10})
+%                             Image1=zeros(128,128);
+%                             Image1(NeuronalData{nNeuro,10})=1;
+%                             %Image1=im2bw(Image1);
+%                         elseif islogical(NeuronalData{nNeuro,10})
+%                             Image1= double(NeuronalData{nNeuro,10});
+%                         else
+%                             Image1=[];
+%                         end
+%                         
+%                         % for the second ROI
+%                         if isnumeric(AstroData{nAstro,10})
+%                             Image2=zeros(128,128);
+%                             Image2(AstroData{nAstro,10})=1;
+%                             Image2=im2bw(Image2);
+%                         elseif islogical(AstroData{nAstro,10})
+%                             Image2= double(AstroData{nAstro,10});
+%                         else
+%                             Image2=[];
+%                         end
+%                         
+%                         Mask=Image1+Image2;
+%                         Mask=im2bw(Mask);
+%                         
+%                         % find the minimium distance between the edges of the two ROIs
+%                         %Pythaogrean theorem method
+%                         
+%                         % Define object boundaries
+%                         boundaries = bwboundaries(Mask);
+%                         numberOfBoundaries = size(boundaries, 1);
+%                         if numberOfBoundaries==1
+%                             distance = 0;
+%                         elseif numberOfBoundaries>1
+%                             boundary1 = boundaries{1};
+%                             boundary2 = boundaries{2};
+%                             boundary1x = boundary1(:, 2);
+%                             boundary1y = boundary1(:, 1);
+%                             minDistance= zeros(length(boundary2),1);
+%                             for k = 1 : length(boundary2)
+%                                 boundary2x = boundary2(k, 2);
+%                                 boundary2y = boundary2(k, 1);
+%                                 % For this blob, compute distances from boundaries to edge.
+%                                 allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
+%                                 % Find closest point, min distance.
+%                                 [minDistance(k), indexOfMin] = min(allDistances);
+%                             end
+%                             % Find the overall min distance
+%                             distance = (min(minDistance)*cell2mat(AstroData(nAstro,11)));
+%                         else
+%                             distance = [];
+%                         end
+%                         
+%                         % find the neuronal ROI area
+%                         CurrentNeuron=NeuronalData(nNeuro,15);
+%                         matchingROIIdx= find(~cellfun(@isempty, regexp(ShortstimPeaks(:,23), CurrentNeuron)));
+%                         N_ROIarea = ShortstimPeaks(matchingROIIdx(1,1),18);
+%                         
+%                         % find the neuronal ROI area
+%                         CurrentAstro=AstroData(nAstro,15);
+%                         matchingROIIdx2= find(~cellfun(@isempty, regexp(ShortstimPeaks(:,23), CurrentAstro)));
+%                         A_ROIarea = ShortstimPeaks(matchingROIIdx2(1,1),18);
+%                         
+%                         for iN=1:length(NOnset)
+%                             OnsetTimeComparisons=cell(length(AOnset),17);
+%                             for iA=1:length(AOnset)
+%                                 NeuronalOnset=NOnset(1,iN); % neuronal peak onset
+%                                 AstrocyteOnset=AOnset(1,iA); % astrocyte peak onset
+%                                 TimeDiff= AstrocyteOnset-NeuronalOnset;
+%                                 TimeDiff2 = NeuronalOnset-AstrocyteOnset
+%                                 %if TimeDiff>=-10 && TimeDiff<=10
+%                                 
+%                                 % generate data table with onset comparisons
+%                                 OnsetTimeComparisons(iA,1)=NeuronalData(nNeuro,5); % animal
+%                                 OnsetTimeComparisons(iA,2)=NeuronalData(nNeuro,4); % spot
+%                                 OnsetTimeComparisons(iA,3)=NeuronalData(nNeuro,2); % trial
+%                                 OnsetTimeComparisons(iA,4)=NeuronalData(nNeuro,15); % unique neuronal ROI name
+%                                 OnsetTimeComparisons(iA,5)=NeuronalData(nNeuro,13); % neuron ROI type
+%                                 OnsetTimeComparisons(iA,6)=N_ROIarea; % neuron ROI area
+%                                 OnsetTimeComparisons(iA,7)=AstroData(nAstro,15); % unique astrocyte ROI name
+%                                 OnsetTimeComparisons(iA,8)=AstroData(nAstro,13); % astrocyte ROI type
+%                                 OnsetTimeComparisons(iA,9)=A_ROIarea; % astrocyte ROI area
+%                                 OnsetTimeComparisons{iA,10} =distance;
+%                                 OnsetTimeComparisons{iA,11} = numberOfBoundaries; % number of ROIs in the mask
+%                                 
+%                                 
+%                                 % Onset times
+%                                 OnsetTimeComparisons{iA,12}=strcat('NPeak',num2str(iN,'%02d')); % neuronal peak number
+%                                 OnsetTimeComparisons{iA,13}=NeuronalOnset; % neuronal onset time
+%                                 OnsetTimeComparisons{iA,14}=strcat('APeak',num2str(iA,'%02d')); % astrocyte peak number
+%                                 OnsetTimeComparisons{iA,15}=AstrocyteOnset; % astrocyte onset time
+%                                 
+%                                 % difference between astrocyte onset and neuronal onset
+%                                 OnsetTimeComparisons{iA,16}=TimeDiff; %astrocytes-neurons
+%                                 OnsetTimeComparisons{iA,17}=strcat(OnsetTimeComparisons{iA,7},OnsetTimeComparisons{iA,14}); % astrocyte peak name
+% %                                 OnsetTimeComparisons{iA,18}=TimeDiff2; %neurons-astrocytes
+% %                                 OnsetTimeComparisons{iA,19}=NeuronalData{iN,8}; %neuronal trace
+% %                                 OnsetTimeComparisons{iA,20}=AstroData{iA,8};
+%                             end
+%                             
+%                             TimeComparisons=vertcat(TimeComparisons,OnsetTimeComparisons); % concatenate all data into a big matrix
+%                             
+%                             %clear NeuronalData AstroData boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin OnsetTimeComparisons
+%                         end
+%                     end
+%                 end
+%             end
+%         end
+%     end
+%     
+%     save(saveFiles1, 'TimeComparisons','-v7.3');
+%     
+%     names={'Animal','Spot','Trial','N_ROI','N_ROIType','N_Area','A_ROI','A_ROIType',...
+%         'A_Area','distance','ROInum','NPeak','N_Onset','APeak','A_Onset','TimeDiff',...
+%         'A_peak_name'};
+%     TimeComp2=vertcat(names,TimeComparisons);
+%     cell2csv(saveFiles2, TimeComp2);
+%     
+%     toc
+% else
+%     load(saveFiles1);
+% end
+% 
+% %% histograms
+% figure('name', 'histogram: OnsetTime (A)- OnsetTime (N)')
+% histogram(cell2mat(TimeComparisons(:,16)))
+% 
+% ACIdx= find(~cellfun(@isempty, regexp(Shortstim(:,3), 'GCaMP')));
+% figure('name', 'Astrocyte onset times')
+% histogram(cell2mat(Shortstim(ACIdx,16)), 'binwidth',0.8450)
+% 
+% NIdx= find(~cellfun(@isempty, regexp(Shortstim(:,3), 'RCaMP')));
+% figure('name', 'Neuronal onset times')
+% histogram(cell2mat(Shortstim(NIdx,16)), 'binwidth', 0.845)
+% 
+%  figure('name', 'Astrocyte AUC')
+% histogram(cell2mat(Shortstim(ACIdx,17)))
+% 
+% figure('name', 'Neuronal AUC')
+% histogram(cell2mat(Shortstim(NIdx,17)))
 
 %% Responding Neurons and Astrocytes based on onset times
 
@@ -696,8 +697,8 @@ scatter(cell2mat(Shortstim(:,16)), cell2mat(Shortstim(:,17)));
 % scatter(cell2mat(Shortstim(:,16)), cell2mat(Shortstim(:,18)));
 
 for iROI=1:length(GrespOT)
-    fastIdx(iROI)=~isempty(find(GrespOT{iROI,16}>0 && GrespOT{iROI,16}<=1));
-    slowIdx(iROI)=~isempty(find(GrespOT{iROI,16}>1));
+    fastIdx(iROI)=~isempty(find(GrespOT{iROI,16}>0 && GrespOT{iROI,16}<=2));
+    slowIdx(iROI)=~isempty(find(GrespOT{iROI,16}>2));
 end
 fastAC=GrespOT(fastIdx',:);
 slowAC=GrespOT(slowIdx',:);
