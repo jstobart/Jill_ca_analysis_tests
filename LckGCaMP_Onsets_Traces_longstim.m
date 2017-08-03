@@ -17,8 +17,8 @@ stimwindow=20; % 5 s baseline, 15 s imaging
 % save files names
 %saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.mat';
 %saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.csv';
-%saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset&AUC.csv';
-saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset_2sbeforeStim.csv';
+saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset&AUC.csv';
+%saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset_2sbeforeStim.csv';
 
 %AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-AstrocyteTraces_Stim.xlsx';
 %NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-NeuronalTraces_Stim.xlsx';
@@ -149,7 +149,8 @@ Shortstim = Shortstim(nonOverlapIdx2',:);
 
 %% Calculate the first peak onset time and AUC after stim
 
-baselineCorrectedTime=TimeX-(24*(1/FrameRate));%1.9908;
+%baselineCorrectedTime=TimeX-3;%1.9908;
+baselineCorrectedTime=TimeX-5;
 
 % peak onsets and AUC in the first second after stim for each ROI
 for iROI= 1:length(Shortstim)

@@ -93,6 +93,22 @@ data.raw.short <- rbind(data.raw.short.YC20,data.raw.short.YC21,data.raw.short.Y
 #data.raw.short.largelamp <- subset(data.raw.short, amplitude>3)
 
 
+# plots of amplitudes
+
+#before.stim<-subset(data.raw.short, treatment=="None"& condition=="Stim")
+
+# one number for each ROI for each trial
+#before.stim$trialU<-paste(before.stim$sessionU, before.stim$trial, sep=".")
+
+#before.stim.ROI<- ddply(before.stim, c("animal","ROInameU","trialU","condition","treatment","area","session"), summarise, 
+                          # Amp_mean =mean(amplitude), nEvents = sum(numPeaks))
+
+
+#write.csv(before.stim.ROI, file = "E:/Data/Two_Photon_Data/YC_data/before_stim_ROI.csv")
+
+
+# aggregate the data
+
 # How many peaks do rois give for each trial
 sum.data.short.raw<- ddply(data.raw.short, c("animal","ROInameU","condition","treatment","area","session","trial"), summarise, 
                    PA_mean = mean(peakAUC), Amp_mean =mean(amplitude), nEvents = sum(numPeaks),
@@ -109,7 +125,7 @@ sum.data.raw.roi<- ddply(sum.data.short.raw, c("animal","ROInameU","condition","
                      PA_mean2 = mean(PA_mean), Amp_mean2 =mean(Amp_mean), nEvents2 = sum(nEvents),
                      Dur_mean2 = mean(Dur_mean), PT_mean2 = mean(PT_mean))
 
-
+##########
 # --------------------------------------------------------------------------- #
 ## Do some exploratory plotting
 
