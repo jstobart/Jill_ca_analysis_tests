@@ -12,6 +12,7 @@ library("data.table")
 
 # Load the raw data
 data.raw <- read.table("E:/Data/Two_Photon_Data/YC_data/WTDN_allareas_matched_ROIs_all.csv", header=TRUE, sep=",") #
+data.raw <- read.table("D:/Data/YC_data/WTDN_allareas_matched_ROIs_all.csv", header=TRUE, sep=",") #
 
 # make NaNs zero
 data.raw[is.na(data.raw)] <- 0
@@ -93,19 +94,6 @@ data.raw.short <- rbind(data.raw.short.YC20,data.raw.short.YC21,data.raw.short.Y
 #data.raw.short.largelamp <- subset(data.raw.short, amplitude>3)
 
 
-# plots of amplitudes
-
-#before.stim<-subset(data.raw.short, treatment=="None"& condition=="Stim")
-
-# one number for each ROI for each trial
-#before.stim$trialU<-paste(before.stim$sessionU, before.stim$trial, sep=".")
-
-#before.stim.ROI<- ddply(before.stim, c("animal","ROInameU","trialU","condition","treatment","area","session"), summarise, 
-                          # Amp_mean =mean(amplitude), nEvents = sum(numPeaks))
-
-
-#write.csv(before.stim.ROI, file = "E:/Data/Two_Photon_Data/YC_data/before_stim_ROI.csv")
-
 
 # aggregate the data
 
@@ -124,6 +112,8 @@ sum.data.raw.Ev.short<- ddply(data.raw.short, c("animal","ROInameU","condition",
 sum.data.raw.roi<- ddply(sum.data.short.raw, c("animal","ROInameU","condition","treatment","area"), summarise, 
                      PA_mean2 = mean(PA_mean), Amp_mean2 =mean(Amp_mean), nEvents2 = sum(nEvents),
                      Dur_mean2 = mean(Dur_mean), PT_mean2 = mean(PT_mean))
+
+
 
 ##########
 # --------------------------------------------------------------------------- #
@@ -180,6 +170,45 @@ ggplot(sum.data.raw.roi, aes(x = Amp_mean2, fill = treatment)) +
   facet_grid(condition~ area) + 
   xlim(0,5)+
   theme_bw()
+
+
+# plots of amplitudes
+
+#before.stim<-subset(data.raw.short, treatment=="None"& condition=="Stim")
+
+# one number for each ROI for each trial
+#before.stim$trialU<-paste(before.stim$sessionU, before.stim$trial, sep=".")
+
+#before.stim.ROI<- ddply(before.stim, c("animal","ROInameU","trialU","condition","treatment","area","session"), summarise, 
+# Amp_mean =max(amplitude), nEvents = sum(numPeaks))
+
+
+#write.csv(before.stim.ROI, file = "E:/Data/Two_Photon_Data/YC_data/before_stim_ROI.csv")
+
+library(RColorBrewer)
+jBuPuFun <- colorRampPalette(brewer.pal(n = 9, "BuPu"))
+paletteSize <- 256
+jBuPuPalette <- jBuPuFun(paletteSize)
+
+## 'jet.colors' is "as in Matlab"
+## (and hurting the eyes by over-saturation)
+jet.colors <-
+  colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+                     "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
+jJet.colors <- jet.colors(paletteSize)
+
+sum.data.raw.roi<- sum.data.raw.roi[order(sum.data.raw.roi$Amp_mean2),]
+
+ggplot(sum.data.raw.roi[sum.data.raw.roi$area==1,], aes(x = condition, y = ROInameU, fill = Amp_mean2)) +
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  geom_tile() +
+  facet_grid(~treatment) + 
+  scale_fill_gradient2(low = jJet.colors[1],
+                       mid = jJet.colors[paletteSize/2],
+                       high = jJet.colors[paletteSize],
+                       midpoint = max(sum.data.raw.roi$Amp_mean2) + min(sum.data.raw.roi$Amp_mean2)) / 2,
+                       name = "Amplitude")
+
 
 
 ###########
