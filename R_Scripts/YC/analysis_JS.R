@@ -197,17 +197,18 @@ jet.colors <-
                      "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
 jJet.colors <- jet.colors(paletteSize)
 
-sum.data.raw.roi<- sum.data.raw.roi[order(sum.data.raw.roi$Amp_mean2),]
+sum.data.raw.roi.1<-subset(sum.data.raw.roi, area==1)
+sum.data.raw.roi.1<- sum.data.raw.roi.1[order(sum.data.raw.roi.1$Amp_mean2),]
 
-ggplot(sum.data.raw.roi[sum.data.raw.roi$area==1,], aes(x = condition, y = ROInameU, fill = Amp_mean2)) +
-  #theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+library(scales)
+
+ggplot(sum.data.raw.roi.1, aes(x = treatment, y = ROInameU, fill = Amp_mean2)) +
+  #theme(axis.text.y = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   geom_tile() +
-  facet_grid(~treatment) + 
-  scale_fill_gradient2(low = jJet.colors[1],
-                       mid = jJet.colors[paletteSize/2],
-                       high = jJet.colors[paletteSize],
-                       midpoint = max(sum.data.raw.roi$Amp_mean2) + min(sum.data.raw.roi$Amp_mean2)) / 2,
-                       name = "Amplitude")
+  facet_grid(area~condition) + 
+  scale_fill_gradientn(colours= jJet.colors, na.value = "grey50",
+                       limits = c(0,2), oob=squish, name = "Amplitude")
+
 
 
 
@@ -251,6 +252,11 @@ low<-rbind(area1.low,area2.low,area3.low)
 
 
 sum.data.raw.roi$responders=0
+
+
+#ROInum.eitherside.1s<-merge(ROInum.eitherside.1s, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+
+
 
 ROIdata<-data.frame()
 for (ii in 1:nrow(high))
