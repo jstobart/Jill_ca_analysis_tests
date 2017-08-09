@@ -2203,6 +2203,28 @@ minDis.lck.type.anova <- anova(minDis.lck.type.null, minDis.lck.type.model1,
 print(minDis.lck.type.anova)
 
 
+
+
+
+######
+
+# subsets to look for example ROIs for movies
+
+lck.fast<-subset(stim.lck.compdata.STIM, Channel_Group=="lck_GCaMP.fast")
+lck.fast.corr<-subset(GCaMP_RCaMP.groups, GroupX=="fast A")
+lck.fast.corr.close<-subset(lck.fast.corr, MinDistance<15)
+
+
+lck.fast.corr.close<-merge(lck.fast.corr.close, lck.fast[, c("ROIs_trial", "area")], by="ROIs_trial", all.x=TRUE)
+
+
+#sort by correlation
+lck.fast.corr.close<-lck.fast.corr.close[order(lck.fast.corr.close$Short_Corr),] 
+
+
+
+
+
 ########
 
 # histograms for onset time comparison RASTERs
