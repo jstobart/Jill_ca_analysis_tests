@@ -1158,7 +1158,7 @@ pairsData$Cond_Channel<-as.factor(pairsData$Cond_Channel)
 pairsData$Channel_Group<-interaction(pairsData$Channel, pairsData$Group)
 pairsData$Channel_Group<-as.factor(pairsData$Channel_Group)
 
-ggpairs(data=pairsData[,c(1:3,5,6,13)], mapping=aes(color = Cond_Channel))
+ggpairs(data=pairsData[,c(10:12)], mapping=aes(color = Group))
 ggpairs(data=pairsData[,c(7:12,13)], mapping=aes(color = Cond_Channel))
 
 # only considering fast and delayed
@@ -1182,6 +1182,7 @@ df.OT1<- summarySE(stim.both.alldata, measurevar = "OnsetTime", groupvars = c("C
 df.OT2<- summarySE(stim.lck.alldata, measurevar = "OnsetTime", groupvars = c("Channel_Group","Condition"))
 df.OT3<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "OnsetTime", groupvars = c("Channel_Group"))
 df.OT4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="lck_GCaMP",], measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group"))
+df.OT5<- summarySE(stim.lck.compdata.STIM, measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group"))
 
 ggplot(df.OT1, aes(x=interaction(Channel,Group),y=OnsetTime, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
