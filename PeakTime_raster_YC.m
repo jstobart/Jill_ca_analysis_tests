@@ -9,17 +9,17 @@ saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\time_compari
 saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\time_comparisons.csv';
 
 %peak data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.csv');
+% load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.csv');
+% 
 
 
-
-Peaks=AllData2(2:end,:);
-
+%Peaks=AllData2(2:end,:);
+Peaks=datarawshortnoGeph;
 for iROI=1:length(Peaks)
     % make new unique trial names
     Peaks{iROI,19}=strcat(Peaks{iROI,18},'_',Peaks{iROI,1});
     % make new Condition/treatment names
-    Peaks{iROI,20}=strcat(Peaks{iROI,13},'_',Peaks{iROI,14});
+    Peaks{iROI,20}=strcat(Peaks{iROI,13},'_',num2str(Peaks{iROI,14}));
 end
 
 %% compare peak times for each ROI
@@ -32,10 +32,10 @@ if ~exist(saveFiles1, 'file')
     
     % peak comparisons for each field of view and each trial
     for iTreat=1:length(CondTreat)
-        CurrentTreat=CondTreat(CondTreat);
+        CurrentTreat=CondTreat(iTreat);
         
         % Find the idx of matching trials
-        matchingTreatIdx = find(~cellfun(@isempty, regexp(Peaks(:,20), CurrentTreat)));
+        matchingTreatIdx = find(~cellfun(@isempty, strfind(Peaks(:,20), CurrentTreat)));
         TreatData = Peaks(matchingTreatIdx,:);
         
         % peak comparisons for each field of view and each trial
@@ -43,7 +43,7 @@ if ~exist(saveFiles1, 'file')
             CurrentTrial=Trials(itrial);
             
             % Find the idx of matching trials
-            matchingTrialIdx = find(~cellfun(@isempty, regexp(TreatData(:,19), CurrentTrial)));
+            matchingTrialIdx = find(~cellfun(@isempty, str(TreatData(:,19), CurrentTrial)));
             TrialData = TreatData(matchingTrialIdx,:);
             
             numROIs = size(TrialData,1);

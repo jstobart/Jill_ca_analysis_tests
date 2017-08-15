@@ -729,25 +729,25 @@ NvsA_SpaceOnsets=NvsA_SpaceOnsets(NvsA_SpaceOnsetsIdx,:);
 AvsN_TimeOnsetsIdx=find(cell2mat(AvsN_TimeOnsets(:,13))>=-20 & cell2mat(AvsN_TimeOnsets(:,13))<=20);
 AvsN_TimeOnsets=AvsN_TimeOnsets(AvsN_TimeOnsetsIdx,:);
 
-AvsN_SpaceOnsetsIdx=find(cell2mat(AvsN_SpaceOnsets(:,13))>=-20 & cell2mat(AvsN_SpaceOnsets(:,13))<=20);
+AvsN_SpaceOnsetsIdx=find(cell2mat(AvsN_SpaceOnsets(:,13))>=-12 & cell2mat(AvsN_SpaceOnsets(:,13))<=12);
 AvsN_SpaceOnsets=AvsN_SpaceOnsets(AvsN_SpaceOnsetsIdx,:);
 
 %% sort by astrocyte ROI area
 
-[~, area_idx] = sort([NvsA_SpaceOnsets{:,9}], 'ascend');
-NvsA_SpaceOnsetsAr=NvsA_SpaceOnsets(area_idx,:);
-
-figure('name', 'Raster plot NvsA_SpaceOnsets- sorted by astrocyte ROI area')
-hold on
-set(gca,'ytick',[])
-set(gca,'YColor',get(gcf,'Color'))
-for iComp=1:length(NvsA_SpaceOnsetsAr)
-    
-    scatter(cell2mat(NvsA_SpaceOnsetsAr(iComp,13)), iComp, 5, 'filled','k')
-    xlim([-20 20])
-end
-plot([0 0],[0 length(NvsA_SpaceOnsetsAr)], 'r--','LineWidth', 1)
-xlabel('time from neuronal event')
+% [~, area_idx] = sort([NvsA_SpaceOnsets{:,9}], 'ascend');
+% NvsA_SpaceOnsetsAr=NvsA_SpaceOnsets(area_idx,:);
+% 
+% figure('name', 'Raster plot NvsA_SpaceOnsets- sorted by astrocyte ROI area')
+% hold on
+% set(gca,'ytick',[])
+% set(gca,'YColor',get(gcf,'Color'))
+% for iComp=1:length(NvsA_SpaceOnsetsAr)
+%     
+%     scatter(cell2mat(NvsA_SpaceOnsetsAr(iComp,13)), iComp, 5, 'filled','k')
+%     xlim([-20 20])
+% end
+% plot([0 0],[0 length(NvsA_SpaceOnsetsAr)], 'r--','LineWidth', 1)
+% xlabel('time from neuronal event')
 
 
 %% add astrocyte peak information to onset comparisons cell arrays
@@ -797,8 +797,45 @@ for iROI=1:length(peakInfo4)
     NvsA_SpaceOnsets(SpaceIdx2,18)=num2cell(cell2mat(peakInfo4(iROI,3))*2); % astrocyte duration
 end
 
+ %% sort by distance- some graphs with fast/delayed colour code, some graphs without
+% 
+[~, Dis_idx] = sort([AvsN_SpaceOnsets{:,10}], 'ascend');
+AvsN_SpaceOnsetsD=AvsN_SpaceOnsets(Dis_idx,:);
+clearvars Dis_idx
+% 
+figure('name', 'Raster plot AvsN_SpaceOnsets- sorted by distance & coloured by group')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+ylim([0 3759])
+for iComp=1:length(AvsN_SpaceOnsetsD)
+    if AvsN_SpaceOnsetsD{iComp,11}<1
+    scatter(AvsN_SpaceOnsetsD{iComp,13}, iComp, 5, 'filled','b')
+    elseif (AvsN_SpaceOnsetsD{iComp,11}>=1 && AvsN_SpaceOnsetsD{iComp,11}<12)
+        scatter(AvsN_SpaceOnsetsD{iComp,13}, iComp, 5, 'filled','g')
+    end
+    xlim([-12 12])
+    
+end
+plot([0 0],[0 length(AvsN_SpaceOnsetsD)], 'r--','LineWidth', 1)
+xlabel('time from neuronal event')
 
-% %% unsorted rasters and histograms
+
+figure('name', 'Raster plot AvsN_SpaceOnsets- no colour')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+% set(gca, 'XScale', 'log')
+    ylim([0 3759])
+for iComp=1:length(AvsN_SpaceOnsetsD)
+    scatter(AvsN_SpaceOnsetsD{iComp,13}, iComp, 5, 'filled','b')
+    xlim([-12 12])
+end
+plot([0 0],[0 length(AvsN_SpaceOnsetsD)], 'r--','LineWidth', 1)
+xlabel('time from neuronal event')
+
+
+%% unsorted rasters and histograms
 % figure('name', 'histogram: N vs A- closest in time')
 % h1=histogram(cell2mat(NvsA_TimeOnsets(:,13)),158, 'Normalization','pdf');
 % xlim([-20 20])
