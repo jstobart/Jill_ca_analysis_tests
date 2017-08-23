@@ -1,5 +1,17 @@
 function tOnset = find_first_onset_time(tt, traces, nSDs, nMA, varargin)
 
+% tt= time series (negative numbers are the baseline, time=0 is the onset
+% of stimulus, etc)
+
+% traces= the dF/F trace for each ROI (from the CellScan)
+
+% nSDs= number of standard deviations from the baseline for the threshold
+% (I used 2.5 for my astrocyte data)
+
+% nMA= the width of the moving average filter for smoothing the traces 
+
+% if varargin is true a plot will be created for each ROI
+
 % Determine the threshold each trace must exceed
 blFrames = find(tt < 0, 1, 'last');
 blStd = std(traces(1:blFrames, :), 0, 1);

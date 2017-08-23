@@ -351,17 +351,16 @@ short.cyto.DSP4.OT.dist<-subset(all.cyto.DSP4.OT,Condition!="Stim" & OnsetTime<s
 # no stim vs 8 s stim- neuronal window=9s, AC window= 15 s for peak time, neuronal window=2s, AC window=12 s for onset
 # no stim vs 1 s stim- neuronal window=2s, AC window= 10 s for peak time, neuronal window=2s, AC window=8 s for onset
 
-#LongN_PTwind=9
-#LongAC_PTwind=15
+LongN_PTwind2=9
+LongAC_PTwind2=15
 
-#LongN_OTwind=2
-#LongAC_OTwind=12
+LongN_OTwind2=2
+LongAC_OTwind2=12
 
-LongN_PTwind=12
-LongAC_PTwind=12
+Long_PTwind=12
 
-LongN_OTwind=10
-LongAC_OTwind=10
+Long_OTwind=10
+
 
 ShortN_PTwind=2
 ShortAC_PTwind=10
@@ -372,10 +371,12 @@ ShortAC_OTwind=8
 # remove data that is outside the above windows
 # lck
 stim.lck.OT<-subset(all.lck.OT,Condition!="shortstim")
-stim.lck.OT.R<-subset(stim.lck.OT, Channel=="RCaMP" & OnsetTime<=LongN_OTwind)
-stim.lck.OT.G<-subset(stim.lck.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind)
+stim.lck.OT.window<-subset(stim.lck.OT, OnsetTime<=Long_OTwind)
 
-stim.lck.OT.window<-rbind(stim.lck.OT.R, stim.lck.OT.G)
+stim.lck.OT.R<-subset(stim.lck.OT, Channel=="RCaMP" & OnsetTime<=LongN_OTwind2)
+stim.lck.OT.G<-subset(stim.lck.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind2)
+
+stim.lck.OT.window2<-rbind(stim.lck.OT.R, stim.lck.OT.G)
 
 short.lck.OT<-subset(all.lck.OT,Condition!="Stim")
 short.lck.OT.R<-subset(short.lck.OT, Channel=="RCaMP" & OnsetTime<=ShortN_OTwind)
@@ -415,10 +416,13 @@ short.cyto.DSP4.OT.window<-rbind(short.cyto.DSP4.OT.R, short.cyto.DSP4.OT.G)
 # peak times
 # lck
 stim.lck.PT<-subset(all.lck.peaks,Condition!="shortstim")
-stim.lck.PT.R<-subset(stim.lck.PT, Channel=="RCaMP" & peakTime<=LongN_PTwind & peakTime>=0 & Duration<45)
-stim.lck.PT.G<-subset(stim.lck.PT, Channel=="GCaMP" & peakTime<=LongAC_PTwind & peakTime>=0 & Duration<45)
 
-stim.lck.peaks.window<-rbind(stim.lck.PT.R, stim.lck.PT.G)
+stim.lck.PT.window<-subset(stim.lck.OT, peakTime<=Long_PTwind & peakTime>=0 & Duration<45)
+
+stim.lck.PT.R<-subset(stim.lck.PT, Channel=="RCaMP" & peakTime<=LongN_PTwind2 & peakTime>=0 & Duration<45)
+stim.lck.PT.G<-subset(stim.lck.PT, Channel=="GCaMP" & peakTime<=LongAC_PTwind2 & peakTime>=0 & Duration<45)
+
+stim.lck.peaks.window2<-rbind(stim.lck.PT.R, stim.lck.PT.G)
 
 short.lck.PT<-subset(all.lck.peaks,Condition!="Stim")
 short.lck.PT.R<-subset(short.lck.PT, Channel=="RCaMP" & peakTime<=ShortN_PTwind & peakTime>=0 & Duration<45)
@@ -626,9 +630,9 @@ print(OT.lck.RC.NSvsS.adtest)
 ######
 # number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
 
-stim.lck.OT.window$Channel <- factor(stim.lck.OT.window$Channel, levels = c("RCaMP","GCaMP"))
+stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
 
-ROInum.lck.stim<-ddply(stim.lck.OT.window, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
 
 # add in number of trials
 ROInum.lck.stim$Ani_Spot_Cond<-paste(ROInum.lck.stim$Animal, ROInum.lck.stim$Spot, ROInum.lck.stim$Condition, sep="_")
@@ -738,11 +742,11 @@ print(pT.lck.RC.NSvsS.adtest)
 ##################### 
 histseq= seq(0,15,0.5)
 #cyto data
-ntrials.cyto.OT.long.R.dis<- ddply(stim.cyto.OT.window[stim.cyto.OT.window$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
-ntrials.cyto.OT.long.G.dis<- ddply(stim.cyto.OT.window[stim.cyto.OT.window$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.OT.long.R.dis<- ddply(stim.cyto.OT.dist[stim.cyto.OT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.OT.long.G.dis<- ddply(stim.cyto.OT.dist[stim.cyto.OT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 
-ntrials.cyto.DSP4.OT.long.R<- ddply(stim.cyto.DSP4.OT.window[stim.cyto.DSP4.OT.window$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
-ntrials.cyto.DSP4.OT.long.G<- ddply(stim.cyto.DSP4.OT.window[stim.cyto.DSP4.OT.window$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.DSP4.OT.long.R<- ddply(stim.cyto.DSP4.OT.dist[stim.cyto.DSP4.OT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.DSP4.OT.long.G<- ddply(stim.cyto.DSP4.OT.dist[stim.cyto.DSP4.OT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
 
 # neuronal cyto onset histogram
 # counts for each condition in the histogram
@@ -893,9 +897,9 @@ summary(cyto.nROI.either1s.Cond_Gr)
 ################
 # number of ROIs per trial per field of view?
 
-stim.cyto.OT.window$Channel <- factor(stim.cyto.OT.window$Channel, levels = c("RCaMP","GCaMP"))
+stim.cyto.OT.window2$Channel <- factor(stim.cyto.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
 
-ROInum.cyto.stim<-ddply(stim.cyto.OT.window, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+ROInum.cyto.stim<-ddply(stim.cyto.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
 
 # add in number of trials
 Spot.cyto.ntrials$Ani_Spot_Cond<-paste(Spot.cyto.ntrials$Animal, Spot.cyto.ntrials$Spot, Spot.cyto.ntrials$Condition, sep="_")
@@ -907,7 +911,7 @@ ROInum.cyto.stim$ROIsPerTrial<-ROInum.cyto.stim$nROIs/ROInum.cyto.stim$nTrials
 
 
 # mean
-df.cyto.ROInum.mean<-summarySE(ROInum.cyto.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
+df.cyto.ROInum.mean2<-summarySE(ROInum.cyto.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
 
 
 ggplot(df.cyto.ROInum.mean, aes(x=Channel,y=ROIsPerTrial, fill= Condition)) +

@@ -25,10 +25,10 @@ Settings.ScoreSheetNames = {
 channel = struct('Ca_Memb_Astro', 1, 'blood_plasma', 2);
 
 % final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'test_peaks_21_03_2017.csv');% all peak data
-SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'test_prop_21_03_2017.csv');% propagation data (duration, distance, etc.)
-SaveFiles{1,3} = fullfile(Settings.MainDir, 'Results', 'test_prop_ROIdata_21_03_2017.mat');%'propagation ROI info
-SaveFiles{1,4}= fullfile(Settings.MainDir, 'Results','test_traces_21_03_2017.mat'); % normalized traces
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'test_peaks_18_08_2017.csv');% all peak data
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'test_prop_18_08_2017.csv');% propagation data (duration, distance, etc.)
+SaveFiles{1,3} = fullfile(Settings.MainDir, 'Results', 'test_prop_ROIdata_18_08_2017.mat');%'propagation ROI info
+SaveFiles{1,4}= fullfile(Settings.MainDir, 'Results','test_traces_18_08_2017.mat'); % normalized traces
 
 %% Load calibration file
 calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
@@ -95,7 +95,7 @@ for iAnimal = 1:numAnimals
         
         %Motion correction
         channelToUseMC = 2; % which channel to use
-        refImg = squeeze(mean(ImgArray(1,1).rawdata(:,:,channelToUseMC, 5:20),4));
+        refImg = squeeze(mean(ImgArray(1,1).rawdata(:,:,channelToUseMC, 5:10),4));
         ImgArray=ImgArray.motion_correct( 'refImg', refImg,'ch', channelToUseMC,'minCorr', 0.4);
         
         
