@@ -69,7 +69,8 @@ ImgArray =  SCIM_Tif([], channel, CalFile);
 % RG17, 03_08_2016, spot1, trial 3, process 15 vs dendrites
 
 % Spectral Unmixing of GCaMP and RCaMP
-ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
+
+
 
 HighRes = SCIM_Tif([],channel, CalFile);
 % Extract a reference image
