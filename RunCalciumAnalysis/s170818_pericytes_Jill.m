@@ -4,9 +4,9 @@ AllData= [];
 All_traces= [];
 AllPropData=[];
 
-        
-        tblRaw = table();
-        tblSummary = table();
+
+tblRaw = table();
+tblSummary = table();
 %% Example script for CellScan application
 % Add path to 2p-img-analysis
 %addpath('D:\Code\Matlab\2p-img-analysis');
@@ -267,8 +267,8 @@ for iAnimal = 1:numAnimals
         
         
         %% Output data
-
-        for iStack = 1:nStacks            
+        
+        for iStack = 1:nStacks
             % Prepare some temporary tables for 3D FLIKA and Field of View Summary
             tblTempRaw = table();
             tblTempSummary = table();
@@ -338,133 +338,181 @@ for iAnimal = 1:numAnimals
                 (tblTempSummary.fov_area./100));
             tblSummary = [tblSummary; tblTempSummary];
             
+            
+            
+            %% extract traces from ROIs for correlations etc.
+            traces= FLIKA_2p5D(1,iStack).calcMeasureROIs.data.tracesNorm;
+            %preallocate
+            Trace_data=cell(size(traces,2),1);
+            for iROI = 1:size(traces,2)
+                Trace_data{iROI,1}= FLIKA_2p5D(1,iStack).calcFindROIs.data.roiNames{iROI,1};
+                Trace_data{iROI,2}= FLIKA_3D(iStack).rawImg.name;
+                Trace_data{iROI,3}= strcat('trial', num2str(iStack));
+                Trace_data{iROI,4}= spotId;
+                Trace_data{iROI,5}= CurrentAnimal;
+                Trace_data{iROI,6}= CurrentCell;
+                Trace_data{iROI,7} = CurrentDepth(1,1);
+                Trace_data{iROI,8} = traces(:,iROI);
+                Trace_data{iROI,9} = FLIKA_2p5D(1,iStack).calcFindROIs.data.roiMask(:,:,iROI);
+                Trace_data{iROI,10} = FLIKA_2p5D(1,iStack).rawImg.metadata.pixelSize;
+            end
+            All_traces=vertcat(All_traces, Trace_data);
+            clearvars Trace_data
+            clearvars temp temp2
         end
         
         
+        %% Pericyte signal propagation
         
-        
-        
-        %% Save the data
-        % Set up the filenames / directory
-        dirData = 'F:\Data\2PLSM-temp\optic nerve\2016-10-06-N4005';
-        fnData = '2016-10-06-N4005';
-        fnFull = fullfile(dirData, fnData);
-        % Save the data in 2 csv files, and also as a .mat file
-        delim = '\t';
-        writetable(tblRaw, [fnFull, '_raw.csv'], 'Delimiter', delim)
-        writetable(tblSummary, [fnFull, '_summary.csv'], 'Delimiter', delim)
-        save('-v7.3', [fnFull, '.mat'], 'cs*', 'ri*', 'tbl*')
-        
-        
-        
-        
-        
-        
-        %% extract traces from ROIs for correlations etc.
-        traces= somata(1,itrial).calcMeasureROIs.data.tracesNorm;
-        %preallocate
-        Trace_data=cell(size(traces,2),7);
-        for iROI = 1:size(traces,2)
-            Trace_data{iROI,1}= somata(1,itrial).calcFindROIs.data.roiNames{iROI,1};
-            Trace_data{iROI,2}= strcat('trial', num2str(itrial));
-            Trace_data{iROI,3}= spotId;
-            Trace_data{iROI,4}= CurrentAnimal;
-            Trace_data{iROI,5}= CurrentCell;
-            Trace_data{iROI,6} = CurrentDepth(1,1);
-            Trace_data{iROI,7} = traces(:,iROI);
-            Trace_data{iROI,8} = somata(1,itrial).calcFindROIs.data.roiMask(:,:,iROI);
-            Trace_data{iROI,9} = somata(1,itrial).rawImg.metadata.pixelSize;
+        for itrial=1:length(FLIKA_3D)
+            temp3=FLIKA_3D(1,itrial).calcFindROIs.data;
+            
+            %% Distance Calculations
+            % find the minimium distance between the edges of the 3D
+            % ROIs and somata
+            
+            % somata mask
+            for iSoma=1:nSomata
+                if isempty(strfind(somata(1).calcFindROIs.data.roiNames{iSoma,1}, 'B')) % look for border ROI
+                    
+                    SomaROI = double(somata(1).calcFindROIs.data.roiMask(:,:,iSoma));
+                end
+                
+                for jROI = 1:nROIs
+                    traceExists = ...
+                        FLIKA_3D(iStack).calcMeasureROIs.data.tracesExist(:,jROI);
+                    MaskExtract = Mask3D_temp(:,:,traceExist);
+                    for iBlob = 1:size(MaskExtract)
+                        ROIMask= double(MaskExtract(:,:,iBlob);
+                        
+                        % combine masks together
+                        Mask=SomaROI + ROIMask;
+                        Mask=im2bw(Mask);
+                        
+                        %Pythaogrean theorem method
+                        
+                        % Define object boundaries
+                        boundaries = bwboundaries(Mask);
+                        numberOfBoundaries = size(boundaries, 1);
+                        if numberOfBoundaries==1
+                            minDis_toSoma = 0;
+                        elseif numberOfBoundaries>1
+                            boundary1 = boundaries{1};
+                            boundary2 = boundaries{2};
+                            boundary1x = boundary1(:, 2);
+                            boundary1y = boundary1(:, 1);
+                            for k = 1 : length(boundary2)
+                                boundary2x = boundary2(k, 2);
+                                boundary2y = boundary2(k, 1);
+                                % For this blob, compute distances from boundaries to edge.
+                                allDistances = sqrt((boundary1x - boundary2x).^2 + (boundary1y - boundary2y).^2);
+                                % Find closest point, min distance.
+                                [minDistance(k), indexOfMin] = min(allDistances);
+                            end
+                            % Find the overall min distance
+                            minDis_toSoma = (min(minDistance)*FLIKA_3D(iStack).rawImg.metadata.pixelSize);
+                        end
+                        
+                        % make a distance vector
+                        DistanceVec{iBlob}=minDis_toSoma;
+                        
+                        clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y minDistance indexofMin
+                    end
+                end
+            end
+            
+            
+            % create fields for trial, animal, spot, condition, etc.
+            for iROI = 1:length(temp3.distance)
+                temp4.roiNames{iROI,1}=temp3.roiNames{iROI,1};
+                temp4.trialname{iROI,1}=strcat('trial', num2str(itrial));
+                temp4.Spot{iROI,1}= spotId;
+                temp4.animalname{iROI,1}= CurrentAnimal;
+                temp4.celltype{iROI,1}=CurrentCell;
+                temp4.depth{iROI,1} = CurrentDepth(1,1);
+                temp4.propRate{iROI,1} = temp3.distance(iROI,1)/temp3.duration(iROI,1); % rate of propagation= distance of propagation/duration (um/s)
+                temp4.pixelsize{iROI,1} = somata(1,itrial).rawImg.metadata.pixelSize;
+                temp4.centroid{iROI,1}=temp3.centroid{iROI,1};
+                temp4.puffIdxs{iROI,1}=temp3.puffIdxs{iROI,1};
+                temp4.distance{iROI,1}=temp3.distance(iROI,1);
+                temp4.duration{iROI,1}=temp3.duration(iROI,1);
+                temp4.onset{iROI,1}=temp3.onset(iROI,1);
+                temp4.volume{iROI,1}=temp3.volume(iROI,1);
+                temp4.area{iROI,1}=temp3.area(iROI,1);
+            end
+            isFirst = (itrial == 1 );
+            if isFirst
+                propdata.Trial = {};
+                propdata.Animal = {};
+                propdata.Spot = {};
+                propdata.CellType={};
+                propdata.Depth = {};
+                propdata.PropRate = {};
+                propdata.pixelsize={};
+                propdata.distance={};
+                propdata.duration={};
+                propdata.onset={};
+                propdata.volume={};
+                propdata.area={};
+            end
+            propdata.Trial= [propdata.Trial; temp4.trialname];
+            propdata.Animal= [propdata.Animal; temp4.animalname];
+            propdata.Spot= [propdata.Spot; temp4.Spot];
+            propdata.PropRate= [propdata.PropRate; temp4.propRate];
+            propdata.CellType= [propdata.CellType; temp4.celltype];
+            propdata.Depth= [propdata.Depth; temp4.depth];
+            propdata.pixelsize= [propdata.pixelsize; temp4.pixelsize];
+            propdata.distance= [propdata.distance; temp4.distance];
+            propdata.duration= [propdata.duration; temp4.duration];
+            propdata.onset= [propdata.onset; temp4.onset];
+            propdata.volume= [propdata.volume; temp4.volume];
+            propdata.area= [propdata.area; temp4.area];
+            clearvars temp3 temp4
         end
-        All_traces=vertcat(All_traces, Trace_data);
-        clearvars Trace_data
-        clearvars temp temp2
+        
+        % concatenate peak data
+        dataNames1=fieldnames(data);
+        data2= struct2cell(data);
+        data3= [data2{:}];
+        AllData=vertcat(AllData, data3);
+        
+        % concatenate peak data
+        dataNames2=fieldnames(propdata);
+        propdata2= struct2cell(propdata);
+        propdata3= [propdata2{:}];
+        AllPropData=vertcat(AllPropData, propdata3);
+        
+        
+        clearvars data data3 propdata propdata3
+        
     end
     
     
-    %% Pericyte signal propagation
     
-    for itrial=1:length(FLIKA_prop)
-        temp3=FLIKA_prop(1,itrial).calcFindROIs.data;
-        
-        % create fields for trial, animal, spot, condition, etc.
-        for iROI = 1:length(temp3.distance)
-            temp4.roiNames{iROI,1}=temp3.roiNames{iROI,1};
-            temp4.trialname{iROI,1}=strcat('trial', num2str(itrial));
-            temp4.Spot{iROI,1}= spotId;
-            temp4.animalname{iROI,1}= CurrentAnimal;
-            temp4.celltype{iROI,1}=CurrentCell;
-            temp4.depth{iROI,1} = CurrentDepth(1,1);
-            temp4.propRate{iROI,1} = temp3.distance(iROI,1)/temp3.duration(iROI,1); % rate of propagation= distance of propagation/duration (um/s)
-            temp4.pixelsize{iROI,1} = somata(1,itrial).rawImg.metadata.pixelSize;
-            temp4.centroid{iROI,1}=temp3.centroid{iROI,1};
-            temp4.puffIdxs{iROI,1}=temp3.puffIdxs{iROI,1};
-            temp4.distance{iROI,1}=temp3.distance(iROI,1);
-            temp4.duration{iROI,1}=temp3.duration(iROI,1);
-            temp4.onset{iROI,1}=temp3.onset(iROI,1);
-            temp4.volume{iROI,1}=temp3.volume(iROI,1);
-            temp4.area{iROI,1}=temp3.area(iROI,1);
-        end
-        isFirst = (itrial == 1 );
-        if isFirst
-            propdata.Trial = {};
-            propdata.Animal = {};
-            propdata.Spot = {};
-            propdata.CellType={};
-            propdata.Depth = {};
-            propdata.PropRate = {};
-            propdata.pixelsize={};
-            propdata.distance={};
-            propdata.duration={};
-            propdata.onset={};
-            propdata.volume={};
-            propdata.area={};
-        end
-        propdata.Trial= [propdata.Trial; temp4.trialname];
-        propdata.Animal= [propdata.Animal; temp4.animalname];
-        propdata.Spot= [propdata.Spot; temp4.Spot];
-        propdata.PropRate= [propdata.PropRate; temp4.propRate];
-        propdata.CellType= [propdata.CellType; temp4.celltype];
-        propdata.Depth= [propdata.Depth; temp4.depth];
-        propdata.pixelsize= [propdata.pixelsize; temp4.pixelsize];
-        propdata.distance= [propdata.distance; temp4.distance];
-        propdata.duration= [propdata.duration; temp4.duration];
-        propdata.onset= [propdata.onset; temp4.onset];
-        propdata.volume= [propdata.volume; temp4.volume];
-        propdata.area= [propdata.area; temp4.area];
-        clearvars temp3 temp4
-    end
+    % %% Save all data for R analysis
+    AllData2= [dataNames1';AllData];
+    AllPropData2= [dataNames2';AllPropData];
     
-    % concatenate peak data
-    dataNames1=fieldnames(data);
-    data2= struct2cell(data);
-    data3= [data2{:}];
-    AllData=vertcat(AllData, data3);
-    
-    % concatenate peak data
-    dataNames2=fieldnames(propdata);
-    propdata2= struct2cell(propdata);
-    propdata3= [propdata2{:}];
-    AllPropData=vertcat(AllPropData, propdata3);
+    %TraceNames= {'ROI','Trial','Channel','Spot','Animal','Condition','depth','traces','centroid','puffIdx'};
+    %All_traces2=[TraceNames;All_traces];
+    %
+    cd(fullfile(Settings.MainDir, 'Results'));
+    % write date to created file
+    cell2csv(SaveFiles{1,1}, AllData2);
+    cell2csv(SaveFiles{1,2}, AllPropData2);
+    save(SaveFiles{1,3}, 'AllPropData2','-v7.3');
+    save(SaveFiles{1,4}, 'All_traces','-v7.3');
     
     
-    clearvars data data3 propdata propdata3
     
-end
-
-
-
-% %% Save all data for R analysis
-AllData2= [dataNames1';AllData];
-AllPropData2= [dataNames2';AllPropData];
-
-%TraceNames= {'ROI','Trial','Channel','Spot','Animal','Condition','depth','traces','centroid','puffIdx'};
-%All_traces2=[TraceNames;All_traces];
-%
-cd(fullfile(Settings.MainDir, 'Results'));
-% write date to created file
-cell2csv(SaveFiles{1,1}, AllData2);
-cell2csv(SaveFiles{1,2}, AllPropData2);
-save(SaveFiles{1,3}, 'AllPropData2','-v7.3');
-save(SaveFiles{1,4}, 'All_traces','-v7.3');
-
-
+    
+    %% Save the data
+    % Set up the filenames / directory
+    dirData = 'F:\Data\2PLSM-temp\optic nerve\2016-10-06-N4005';
+    fnData = '2016-10-06-N4005';
+    fnFull = fullfile(dirData, fnData);
+    % Save the data in 2 csv files, and also as a .mat file
+    delim = '\t';
+    writetable(tblRaw, [fnFull, '_raw.csv'], 'Delimiter', delim)
+    writetable(tblSummary, [fnFull, '_summary.csv'], 'Delimiter', delim)
+    save('-v7.3', [fnFull, '.mat'], 'cs*', 'ri*', 'tbl*')
