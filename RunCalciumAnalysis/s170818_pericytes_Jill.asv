@@ -328,9 +328,7 @@ for iDrug = 1:numDrugs
             
             
             %% extract traces and masks from ROIs.
-            traces1= FLIKA_2p5D(1,iStacks).calcMeasureROIs.data.tracesNorm;
-            traces2= somata(1,iStacks).calcMeasureROIs.data.tracesNorm;
-            
+            traces= FLIKA_2p5D(1,iStacks).calcMeasureROIs.data.tracesNorm;
             %preallocate
             Trace_data=cell(size(traces,2),1);
             for iROI = 1:size(traces,2)
@@ -342,10 +340,9 @@ for iDrug = 1:numDrugs
                 Trace_data{iROI,6}= CurrentCell;
                 Trace_data{iROI,7}= CurrentDrug;
                 Trace_data{iROI,8} = CurrentDepth(1,1);
-                Trace_data{iROI,9} = isSoma{iStacks}(iROI);
-                Trace_data{iROI,10} = traces(:,iROI);
-                Trace_data{iROI,11} = FLIKA_2p5D(1,iStacks).calcFindROIs.data.roiMask(:,:,iROI);
-                Trace_data{iROI,12} = FLIKA_2p5D(1,iStacks).rawImg.metadata.pixelSize;
+                Trace_data{iROI,9} = traces(:,iROI);
+                Trace_data{iROI,10} = FLIKA_2p5D(1,iStacks).calcFindROIs.data.roiMask(:,:,iROI);
+                Trace_data{iROI,11} = FLIKA_2p5D(1,iStacks).rawImg.metadata.pixelSize;
             end
             All_traces=vertcat(All_traces, Trace_data);
         end
