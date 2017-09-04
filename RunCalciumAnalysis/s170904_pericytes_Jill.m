@@ -17,8 +17,9 @@ channel = struct('Ca_Memb_Astro', 1, 'blood_plasma', 2);
 SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'ROI_table_18_08_2017.csv');% all ROI data
 SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'Summary_table_18_08_2017.csv');% summary for field of view
 SaveFiles{1,3} = fullfile(Settings.MainDir, 'Results', 'test_traces_18_08_2017.mat');% normalized 2.5D traces
-SaveFiles{1,4} = fullfile(Settings.MainDir, 'Results', 'somataROIs_18_08_2017.mat');% CellScans, etc.
-SaveFiles{1,5} = fullfile(Settings.MainDir, 'Results', '3DROIs_18_08_2017.mat');% CellScans, etc.
+SaveFiles{1,4} = 'somataROIs_18_08_2017.mat';% CellScans
+SaveFiles{1,5} = '3DROIs_18_08_2017.mat';% CellScans
+SaveFiles{1,6} = '2p5DROIs_18_08_2017.mat';% CellScans
 
 BorderROIName = 'B';
 
@@ -68,22 +69,24 @@ for iDrug = 1:numDrugs
         CurrentDrug = Settings.Drug(iSpot); %drug treatment
         CurrentAnimal = Settings.AnimalNames{iSpot};
         
-        if exist(SaveFiles{1,4},'file')
-            load(SaveFiles{1,4})
+        
+        %% Load calibration file
+        if strcmp(Settings.Objective(iSpot),'20x')
+            %calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
+            calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
         else
-            %% Load calibration file
-            if strcmp(Settings.Objective(iSpot),'20x')
-                %calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
-                calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
-            else
-                calibration ='E:\matlab\CalibrationFiles\calibration_25x_approx.mat';
-            end
-            CalFile = CalibrationPixelSize.load(calibration);
-            
-            
-            % Get image paths
-            testRoot =Settings.LowresPath{iSpot};
-            
+            calibration ='E:\matlab\CalibrationFiles\calibration_25x_approx.mat';
+        end
+        CalFile = CalibrationPixelSize.load(calibration);
+        
+        
+        % Get image paths
+        testRoot =Settings.LowresPath{iSpot};
+        
+        if exist(fullfile(testRoot,SaveFiles{1,4}),'file')
+            load(fullfile(testRoot,SaveFiles{1,4}))
+            load(fullfile(testRoot,SaveFiles{1,5}))
+        else
             expfiles = dir(fullfile(testRoot,'*.tif'));
             fnTempList = {expfiles(:).name};
             fnList = fullfile(testRoot, fnTempList);
@@ -160,52 +163,88 @@ for iDrug = 1:numDrugs
                 %         FLIKA_3D(1).opt_config()
             end
             
-            %% Exclude 'noise' ROIs that are outside the pericyte then sort somata and processes
+            cd(testRoot);
+            save('-v7.3', SaveFiles{1,4}, 'somata') % cell scans
+            save('-v7.3', SaveFiles{1,5}, 'FLIKA_3D') % cell scans
+        end
+        
+        %% Exclude 'noise' ROIs that are outside the pericyte then sort somata and processes
+        
+        nStacks = length(somata);
+        isInside = cell(1, nStacks);
+        for iStacks = 1:nStacks
+            % boundary ROI mask (this is the area to be analyzed- ROIs must be
+            % inside this area)
+            BoundaryMaskRaw = any(somata(iStacks).calcFindROIs.data.roiMask, 3);
+            BoundaryMask = imresize(BoundaryMaskRaw, size(somata(1).rawImg.rawdata(:,:,1,1)));
             
-            nStacks = numel(ImgArray);
-            isInside = cell(1, nStacks);
-            for iStacks = 1:nStacks
-                % boundary ROI mask (this is the area to be analyzed- ROIs must be
-                % inside this area)
-                BoundaryMaskRaw = any(somata(iStacks).calcFindROIs.data.roiMask, 3);
-                BoundaryMask = imresize(BoundaryMaskRaw, size(ImgArray(1).rawdata(:,:,1,1)));
-                
-                % hand selected somata ROI mask
-                nROIs2=length(somata(iStacks).calcFindROIs.data.roiNames);
-                AllSomaMask = false([size(BoundaryMask(:,:)), 1]);
-                
-                for iSoma=1:nROIs2
-                    maskROI = somata(iStacks).calcFindROIs.data.roiMask(:,:,iSoma);
-                    % find soma ROIs
-                    if ~isempty(regexp(somata(iStacks).calcFindROIs.data.roiNames{iSoma,1}, 'S*', 'ONCE')) % look for somata ROI
-                        AllSomaMask=AllSomaMask + maskROI;
-                    end
+            % hand selected somata ROI mask
+            nROIs2=length(somata(iStacks).calcFindROIs.data.roiNames);
+            AllSomaMask = false([size(BoundaryMask(:,:)), 1]);
+            
+            for iSoma=1:nROIs2
+                maskROI = somata(iStacks).calcFindROIs.data.roiMask(:,:,iSoma);
+                % find soma ROIs
+                if ~isempty(regexp(somata(iStacks).calcFindROIs.data.roiNames{iSoma,1}, 'S*', 'ONCE')) % look for somata ROI
+                    AllSomaMask=AllSomaMask + maskROI;
                 end
+            end
+            
+            % Extract the complete mask
+            roiMask = FLIKA_3D(iStacks).calcFindROIs.data.roiMask;
+            cc = bwconncomp(roiMask);
+            ll = labelmatrix(cc);
+            
+            % Create the artificial 3D masks for only the in bound ROIs (i.e. no
+            % garbage noise ROIs
+            nROIs = cc.NumObjects;
+            isInside{iStacks} = false(nROIs, 1);
+            isSoma{iStacks} = false(nROIs, 1);
+            for iROI = 1:nROIs
+                % Identify if this ROI is inside the area
+                maskROI = any(ll == iROI, 3);
+                maskOverlap = BoundaryMask & maskROI;
+                isInside{iStacks}(iROI) = any(maskOverlap(:));
                 
+                % look for overlap between somata and processes
+                maskOverlap2= AllSomaMask & maskROI;
+                isSoma{iStacks}(iROI) = any(maskOverlap2(:));
+            end
+        end
+        
+        if exist(fullfile(testRoot,SaveFiles{1,6}),'file')
+            load(fullfile(testRoot,SaveFiles{1,6}))
+        else
+            for iStacks = 1:nStacks
                 % Extract the complete mask
                 roiMask = FLIKA_3D(iStacks).calcFindROIs.data.roiMask;
                 cc = bwconncomp(roiMask);
-                ll = labelmatrix(cc);
                 
-                % Create the artificial 3D masks for only the in bound ROIs (i.e. no
-                % garbage noise ROIs
+                % Create the artificial 3D masks
                 nROIs = cc.NumObjects;
-                isInside{iStacks} = false(nROIs, 1);
-                isSoma{iStacks} = false(nROIs, 1);
                 for iROI = 1:nROIs
-                    % Identify if this ROI is inside the area
-                    maskROI = any(ll == iROI, 3);
-                    maskOverlap = BoundaryMask & maskROI;
-                    isInside{iStacks}(iROI) = any(maskOverlap(:));
-
-                    % look for overlap between somata and processes
-                    maskOverlap2= AllSomaMask & maskROI;
-                    isSoma{iStacks}(iROI) = any(maskOverlap2(:));
-                    
                     % Create a 2p5d mask to make it cleaner to measure the ROI
                     mask3D_temp = false(size(roiMask));
                     mask3D_temp(cc.PixelIdxList{iROI}) = true;
                     mask2p5D(:,:,iROI) = any(mask3D_temp, 3);
+                end
+                
+                if ~exist('fnList', 'var')
+                    expfiles = dir(fullfile(testRoot,'*.tif'));
+                    fnTempList = {expfiles(:).name};
+                    fnList = fullfile(testRoot, fnTempList);
+                    
+                    % Create an array of ScanImage Tiffs
+                    ImgArray =  SCIM_Tif(fnList, channel, CalFile);
+                    
+                    %% Run preprocessing steps
+                    % Spectral Unmixing
+                    ImgArray= ImgArray.unmix_chs(false, [], cell2mat(eGFP_TexasRed_Matrix));
+                    
+                    %Motion correction
+                    channelToUseMC = Settings.MotionCorrChannel(iSpot); % which channel to use
+                    refImg = squeeze(mean(ImgArray(1,1).rawdata(:,:,channelToUseMC, 5:10),4));
+                    ImgArray=ImgArray.motion_correct( 'refImg', refImg,'ch', channelToUseMC,'minCorr', 0.4);
                 end
                 
                 % Create the configs for only the processes
@@ -223,138 +262,138 @@ for iDrug = 1:numDrugs
             % figure, imagesc(FLIKA_2p5D(1).calcMeasureROIs.data.time, ...
             %     1:size(FLIKA_2p5D(1).calcMeasureROIs.data.tracesNorm, 2),...
             %     FLIKA_2p5D(1).calcMeasureROIs.data.tracesNorm');
-            
-            
-            
-            %% Output data
-            
-            for iStacks = 1:nStacks
-                % Prepare some temporary tables for 3D FLIKA and Field of View Summary
-                tblTempRaw = table();
-                tblTempSummary = table();
-                
-                % Extract the basic parameters from the 3D FLIKA CellScan
-                nROIs = numel(FLIKA_3D(iStacks).calcFindROIs.data.roiNames);
-                tblTempRaw.animalname=repmat({CurrentAnimal}, nROIs, 1);
-                tblTempRaw.Img = repmat({FLIKA_3D(iStacks).rawImg.name}, nROIs, 1);
-                tblTempRaw.trialname=repmat({strcat('trial', num2str(iStacks))}, nROIs, 1);
-                tblTempRaw.Spot=repmat({spotId}, nROIs, 1);
-                tblTempRaw.Drug=repmat(CurrentDrug(1,1), nROIs, 1);
-                tblTempRaw.celltype=repmat(CurrentCell(1,1), nROIs, 1);
-                tblTempRaw.depth=repmat(CurrentDepth(1,1), nROIs, 1);
-                
-                tblTempRaw.ROI = FLIKA_3D(iStacks).calcFindROIs.data.roiNames;
-                tblTempRaw.volume = FLIKA_3D(iStacks).calcFindROIs.data.volume;
-                tblTempRaw.area = FLIKA_3D(iStacks).calcFindROIs.data.area;
-                tblTempRaw.duration = FLIKA_3D(iStacks).calcFindROIs.data.duration;
-                tblTempRaw.onset = FLIKA_3D(iStacks).calcFindROIs.data.onset;
-                
-                
-                % Extract some more parameters from the 2.5D traces, but using the
-                % timing information from the 3D traces
-                amplitude = zeros(nROIs, 1);
-                auc = amplitude;
-                for jROI = 1:nROIs
-                    traceExists = ...
-                        FLIKA_3D(iStacks).calcMeasureROIs.data.tracesExist(:,jROI);
-                    traceExtract = FLIKA_2p5D(iStacks).calcMeasureROIs.data.tracesNorm(...
-                        traceExists, jROI);
-                    timeExtract = FLIKA_2p5D(iStacks).calcMeasureROIs.data.time(traceExists);
-                    amplitude(jROI) = max(traceExtract); %
-                    auc(jROI) = trapz(timeExtract, traceExtract);
-                    
-                end
-                tblTempRaw.Max_amplitude = amplitude;
-                tblTempRaw.auc = auc;
-                
-                %distance calculations
-                tblTempRaw.centroidDis_Traveled = FLIKA_3D(iStacks).calcFindROIs.data.distance; %the ROI centroid has moved
-                % propagation rate of the centroid
-                tblTempRaw.centroidProp_Rate = (FLIKA_3D(iStacks).calcFindROIs.data.distance)./ ...
-                    FLIKA_3D(iStacks).calcFindROIs.data.duration;
-                
-                % minimum distance between 3D ROI edge to soma (hand-clicked)                
-                % 2.5D FLIKA mask
-                Dis_to_soma = zeros(nROIs, 1);
-                for jROI = 1:nROIs
-                    FLIKA_ROI= double(FLIKA_2p5D(iStacks).calcFindROIs.data.roiMask(:,:,jROI));
-                    
-                    AllSomaDistances=[];
-                    % somata mask
-                    for iSoma=1:nROIs2
-                        % find soma ROIs
-                        if ~isempty(regexp(somata(iStacks).calcFindROIs.data.roiNames{iSoma,1}, 'S*', 'ONCE')) % look for somata ROI
-                            SomaMask = double(somata(iStacks).calcFindROIs.data.roiMask(:,:,iSoma));
-                            somaDistance=minDistance(FLIKA_ROI,SomaMask); % # of pixels
-                            AllSomaDistances=vertcat(AllSomaDistances, somaDistance);
-                        end
-
-                    end
-                    Dis_to_soma(jROI,1) = min(AllSomaDistances)*FLIKA_3D(iStacks).rawImg.metadata.pixelSize; % in microns
-                end
-                tblTempRaw.Dis_to_Soma = Dis_to_soma;
-                
-                
-                % Specify whether the ROI is a process or soma
-                tblTempRaw.is_soma = isSoma{iStacks};
-                
-                % delete the rows where the ROIs are outside the field of interest
-                tblTempRaw(~isInside{iStacks},:)=[];
-                
-                % Add the data from this image to the table
-                tblRaw = [tblRaw; tblTempRaw];
-                
-                % Extract some summary data
-                nCats = 2;
-                tblTempSummary.animalname=repmat({CurrentAnimal}, nCats, 1);
-                tblTempSummary.Img = repmat({FLIKA_3D(iStacks).rawImg.name}, nCats, 1);
-                tblTempSummary.trialname=repmat({strcat('trial', num2str(iStacks))}, nCats, 1);
-                tblTempSummary.Spot=repmat({spotId}, nCats, 1);
-                tblTempSummary.celltype=repmat(CurrentCell(1,1), nCats, 1);
-                tblTempSummary.Drug=repmat(CurrentDrug(1,1), nCats, 1);
-                tblTempSummary.depth=repmat(CurrentDepth(1,1), nCats, 1);
-                
-                tblTempSummary.fov_area = repmat(...
-                    (FLIKA_3D(iStacks).rawImg.metadata.nPixelsPerLine.* ...
-                    FLIKA_3D(iStacks).rawImg.metadata.pixelSize).*2, nCats, 1);
-                tblTempSummary.img_duration = repmat(...
-                    FLIKA_3D(iStacks).rawImg.metadata.nFrames./ ...
-                    FLIKA_3D(iStacks).rawImg.metadata.frameRate, nCats, 1);
-                tblTempSummary.num_somas = repmat(nROIs2-1, nCats, 1);
-                tblTempSummary.is_soma = [true; false];
-                tblTempSummary.num_signals = [sum(isSoma{iStacks}); sum(~isSoma{iStacks})];
-                tblTempSummary.frequency = (tblTempSummary.num_signals)./ ...
-                    ((tblTempSummary.img_duration./60).* ...
-                    (tblTempSummary.num_somas./100));
-                tblSummary = [tblSummary; tblTempSummary];
-                
-                
-                
-                %% extract traces and masks from ROIs.
-                traces= FLIKA_2p5D(1,iStacks).calcMeasureROIs.data.tracesNorm;
-                
-                %preallocate
-                Trace_data=cell(size(traces,2),1);
-                for iROI = 1:size(traces,2)
-                    Trace_data{iROI,1}= FLIKA_2p5D(1,iStacks).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= FLIKA_3D(iStacks).rawImg.name;
-                    Trace_data{iROI,3}= strcat('trial', num2str(iStacks));
-                    Trace_data{iROI,4}= spotId;
-                    Trace_data{iROI,5}= CurrentAnimal;
-                    Trace_data{iROI,6}= CurrentCell;
-                    Trace_data{iROI,7}= CurrentDrug;
-                    Trace_data{iROI,8} = CurrentDepth(1,1);
-                    Trace_data{iROI,9} = isSoma{iStacks}(iROI);
-                    Trace_data{iROI,10} = traces(:,iROI);
-                    Trace_data{iROI,11} = FLIKA_2p5D(1,iStacks).calcFindROIs.data.roiMask(:,:,iROI);
-                    Trace_data{iROI,12} = FLIKA_2p5D(1,iStacks).rawImg.metadata.pixelSize;
-                end
-                All_traces=vertcat(All_traces, Trace_data);
-            end
-            
-            save('-v7.3', SaveFiles{1,4}, 'somata') % cell scans
-            save('-v7.3', SaveFiles{1,5}, 'FLIKA_3D') % cell scans
+            cd(testRoot);
+            save('-v7.3', SaveFiles{1,6}, 'FLIKA_2p5D') % cell scans
         end
+        
+        
+        
+        %% Output data
+        
+        for iStacks = 1:nStacks
+            % Prepare some temporary tables for 3D FLIKA and Field of View Summary
+            tblTempRaw = table();
+            tblTempSummary = table();
+            
+            % Extract the basic parameters from the 3D FLIKA CellScan
+            nROIs = numel(FLIKA_3D(iStacks).calcFindROIs.data.roiNames);
+            tblTempRaw.animalname=repmat({CurrentAnimal}, nROIs, 1);
+            tblTempRaw.Img = repmat({FLIKA_3D(iStacks).rawImg.name}, nROIs, 1);
+            tblTempRaw.trialname=repmat({strcat('trial', num2str(iStacks))}, nROIs, 1);
+            tblTempRaw.Spot=repmat({spotId}, nROIs, 1);
+            tblTempRaw.Drug=repmat(CurrentDrug(1,1), nROIs, 1);
+            tblTempRaw.celltype=repmat(CurrentCell(1,1), nROIs, 1);
+            tblTempRaw.depth=repmat(CurrentDepth(1,1), nROIs, 1);
+            
+            tblTempRaw.ROI = FLIKA_3D(iStacks).calcFindROIs.data.roiNames;
+            tblTempRaw.volume = FLIKA_3D(iStacks).calcFindROIs.data.volume;
+            tblTempRaw.area = FLIKA_3D(iStacks).calcFindROIs.data.area;
+            tblTempRaw.duration = FLIKA_3D(iStacks).calcFindROIs.data.duration;
+            tblTempRaw.onset = FLIKA_3D(iStacks).calcFindROIs.data.onset;
+            
+            
+            % Extract some more parameters from the 2.5D traces, but using the
+            % timing information from the 3D traces
+            amplitude = zeros(nROIs, 1);
+            auc = amplitude;
+            for jROI = 1:nROIs
+                traceExists = ...
+                    FLIKA_3D(iStacks).calcMeasureROIs.data.tracesExist(:,jROI);
+                traceExtract = FLIKA_2p5D(iStacks).calcMeasureROIs.data.tracesNorm(...
+                    traceExists, jROI);
+                timeExtract = FLIKA_2p5D(iStacks).calcMeasureROIs.data.time(traceExists);
+                amplitude(jROI) = max(traceExtract); %
+                auc(jROI) = trapz(timeExtract, traceExtract);
+                
+            end
+            tblTempRaw.Max_amplitude = amplitude;
+            tblTempRaw.auc = auc;
+            
+            %distance calculations
+            tblTempRaw.centroidDis_Traveled = FLIKA_3D(iStacks).calcFindROIs.data.distance; %the ROI centroid has moved
+            % propagation rate of the centroid
+            tblTempRaw.centroidProp_Rate = (FLIKA_3D(iStacks).calcFindROIs.data.distance)./ ...
+                FLIKA_3D(iStacks).calcFindROIs.data.duration;
+            
+            % minimum distance between 3D ROI edge to soma (hand-clicked)
+            % 2.5D FLIKA mask
+            Dis_to_soma = zeros(nROIs, 1);
+            for jROI = 1:nROIs
+                FLIKA_ROI= double(FLIKA_2p5D(iStacks).calcFindROIs.data.roiMask(:,:,jROI));
+                
+                AllSomaDistances=[];
+                % somata mask
+                for iSoma=1:nROIs2
+                    % find soma ROIs
+                    if ~isempty(regexp(somata(iStacks).calcFindROIs.data.roiNames{iSoma,1}, 'S*', 'ONCE')) % look for somata ROI
+                        SomaMask = double(somata(iStacks).calcFindROIs.data.roiMask(:,:,iSoma));
+                        somaDistance=minDistance(FLIKA_ROI,SomaMask); % # of pixels
+                        AllSomaDistances=vertcat(AllSomaDistances, somaDistance);
+                    end
+                    
+                end
+                Dis_to_soma(jROI,1) = min(AllSomaDistances)*FLIKA_3D(iStacks).rawImg.metadata.pixelSize; % in microns
+            end
+            tblTempRaw.Dis_to_Soma = Dis_to_soma;
+            
+            
+            % Specify whether the ROI is a process or soma
+            tblTempRaw.is_soma = isSoma{iStacks};
+            
+            % delete the rows where the ROIs are outside the field of interest
+            tblTempRaw(~isInside{iStacks},:)=[];
+            
+            % Add the data from this image to the table
+            tblRaw = [tblRaw; tblTempRaw];
+            
+            % Extract some summary data
+            nCats = 2;
+            tblTempSummary.animalname=repmat({CurrentAnimal}, nCats, 1);
+            tblTempSummary.Img = repmat({FLIKA_3D(iStacks).rawImg.name}, nCats, 1);
+            tblTempSummary.trialname=repmat({strcat('trial', num2str(iStacks))}, nCats, 1);
+            tblTempSummary.Spot=repmat({spotId}, nCats, 1);
+            tblTempSummary.celltype=repmat(CurrentCell(1,1), nCats, 1);
+            tblTempSummary.Drug=repmat(CurrentDrug(1,1), nCats, 1);
+            tblTempSummary.depth=repmat(CurrentDepth(1,1), nCats, 1);
+            
+            tblTempSummary.fov_area = repmat(...
+                (FLIKA_3D(iStacks).rawImg.metadata.nPixelsPerLine.* ...
+                FLIKA_3D(iStacks).rawImg.metadata.pixelSize).*2, nCats, 1);
+            tblTempSummary.img_duration = repmat(...
+                FLIKA_3D(iStacks).rawImg.metadata.nFrames./ ...
+                FLIKA_3D(iStacks).rawImg.metadata.frameRate, nCats, 1);
+            tblTempSummary.num_somas = repmat(nROIs2-1, nCats, 1);
+            tblTempSummary.is_soma = [true; false];
+            tblTempSummary.num_signals = [sum(isSoma{iStacks}); sum(~isSoma{iStacks})];
+            tblTempSummary.frequency = (tblTempSummary.num_signals)./ ...
+                ((tblTempSummary.img_duration./60).* ...
+                (tblTempSummary.num_somas./100));
+            tblSummary = [tblSummary; tblTempSummary];
+            
+            
+            
+            %% extract traces and masks from ROIs.
+            traces= FLIKA_2p5D(1,iStacks).calcMeasureROIs.data.tracesNorm;
+            
+            %preallocate
+            Trace_data=cell(size(traces,2),1);
+            for iROI = 1:size(traces,2)
+                Trace_data{iROI,1}= FLIKA_2p5D(1,iStacks).calcFindROIs.data.roiNames{iROI,1};
+                Trace_data{iROI,2}= FLIKA_3D(iStacks).rawImg.name;
+                Trace_data{iROI,3}= strcat('trial', num2str(iStacks));
+                Trace_data{iROI,4}= spotId;
+                Trace_data{iROI,5}= CurrentAnimal;
+                Trace_data{iROI,6}= CurrentCell;
+                Trace_data{iROI,7}= CurrentDrug;
+                Trace_data{iROI,8} = CurrentDepth(1,1);
+                Trace_data{iROI,9} = isSoma{iStacks}(iROI);
+                Trace_data{iROI,10} = traces(:,iROI);
+                Trace_data{iROI,11} = FLIKA_2p5D(1,iStacks).calcFindROIs.data.roiMask(:,:,iROI);
+                Trace_data{iROI,12} = FLIKA_2p5D(1,iStacks).rawImg.metadata.pixelSize;
+            end
+            All_traces=vertcat(All_traces, Trace_data);
+        end
+        
     end
     
 end
