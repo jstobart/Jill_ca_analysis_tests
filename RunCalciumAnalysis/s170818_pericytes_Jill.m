@@ -17,7 +17,8 @@ channel = struct('Ca_Memb_Astro', 1, 'blood_plasma', 2);
 SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'ROI_table_18_08_2017.csv');% all ROI data
 SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'Summary_table_18_08_2017.csv');% summary for field of view
 SaveFiles{1,3} = fullfile(Settings.MainDir, 'Results', 'test_traces_18_08_2017.mat');% normalized 2.5D traces
-SaveFiles{1,4} = fullfile(Settings.MainDir, 'Results', 'Workspace_18_08_2017.mat');% CellScans, etc.
+SaveFiles{1,4} = fullfile(Settings.MainDir, 'Results', 'somataROIs_18_08_2017.mat');% CellScans, etc.
+SaveFiles{1,5} = fullfile(Settings.MainDir, 'Results', '3DROIs_18_08_2017.mat');% CellScans, etc.
 
 BorderROIName = 'B';
 
@@ -67,6 +68,9 @@ for iDrug = 1:numDrugs
         CurrentDrug = Settings.Drug(iSpot); %drug treatment
         CurrentAnimal = Settings.AnimalNames{iSpot};
         
+        if exist('file',SaveFiles{1,4})
+            load(SaveFiles{1,4})
+        else
         %% Load calibration file
         if strcmp(Settings.Objective(iSpot),'20x')
             %calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
@@ -119,7 +123,7 @@ for iDrug = 1:numDrugs
         scaleF = 1;
         % zipPath = 'D:/....';
         zipPath= fullfile(testRoot,'RoiSet.zip');
-        findConf{4} = ConfigFindROIsDummy.from_ImageJ(zipPath, x_pix, y_pix, scaleF);
+        findConf{2} = ConfigFindROIsDummy.from_ImageJ(zipPath, x_pix, y_pix, scaleF);
         
         
         %% Configs for measuring ROIs
@@ -308,7 +312,7 @@ for iDrug = 1:numDrugs
             tblTempSummary.trialname=repmat({strcat('trial', num2str(iStacks))}, nCats, 1);
             tblTempSummary.Spot=repmat({spotId}, nCats, 1);
             tblTempSummary.celltype=repmat(CurrentCell(1,1), nCats, 1);
-            tblTempSummary.Drug=repmat(CurrentDrug(1,1), nROIs, 1);
+            tblTempSummary.Drug=repmat(CurrentDrug(1,1), nCats, 1);
             tblTempSummary.depth=repmat(CurrentDepth(1,1), nCats, 1);
             
             tblTempSummary.fov_area = repmat(...
@@ -328,9 +332,8 @@ for iDrug = 1:numDrugs
             
             
             %% extract traces and masks from ROIs.
-            traces1= FLIKA_2p5D(1,iStacks).calcMeasureROIs.data.tracesNorm;
-            traces2= somata(1,iStacks).calcMeasureROIs.data.tracesNorm;
-            
+            traces= FLIKA_2p5D(1,iStacks).calcMeasureROIs.data.tracesNorm;
+
             %preallocate
             Trace_data=cell(size(traces,2),1);
             for iROI = 1:size(traces,2)
@@ -363,5 +366,6 @@ delim = '\t';
 writetable(tblRaw, SaveFiles{1,1}, 'Delimiter', delim)  % ROI table
 writetable(tblSummary, SaveFiles{1,2}, 'Delimiter', delim) % summary table
 save(SaveFiles{1,3}, 'All_traces','-v7.3');  % all traces
-save('-v7.3', SaveFiles{1,4}, 'FLI*', 'Img*', 'tbl*','somata') % cell scans etc.
+save('-v7.3', SaveFiles{1,4}, 'somata') % cell scans etc.
+save('-v7.3', SaveFiles{1,5}, '3DFLIKA') % cell scans etc.
 
