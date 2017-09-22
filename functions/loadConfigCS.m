@@ -26,6 +26,14 @@ AC_findConf{3} = ConfigFindROIsDummy.from_ImageJ([], x_pix, y_pix,1);
        'min_rise_time',0.1689, 'max_rise_time', 8,...
        'dilateXY', 4,...
        'dilateT', 0.5,'erodeXY', 2);
+   
+      AC_findConf{5} = ConfigFindROIsFLIKA_3D.from_preset('ca_membr_astro', 'baselineFrames',...
+    BL_frames,'freqPassBand',1,'sigmaXY', 2,...
+    'sigmaT', 0.1,'threshold_std', 7, 'threshold_2D', 0.2,...
+    'min_rise_time',0.0845, 'max_rise_time', 1,'minPuffArea', 10,...
+    'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1,...
+    'discardBorderROIs',true);
+
 
 % 2D FLIKA selected for peaks from "dendrites"
 Neur_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_neuron', 'baselineFrames',...
@@ -36,7 +44,7 @@ Neur_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_neuron', 'baselineFram
     'discardBorderROIs',true);
 
 % hand selected for peaks from somata
-Neur_findConf{2} = ConfigFindROIsDummy.from_ImageJ([], x_pix, y_pix,1);
+Neur_findConf{2} = ConfigFindROIsDummy.from_ImageJ([], x_pix, y_pix,4);
 
 Neur_findConf{3} = ConfigFindROIsFLIKA_3D.from_preset('ca_neuron', 'baselineFrames',...
     BL_frames,'freqPassBand',1,'sigmaXY', 2,...
@@ -49,12 +57,12 @@ Neur_findConf{3} = ConfigFindROIsFLIKA_3D.from_preset('ca_neuron', 'baselineFram
 % AWAKE astrocyte cyto calcium
 detectConf{1} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...'normMethod', 'z-score','zIters', 100,...
     'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 3, 'spFilterOrder', 2,...
-    'spPassBandMin',0.05, 'spPassBandMax', 0.2, 'thresholdSD_low', 3,'thresholdSD_band', 5);
+    'spPassBandMin',0.05, 'spPassBandMax', 0.2, 'thresholdLP', 3,'thresholdBP', 5);
 
 % AWAKE neuron calcium
 detectConf{2} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,... 'normMethod','z-score',... 'zIters', 10000,...
     'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 2, 'spFilterOrder', 2,...
-    'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdSD_low', 3,'thresholdSD_band', 5);
+    'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 3,'thresholdBP', 5);
 
 
 % for 3D FLIKA
@@ -70,7 +78,8 @@ configCS{1,2} = ConfigCellScan(AC_findConf{1,2}, measureConf,detectConf{1,1}); %
 configCS{1,3} = ConfigCellScan(AC_findConf{1,3}, measureConf,detectConf{1,1}); % astrocyte hand
 configCS{1,4} = ConfigCellScan(Neur_findConf{1,1}, measureConf,detectConf{1,2}); % neuronal FLIKA, peaks
 configCS{1,5} = ConfigCellScan(Neur_findConf{1,2}, measureConf,detectConf{1,2}); % neuronal hand peaks
-configCS{1,6} = ConfigCellScan(AC_findConf{1,4}, measureConf,detectConf{1,3}); % astrocyte hand
-configCS{1,7} = ConfigCellScan(Neur_findConf{1,3}, measureConf,detectConf{1,3}); % astrocyte hand
+configCS{1,6} = ConfigCellScan(AC_findConf{1,4}, measureConf,detectConf{1,3}); % astrocyte cyto 3D
+configCS{1,7} = ConfigCellScan(AC_findConf{1,5}, measureConf,detectConf{1,3}); % astrocyte membrane 3D
+configCS{1,8} = ConfigCellScan(Neur_findConf{1,3}, measureConf,detectConf{1,3}); % neuron 3D
 
 end

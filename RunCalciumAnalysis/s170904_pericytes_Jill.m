@@ -362,7 +362,16 @@ for iDrug = 1:numDrugs
             tblTempSummary.img_duration = repmat(...
                 FLIKA_3D(iStacks).rawImg.metadata.nFrames./ ...
                 FLIKA_3D(iStacks).rawImg.metadata.frameRate, nCats, 1);
-            tblTempSummary.num_somas = repmat(nROIs2-1, nCats, 1);
+            
+            SomaCount=[];
+            for iSoma=1:nROIs2
+                if ~isempty(regexp(somata(iStacks).calcFindROIs.data.roiNames{iSoma,1}, 'S*', 'ONCE'))
+                    SomaCount(iSoma)=1;
+                end
+            end
+            SomaNum=sum(SomaCount);
+            tblTempSummary.num_somas = repmat(SomaNum, nCats, 1); % count soma names
+            
             tblTempSummary.is_soma = [true; false];
             tblTempSummary.num_signals = [sum(isSoma{iStacks}); sum(~isSoma{iStacks})];
             tblTempSummary.frequency = (tblTempSummary.num_signals)./ ...
