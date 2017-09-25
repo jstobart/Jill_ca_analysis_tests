@@ -106,7 +106,7 @@ for iDrug = 1:numDrugs
             %ImgArray.plot();
             
             % only use part of the data
-            %         [test2, ~] = split1(ImgArray(1,1), 4, [200 size(ImgArray(1,1).rawdata, 4) - 200]);
+            %         [test2, test3] = split1(ImgArray(1,1), 4, [2500 size(ImgArray(1,1).rawdata, 4) - 200]);
             %         ImgArray=test2;
             
             
