@@ -35,18 +35,23 @@ max.theme <- theme_classic() +
 baseline1 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Calcium/Results/ROI_table_18_08_2017.csv", header=TRUE, sep = "\t")
 baseline.summary1 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Calcium/Results/Summary_table_18_08_2017.csv", header=TRUE, sep = "\t")
 
-baseline2 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Calcium/Results/ROI_table_18_08_2017.csv", header=TRUE, sep = "\t")
-baseline.summary2 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Calcium/Results/Summary_table_18_08_2017.csv", header=TRUE, sep = "\t")
+baseline2 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Calcium/Results/InVitroROI_table_18_08_2017.csv", header=TRUE, sep = "\t")
+baseline.summary2 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Calcium/Results/InVitroSummary_table_18_08_2017.csv", header=TRUE, sep = "\t")
 
-baseline1$Drug="Drug1"
-baseline2$Drug="Drug2"
+baseline1$Drug="InVivo"
+baseline2$Drug="InVitro"
 
 baseline<-rbind(baseline1,baseline2)
+
+baseline.summary1$Drug="InVivo"
+baseline.summary2$Drug="InVitro"
+
+baseline.summary<-rbind(baseline.summary1,baseline.summary2)
 
 #########
 # unique animal and spot name
 baseline$FOVname <-paste(baseline$animalname, baseline$Spot,sep= "_")
-baseline.summary $FOVname <-paste(baseline.summary $animalname, baseline.summary $Spot,sep= "_")
+baseline.summary$FOVname <-paste(baseline.summary $animalname, baseline.summary $Spot,sep= "_")
 
 # unique ROI name
 baseline$ROIname <-paste(baseline$animalname, baseline$Spot, baseline$ROI, sep= "_")
@@ -71,8 +76,8 @@ ggplot(baseline, aes(x=volume, fill=interaction(ROIType,Drug))) + geom_histogram
 ggplot(baseline, aes(x=duration, fill=interaction(ROIType,Drug)))+ geom_histogram(binwidth=0.5, position="dodge") +
   ggtitle("Distribution of ROI duration")
 
-ggplot(baseline, aes(x=Max_amplitude, fill=interaction(ROIType,Drug))) + geom_histogram(binwidth=0.5, position="dodge") +
-  ggtitle("Distribution of ROI amplitudes")
+ggplot(baseline, aes(x=Max_amplitude, fill=interaction(ROIType,Drug))) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("Distribution of ROI amplitudes") + xlim(0, 40)
 
 
 #########
@@ -133,6 +138,13 @@ freq.model3 = lmer(freq~ ROIType + Drug + (1|animalname) + (1|Spot), baseline.me
 freq.model4 = lmer(freq~ ROIType * Drug + (1|animalname) + (1|Spot), baseline.means,REML=FALSE)
 freq.anova <- anova(freq.null, freq.model1,freq.model2,freq.model3,freq.model4)
 print(freq.anova)
+
+# look at residuals
+plot(freq.model1)
+plot(freq.model2)
+plot(freq.model3)
+plot(freq.model4)
+
 # p values
 freq.ROIType <- lsmeans(freq.model1, pairwise ~ ROIType, glhargs=list())
 summary(freq.ROIType)
@@ -160,7 +172,7 @@ ggplot(data=df2A, aes(x=ROIType, y=Max_amplitude, fill=ROIType)) +
 ggplot(data=df2B, aes(x=celltype, y=Max_amplitude, fill=ROIType)) +
   geom_errorbar(aes(ymin=Max_amplitude-se, ymax=Max_amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("Signals/min/ROI") +
+  ylab("amplitude") +
   scale_fill_manual(
     values=c("black", "red")) + 
   max.theme
@@ -168,7 +180,7 @@ ggplot(data=df2B, aes(x=celltype, y=Max_amplitude, fill=ROIType)) +
 ggplot(data=df2C, aes(x=Drug, y=Max_amplitude, fill=Drug)) +
   geom_errorbar(aes(ymin=Max_amplitude-se, ymax=Max_amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("Signals/min/ROI") +
+  ylab("amplitude") +
   scale_fill_manual(
     values=c("black", "red")) + 
   max.theme
@@ -176,7 +188,14 @@ ggplot(data=df2C, aes(x=Drug, y=Max_amplitude, fill=Drug)) +
 ggplot(data=df2D, aes(x=Drug, y=Max_amplitude, fill=ROIType)) +
   geom_errorbar(aes(ymin=Max_amplitude-se, ymax=Max_amplitude+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
-  ylab("Signals/min/ROI") +
+  ylab("amplitude") +
+  scale_fill_manual(
+    values=c("black", "red")) + 
+  max.theme
+
+
+ggplot(data=baseline, aes(x=Drug, y= Max_amplitude, fill=ROIType)) +
+  geom_boxplot() +
   scale_fill_manual(
     values=c("black", "red")) + 
   max.theme
@@ -191,6 +210,22 @@ amplitude.model3 = lmer(Max_amplitude~ ROIType + Drug + (1|animalname) + (1|Spot
 amplitude.model4 = lmer(Max_amplitude~ ROIType * Drug + (1|animalname) + (1|Spot), baseline,REML=FALSE)
 amplitude.anova <- anova(amplitude.null, amplitude.model1,amplitude.model2,amplitude.model3,amplitude.model4)
 print(amplitude.anova)
+
+# look at residuals
+plot(amplitude.model1)
+plot(amplitude.model2)
+plot(amplitude.model3)
+plot(amplitude.model4)
+
+
+dotplot(ranef(amplitude.null, condVar = TRUE))$animalname
+dotplot(ranef(amplitude.model1, condVar = TRUE))$animalname
+dotplot(ranef(amplitude.model2, condVar = TRUE))$animalname
+dotplot(ranef(amplitude.model3, condVar = TRUE))$animalname
+dotplot(ranef(amplitude.model4, condVar = TRUE))$animalname
+
+dotplot(ranef(amplitude.model4, condVar = TRUE))$Spot
+
 # p values
 amplitude.ROIType <- lsmeans(amplitude.model1, pairwise ~ ROIType, glhargs=list())
 summary(amplitude.ROIType)
