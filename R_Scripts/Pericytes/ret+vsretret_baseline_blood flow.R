@@ -420,6 +420,303 @@ vel.anovaB <- anova(vel.nullB, vel.model1B,vel.model2B,vel.model3B,vel.model4B)
 print(vel.anovaB)
 
 
+#########
+# Flux
+
+# only data that has 
+
+df3A<- summarySE(baseline, measurevar="Flux", groupvars=c("Genotype"), na.rm=TRUE)
+df3B<- summarySE(baseline, measurevar="Flux", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
+df3C<- summarySE(baseline, measurevar="Flux", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+
+ggplot(data=df3A, aes(x=Genotype, y=Flux, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Flux-se, ymax=Flux+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Flux [RBCs/s]") +
+  scale_fill_manual(
+    values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot(data=df3B, aes(x=BranchOrder, y=Flux, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Flux-se, ymax=Flux+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Flux [RBCs/s]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df3B, aes(x=BranchOrder, y=Flux, colour=Genotype)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin=Flux-se, ymax=Flux+se),width=.2) +
+  ylab("Flux [RBCs/s]") +
+  scale_colour_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df3C, aes(x=BranchGroup, y=Flux, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Flux-se, ymax=Flux+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Flux [RBCs/s]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+## boxplots
+ggplot(baseline, aes(x = Genotype, y = Flux, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("Flux [RBCs/s]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchOrder), y = Flux, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("Flux [RBCs/s]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = Flux, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("Flux [RBCs/s]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+# scatterplot- Flux vs BO
+ggplot(baseline, aes(x=BranchOrder, y=Flux)) +
+  geom_point(aes(colour = Genotype, fill=Genotype),position="dodge", shape = 1, size=2)+
+  ggtitle("Flux vs order for all vessels") +
+  xlab("BranchOrder") + 
+  ylab("Flux [RBCs/s]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+#depth plots
+# scatterplot- Flux vs depth
+ggplot(baseline, aes(x=Flux, y=Depth)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=2)+
+  ggtitle("Flux vs depth for all vessels") +
+  xlab("Flux [RBCs/s]") + 
+  ylab("Depth [um]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+######
+#Stats
+## Flux and genotype or branch order
+flux.null = lmer(Flux ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model1 = lmer(Flux~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model2 = lmer(Flux~ BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model3 = lmer(Flux~ Genotype + BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model4 = lmer(Flux~ Genotype * BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.anova <- anova(flux.null, flux.model1,flux.model2,flux.model3,flux.model4)
+print(flux.anova)
+# p values
+flux.Genotype <- lsmeans(flux.model1, pairwise ~ Genotype, glhargs=list())
+summary(flux.Genotype)
+
+flux.Genotype_BO <- lsmeans(flux.model4, pairwise ~ Genotype*BranchOrder, glhargs=list())
+summary(flux.Genotype_BO)
+
+
+# Look at the per-animal difference
+dotplot(ranef(flux.null, condVar = TRUE))$AnimalName
+dotplot(ranef(flux.model1, condVar = TRUE))$AnimalName
+dotplot(ranef(flux.model2, condVar = TRUE))$AnimalName
+dotplot(ranef(flux.model3, condVar = TRUE))$AnimalName
+dotplot(ranef(flux.model4, condVar = TRUE))$AnimalName
+
+# Look at the model residuals
+plot(flux.model1)
+plot(flux.model2)
+plot(flux.model3)
+
+## Flux and genotype or branch group
+flux.null = lmer(Flux ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model1 = lmer(Flux~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model2 = lmer(Flux~ BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model3 = lmer(Flux~ Genotype + BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model4 = lmer(Flux~ Genotype * BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.anova <- anova(flux.null, flux.model1,flux.model2,flux.model3,flux.model4)
+print(flux.anova)
+# p values
+flux.Genotype <- lsmeans(flux.model1, pairwise ~ Genotype, glhargs=list())
+summary(flux.Genotype)
+
+flux.Genotype_BO <- lsmeans(flux.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
+summary(flux.Genotype_BO)
+
+
+# Flux, genotype and depth
+flux.nullB = lmer(Flux ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model1B = lmer(Flux~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model2B = lmer(Flux~ Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model3B = lmer(Flux~ Genotype + Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model4B = lmer(Flux~ Genotype * Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.anovaB <- anova(flux.nullB, flux.model1B,flux.model2B,flux.model3B,flux.model4B)
+print(flux.anovaB)
+
+
+#########
+# linearDensity
+
+# only data that has 
+
+df4A<- summarySE(baseline, measurevar="linearDensity", groupvars=c("Genotype"), na.rm=TRUE)
+df4B<- summarySE(baseline, measurevar="linearDensity", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
+df4C<- summarySE(baseline, measurevar="linearDensity", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+
+ggplot(data=df4A, aes(x=Genotype, y=linearDensity, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot(data=df4B, aes(x=BranchOrder, y=linearDensity, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df4B, aes(x=BranchOrder, y=linearDensity, colour=Genotype)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se),width=.2) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_colour_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df4C, aes(x=BranchGroup, y=linearDensity, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+## boxplots
+ggplot(baseline, aes(x = Genotype, y = linearDensity, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("linearDensity [RBCs/mm]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchOrder), y = linearDensity, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("linearDensity [RBCs/mm]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = linearDensity, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("linearDensity [RBCs/mm]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+# scatterplot- linearDensity vs BO
+ggplot(baseline, aes(x=BranchOrder, y=linearDensity)) +
+  geom_point(aes(colour = Genotype, fill=Genotype),position="dodge", shape = 1, size=2)+
+  ggtitle("linearDensity vs order for all vessels") +
+  xlab("BranchOrder") + 
+  ylab("linearDensity [RBCs/mm]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+#depth plots
+# scatterplot- linearDensity vs depth
+ggplot(baseline, aes(x=linearDensity, y=Depth)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=2)+
+  ggtitle("linearDensity vs depth for all vessels") +
+  xlab("linearDensity [RBCs/mm]") + 
+  ylab("Depth [um]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+######
+#Stats
+## linearDensity and genotype or branch order
+linearDensity.null = lmer(linearDensity ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model1 = lmer(linearDensity~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model2 = lmer(linearDensity~ BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model3 = lmer(linearDensity~ Genotype + BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model4 = lmer(linearDensity~ Genotype * BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.anova <- anova(linearDensity.null, linearDensity.model1,linearDensity.model2,linearDensity.model3,linearDensity.model4)
+print(linearDensity.anova)
+# p values
+linearDensity.Genotype <- lsmeans(linearDensity.model1, pairwise ~ Genotype, glhargs=list())
+summary(linearDensity.Genotype)
+
+linearDensity.Genotype_BO <- lsmeans(linearDensity.model4, pairwise ~ Genotype*BranchOrder, glhargs=list())
+summary(linearDensity.Genotype_BO)
+
+
+# Look at the per-animal difference
+dotplot(ranef(linearDensity.null, condVar = TRUE))$AnimalName
+dotplot(ranef(linearDensity.model1, condVar = TRUE))$AnimalName
+dotplot(ranef(linearDensity.model2, condVar = TRUE))$AnimalName
+dotplot(ranef(linearDensity.model3, condVar = TRUE))$AnimalName
+dotplot(ranef(linearDensity.model4, condVar = TRUE))$AnimalName
+
+# Look at the model residuals
+plot(linearDensity.model1)
+plot(linearDensity.model2)
+plot(linearDensity.model3)
+
+## linearDensity and genotype or branch group
+linearDensity.null = lmer(linearDensity ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model1 = lmer(linearDensity~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model2 = lmer(linearDensity~ BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model3 = lmer(linearDensity~ Genotype + BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model4 = lmer(linearDensity~ Genotype * BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.anova <- anova(linearDensity.null, linearDensity.model1,linearDensity.model2,linearDensity.model3,linearDensity.model4)
+print(linearDensity.anova)
+# p values
+linearDensity.Genotype <- lsmeans(linearDensity.model1, pairwise ~ Genotype, glhargs=list())
+summary(linearDensity.Genotype)
+
+linearDensity.Genotype_BO <- lsmeans(linearDensity.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
+summary(linearDensity.Genotype_BO)
+
+#linearDensity.Genotype_BO2 <- lsmeans(linearDensity.model3, pairwise ~ Genotype+BranchGroup, glhargs=list())
+#summary(linearDensity.Genotype_BO2)
+
+# linearDensity, genotype and depth
+linearDensity.nullB = lmer(linearDensity ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model1B = lmer(linearDensity~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model2B = lmer(linearDensity~ Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model3B = lmer(linearDensity~ Genotype + Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model4B = lmer(linearDensity~ Genotype * Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.anovaB <- anova(linearDensity.nullB, linearDensity.model1B,linearDensity.model2B,linearDensity.model3B,linearDensity.model4B)
+print(linearDensity.anovaB)
+
 
 ##########################
 # vessel data with NO FLOW
@@ -450,3 +747,12 @@ ggplot(data=df.diam.noflow3, aes(x=interaction(Genotype,BranchGroup), y=Diameter
 # total non-flowing vessels
 noFlow<- ddply(baseline, c("Genotype","flow"), summarise, nVessels=length(Diameter))
 
+# percentages
+noFlow.retplus<-subset(noFlow, Genotype=="Ret+")
+noFlow.retret<-subset(noFlow, Genotype=="RetRet")
+
+total_Ret_plus=sum(noFlow$nVessels[noFlow$Genotype=="Ret+"])
+total_Ret_Ret=sum(noFlow$nVessels[noFlow$Genotype=="RetRet"])
+
+percent_Ret_plus=(noFlow.retplus$nVessels[noFlow.retplus$flow=="no"]/total_Ret_plus)*100
+percent_Ret_Ret=(noFlow.retret$nVessels[noFlow.retret$flow=="no"]/total_Ret_Ret)*100
