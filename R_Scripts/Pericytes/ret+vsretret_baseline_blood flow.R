@@ -717,6 +717,342 @@ linearDensity.model4B = lmer(linearDensity~ Genotype * Depth + (1|AnimalName) + 
 linearDensity.anovaB <- anova(linearDensity.nullB, linearDensity.model1B,linearDensity.model2B,linearDensity.model3B,linearDensity.model4B)
 print(linearDensity.anovaB)
 
+#########
+# Hematocrit
+
+# only data that has flux
+
+df5A<- summarySE(baseline, measurevar="Hematocrit", groupvars=c("Genotype"), na.rm=TRUE)
+df5B<- summarySE(baseline, measurevar="Hematocrit", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
+df5C<- summarySE(baseline, measurevar="Hematocrit", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+
+ggplot(data=df5A, aes(x=Genotype, y=Hematocrit, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Hematocrit [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot(data=df5B, aes(x=BranchOrder, y=Hematocrit, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Hematocrit [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df5B, aes(x=BranchOrder, y=Hematocrit, colour=Genotype)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin=Hematocrit-se, ymax=Hematocrit+se),width=.2) +
+  ylab("Hematocrit [RBCs/mm]") +
+  scale_colour_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df5C, aes(x=BranchGroup, y=Hematocrit, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Hematocrit [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+## boxplots
+ggplot(baseline, aes(x = Genotype, y = Hematocrit, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("Hematocrit [RBCs/mm]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchOrder), y = Hematocrit, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("Hematocrit [RBCs/mm]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = Hematocrit, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("Hematocrit [RBCs/mm]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+# scatterplot- Hematocrit vs BO
+ggplot(baseline, aes(x=BranchOrder, y=Hematocrit)) +
+  geom_point(aes(colour = Genotype, fill=Genotype),position="dodge", shape = 1, size=2)+
+  ggtitle("Hematocrit vs order for all vessels") +
+  xlab("BranchOrder") + 
+  ylab("Hematocrit [RBCs/mm]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+#depth plots
+# scatterplot- Hematocrit vs depth
+ggplot(baseline, aes(x=Hematocrit, y=Depth)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=2)+
+  ggtitle("Hematocrit vs depth for all vessels") +
+  xlab("Hematocrit [RBCs/mm]") + 
+  ylab("Depth [um]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+######
+#Stats
+## Hematocrit and genotype or branch order
+Hematocrit.null = lmer(Hematocrit ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model1 = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model2 = lmer(Hematocrit~ BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model3 = lmer(Hematocrit~ Genotype + BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model4 = lmer(Hematocrit~ Genotype * BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.anova <- anova(Hematocrit.null, Hematocrit.model1,Hematocrit.model2,Hematocrit.model3,Hematocrit.model4)
+print(Hematocrit.anova)
+# p values
+Hematocrit.Genotype <- lsmeans(Hematocrit.model1, pairwise ~ Genotype, glhargs=list())
+summary(Hematocrit.Genotype)
+
+Hematocrit.Genotype_BO <- lsmeans(Hematocrit.model4, pairwise ~ Genotype*BranchOrder, glhargs=list())
+summary(Hematocrit.Genotype_BO)
+
+
+# Look at the per-animal difference
+dotplot(ranef(Hematocrit.null, condVar = TRUE))$AnimalName
+dotplot(ranef(Hematocrit.model1, condVar = TRUE))$AnimalName
+dotplot(ranef(Hematocrit.model2, condVar = TRUE))$AnimalName
+dotplot(ranef(Hematocrit.model3, condVar = TRUE))$AnimalName
+dotplot(ranef(Hematocrit.model4, condVar = TRUE))$AnimalName
+
+# Look at the model residuals
+plot(Hematocrit.model1)
+plot(Hematocrit.model2)
+plot(Hematocrit.model3)
+
+## Hematocrit and genotype or branch group
+Hematocrit.null = lmer(Hematocrit ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model1 = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model2 = lmer(Hematocrit~ BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model3 = lmer(Hematocrit~ Genotype + BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model4 = lmer(Hematocrit~ Genotype * BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.anova <- anova(Hematocrit.null, Hematocrit.model1,Hematocrit.model2,Hematocrit.model3,Hematocrit.model4)
+print(Hematocrit.anova)
+# p values
+Hematocrit.Genotype <- lsmeans(Hematocrit.model1, pairwise ~ Genotype, glhargs=list())
+summary(Hematocrit.Genotype)
+
+Hematocrit.Genotype_BO <- lsmeans(Hematocrit.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
+summary(Hematocrit.Genotype_BO)
+
+#Hematocrit.Genotype_BO2 <- lsmeans(Hematocrit.model3, pairwise ~ Genotype+BranchGroup, glhargs=list())
+#summary(Hematocrit.Genotype_BO2)
+
+# Hematocrit, genotype and depth
+Hematocrit.nullB = lmer(Hematocrit ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model1B = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model2B = lmer(Hematocrit~ Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model3B = lmer(Hematocrit~ Genotype + Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model4B = lmer(Hematocrit~ Genotype * Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.anovaB <- anova(Hematocrit.nullB, Hematocrit.model1B,Hematocrit.model2B,Hematocrit.model3B,Hematocrit.model4B)
+print(Hematocrit.anovaB)
+
+
+######################
+# Pulsatility Index
+
+df6A<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype"), na.rm=TRUE)
+df6B<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
+df6C<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+
+ggplot(data=df6A, aes(x=Genotype, y=PulsatilityIndex, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("PulsatilityIndex") +
+  scale_fill_manual(
+    values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot(data=df6B, aes(x=BranchOrder, y=PulsatilityIndex, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("PulsatilityIndex") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df6B, aes(x=BranchOrder, y=PulsatilityIndex, colour=Genotype)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se),width=.2) +
+  ylab("PulsatilityIndex") +
+  scale_colour_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df6C, aes(x=BranchGroup, y=PulsatilityIndex, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("PulsatilityIndex") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+## boxplots
+ggplot(baseline, aes(x = Genotype, y = PulsatilityIndex, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("PulsatilityIndex") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchOrder), y = PulsatilityIndex, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("PulsatilityIndex") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = PulsatilityIndex, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("PulsatilityIndex") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+# scatterplot- PulsatilityIndex vs BO
+ggplot(baseline, aes(x=BranchOrder, y=PulsatilityIndex)) +
+  geom_point(aes(colour = Genotype, fill=Genotype),position="dodge", shape = 1, size=2)+
+  ggtitle("PulsatilityIndex vs order for all vessels") +
+  xlab("BranchOrder") + 
+  ylab("PulsatilityIndex") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+#depth plots
+# scatterplot- PulsatilityIndex vs depth
+ggplot(baseline, aes(x=PulsatilityIndex, y=Depth)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=2)+
+  ggtitle("PulsatilityIndex vs depth for all vessels") +
+  xlab("PulsatilityIndex [RBCs/mm]") + 
+  ylab("Depth [um]") + 
+  scale_colour_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+######
+#Stats
+## PulsatilityIndex and genotype or branch order
+PulsatilityIndex.null = lmer(PulsatilityIndex ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model1 = lmer(PulsatilityIndex~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model2 = lmer(PulsatilityIndex~ BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model3 = lmer(PulsatilityIndex~ Genotype + BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model4 = lmer(PulsatilityIndex~ Genotype * BranchOrder + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.anova <- anova(PulsatilityIndex.null, PulsatilityIndex.model1,PulsatilityIndex.model2,PulsatilityIndex.model3,PulsatilityIndex.model4)
+print(PulsatilityIndex.anova)
+# p values
+PulsatilityIndex.Genotype <- lsmeans(PulsatilityIndex.model1, pairwise ~ Genotype, glhargs=list())
+summary(PulsatilityIndex.Genotype)
+
+PulsatilityIndex.Genotype_BO <- lsmeans(PulsatilityIndex.model4, pairwise ~ Genotype*BranchOrder, glhargs=list())
+summary(PulsatilityIndex.Genotype_BO)
+
+
+# Look at the per-animal difference
+dotplot(ranef(PulsatilityIndex.null, condVar = TRUE))$AnimalName
+dotplot(ranef(PulsatilityIndex.model1, condVar = TRUE))$AnimalName
+dotplot(ranef(PulsatilityIndex.model2, condVar = TRUE))$AnimalName
+dotplot(ranef(PulsatilityIndex.model3, condVar = TRUE))$AnimalName
+dotplot(ranef(PulsatilityIndex.model4, condVar = TRUE))$AnimalName
+
+# Look at the model residuals
+plot(PulsatilityIndex.model1)
+plot(PulsatilityIndex.model2)
+plot(PulsatilityIndex.model3)
+plot(PulsatilityIndex.model4)
+
+## PulsatilityIndex and genotype or branch group
+PulsatilityIndex.null = lmer(PulsatilityIndex ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model1 = lmer(PulsatilityIndex~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model2 = lmer(PulsatilityIndex~ BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model3 = lmer(PulsatilityIndex~ Genotype + BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model4 = lmer(PulsatilityIndex~ Genotype * BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.anova <- anova(PulsatilityIndex.null, PulsatilityIndex.model1,PulsatilityIndex.model2,PulsatilityIndex.model3,PulsatilityIndex.model4)
+print(PulsatilityIndex.anova)
+# p values
+PulsatilityIndex.Genotype <- lsmeans(PulsatilityIndex.model1, pairwise ~ Genotype, glhargs=list())
+summary(PulsatilityIndex.Genotype)
+
+PulsatilityIndex.Genotype_BO <- lsmeans(PulsatilityIndex.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
+summary(PulsatilityIndex.Genotype_BO)
+
+#PulsatilityIndex.Genotype_BO2 <- lsmeans(PulsatilityIndex.model3, pairwise ~ Genotype+BranchGroup, glhargs=list())
+#summary(PulsatilityIndex.Genotype_BO2)
+
+# PulsatilityIndex, genotype and depth
+PulsatilityIndex.nullB = lmer(PulsatilityIndex ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model1B = lmer(PulsatilityIndex~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model2B = lmer(PulsatilityIndex~ Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model3B = lmer(PulsatilityIndex~ Genotype + Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.model4B = lmer(PulsatilityIndex~ Genotype * Depth + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+PulsatilityIndex.anovaB <- anova(PulsatilityIndex.nullB, PulsatilityIndex.model1B,PulsatilityIndex.model2B,PulsatilityIndex.model3B,PulsatilityIndex.model4B)
+print(PulsatilityIndex.anovaB)
+
+
+######
+df7A<- summarySE(baseline, measurevar="SD_LD", groupvars=c("Genotype"), na.rm=TRUE)
+df7B<- summarySE(baseline, measurevar="linearDensity", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
+df7C<- summarySE(baseline, measurevar="linearDensity", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+
+ggplot(data=df7A, aes(x=Genotype, y=SD_LD, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=SD_LD-se, ymax=SD_LD+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("SD_LD") +
+  scale_fill_manual(
+    values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot(data=df4B, aes(x=BranchOrder, y=linearDensity, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df4B, aes(x=BranchOrder, y=linearDensity, colour=Genotype)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se),width=.2) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_colour_manual(
+    values=c("black", "red"))+
+  max.theme
+
+ggplot(data=df4C, aes(x=BranchGroup, y=linearDensity, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("linearDensity [RBCs/mm]") +
+  scale_fill_manual(
+    values=c("black", "red"))+
+  max.theme
 
 ##########################
 # vessel data with NO FLOW
