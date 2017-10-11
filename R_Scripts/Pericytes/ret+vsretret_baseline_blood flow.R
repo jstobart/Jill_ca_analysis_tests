@@ -58,16 +58,34 @@ baseline$BranchGroup[baseline$BranchOrder==9]<-"7-9"
 
 baseline$BranchGroup<- as.factor(baseline$BranchGroup)
 
+
+# only consider data from vessels were we have all the info (flux, etc.)
+baseline<-baseline[complete.cases(baseline$Flux),]
+
+
+# only consider branch order greater than 4
+
+baseline<- baseline[!baseline$BranchGroup=="1-3",]
+
 ###############################
 #histograms
 ggplot(baseline, aes(x=Diameter, fill=Genotype)) + geom_histogram(binwidth=1, position="dodge") +
   ggtitle("Distribution of diameters")
 
-ggplot(baseline, aes(x=Velocity, fill=Genotype))+ geom_histogram(binwidth=0.5, position="dodge") +
+ggplot(baseline, aes(x=Velocity, fill=Genotype))+ geom_histogram(binwidth=0.2, position="dodge") +
   ggtitle("Distribution of velocites")
+
+ggplot(baseline, aes(x=Velocity, fill=Genotype)) +
+  geom_histogram(binwidth=0.2, position="dodge", aes(y=..count../sum(..count..)))
+
+ggplot(baseline, aes(x=Velocity, y=..density..,fill=Genotype)) +
+  geom_histogram(binwidth=0.2, position="dodge")
 
 ggplot(baseline, aes(x=Flux, fill=Genotype)) + geom_histogram(binwidth=10, position="dodge") +
   ggtitle("Distribution of Flux")
+
+ggplot(baseline, aes(x=Flux, y=..density..,fill=Genotype)) +
+  geom_histogram(bidwidth=10, position="dodge")
 
 ggplot(baseline, aes(x=PulsatilityIndex, fill=Genotype)) + geom_histogram(binwidth=0.1, position="dodge") +
   ggtitle("Distribution of Pulsatility")
@@ -270,7 +288,8 @@ depth.Genotype_BG <- lsmeans(depth.model4, pairwise ~ Genotype*BranchGroup, glha
 summary(depth.Genotype_BG)
 
 
-# no significant different between genotypes and branch order at certain depths
+# no significant different between genotypes and branch order at certain depths,
+# ie. the ret ret do not seem to branch more at earlier depths
 
 #########
 # velocity
