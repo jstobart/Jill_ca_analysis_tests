@@ -32,12 +32,13 @@ max.theme <- theme_classic() +
 # peak data
 
 # load files
-baseline <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Ret+_diam_velocity_25_09_2017.csv", header=TRUE, sep = "\t")
+baseline <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Diam_velocity_24_10_2017.csv", header=TRUE, sep = "\t")
 
 
 #########
 # unique animal and spot name
 baseline$Vesselname <-paste(baseline$AnimalName, baseline$Spot,sep= "_")
+baseline$Branchname <-paste(baseline$AnimalName, baseline$Branch,sep= "_")
 
 baseline$Genotype<- factor(baseline$Genotype,levels = c("Ret+", "RetRet"))
 baseline$BranchOrder<- as.factor(baseline$BranchOrder)

@@ -106,8 +106,11 @@ for iDrug = 1:numDrugs
             %ImgArray.plot();
             
             % only use part of the data
-            %         [test2, test3] = split1(ImgArray(1,1), 4, [2500 size(ImgArray(1,1).rawdata, 4) - 200]);
-            %         ImgArray=test2;
+            if size(ImgArray(1,1).rawdata,4)>2000
+                    [FirstPart, SecondPart] = split1(ImgArray(1,1), 4, [2500 size(ImgArray(1,1).rawdata, 4) - 200]);
+                    ImgArray(1,1)=FirstPart;
+                    ImgArray(1,2)=SecondPart;
+            end
             
             
             %% Configs for Finding ROIs
