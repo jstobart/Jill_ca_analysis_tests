@@ -32,41 +32,63 @@ max.theme <- theme_classic() +
 # peak data
 
 # load files
-baseline <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Diam_velocity_24_10_2017.csv", header=TRUE, sep = "\t")
+baseline1 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Diam_velocity_25_10_2017.csv", header=TRUE, sep = "\t")
 
 
 #########
 # unique animal and spot name
-baseline$Vesselname <-paste(baseline$AnimalName, baseline$Spot,sep= "_")
-baseline$Branchname <-paste(baseline$AnimalName, baseline$Branch,sep= "_")
+baseline1$Vesselname <-paste(baseline1$AnimalName, baseline1$Spot,sep= "_")
+baseline1$Branchname <-paste(baseline1$AnimalName, baseline1$Branch,sep= "_")
 
-baseline$Genotype<- factor(baseline$Genotype,levels = c("Ret+", "RetRet"))
-baseline$BranchOrder<- as.factor(baseline$BranchOrder)
+baseline1$Genotype<- factor(baseline1$Genotype,levels = c("Ret+", "RetRet"))
+#baseline$BranchOrder<- as.factor(baseline$BranchOrder)
 
+#remove data from penetrating arterioles, ascending venules or surface vessels
+baseline1<-baseline1[!baseline1$BranchOrder<=0,]
+baseline1<-baseline1[!baseline1$Velocity>10,]
 
-# group branch order to simplify analysis
-# groups 1-3, 4-6, 7-9
-baseline$BranchGroup<-"0"
-baseline$BranchGroup[baseline$BranchOrder==1]<-"1-3"
-baseline$BranchGroup[baseline$BranchOrder==2]<-"1-3"
-baseline$BranchGroup[baseline$BranchOrder==3]<-"1-3"
-baseline$BranchGroup[baseline$BranchOrder==4]<-"4-6"
-baseline$BranchGroup[baseline$BranchOrder==5]<-"4-6"
-baseline$BranchGroup[baseline$BranchOrder==6]<-"4-6"
-baseline$BranchGroup[baseline$BranchOrder==7]<-"7-9"
-baseline$BranchGroup[baseline$BranchOrder==8]<-"7-9"
-baseline$BranchGroup[baseline$BranchOrder==9]<-"7-9"
+baseline1$BranchGroup<-"0"
+
+eGFPpos<-subset(baseline1, eGFP==1)
+eGFPneg<-subset(baseline1, eGFP==0)
+
+#eGFPpos$BranchGroup[eGFPpos$BranchOrder<=0]<-"arteriole"
+eGFPpos$BranchGroup[eGFPpos$BranchOrder<=4]<-"sm-ensheathing"
+eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC"
+eGFPneg$BranchGroup[eGFPneg$BranchOrder>3]<-"capillary_PC"
+eGFPneg$BranchGroup[eGFPneg$BranchOrder<=3]<-"venule_PC"
+
+baseline<-rbind(eGFPpos,eGFPneg)
+#baseline<-eGFPpos
 
 baseline$BranchGroup<- as.factor(baseline$BranchGroup)
-
+baseline$BranchGroup<- factor(baseline1$Genotype,levels = c("Ret+", "RetRet"))
 
 # only consider data from vessels were we have all the info (flux, etc.)
-baseline<-baseline[complete.cases(baseline$Flux),]
+#baseline<-baseline[complete.cases(baseline$Flux),]
 
 
-# only consider branch order greater than 4
 
-baseline<- baseline[!baseline$BranchGroup=="1-3",]
+# CONSIDER each Branch
+
+# velocity for each branch at different branch orders
+ggplot(eGFPpos[eGFPpos$Genotype=="Ret+",], aes(x=BranchOrder, y=Velocity)) +
+  geom_point(aes(colour = Branchname, fill=Branchname), size=2)+
+  geom_line(aes(colour = Branchname, fill=Branchname), size=1)+
+  ggtitle("Ret+-Velocity vs order for all vessels") +
+  xlab("BranchOrder") + 
+  ylab("Velocity [mm/s]") + 
+  #scale_colour_manual(values=c("black", "red"), guide=FALSE) + 
+  max.theme
+
+ggplot(eGFPpos[eGFPpos$Genotype=="RetRet",], aes(x=BranchOrder, y=Velocity)) +
+  geom_point(aes(colour = Branchname, fill=Branchname), size=2)+
+  geom_line(aes(colour = Branchname, fill=Branchname), size=1)+
+  ggtitle("RetRet-Velocity vs order for all vessels") +
+  xlab("BranchOrder") + 
+  ylab("Velocity [mm/s]") + 
+  #scale_colour_manual(values=c("black", "red"), guide=FALSE) + 
+  max.theme
 
 ###############################
 #histograms
@@ -314,15 +336,6 @@ ggplot(data=df2B, aes(x=BranchOrder, y=Velocity, fill=Genotype)) +
   geom_errorbar(aes(ymin=Velocity-se, ymax=Velocity+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Velocity [mm/s]") +
   scale_fill_manual(
-    values=c("black", "red"))+
-  max.theme
-
-ggplot(data=df2B, aes(x=BranchOrder, y=Velocity, colour=Genotype)) +
-  geom_point() +
-  geom_line() +
-  geom_errorbar(aes(ymin=Velocity-se, ymax=Velocity+se),width=.2) +
-  ylab("Velocity [mm/s]") +
-  scale_colour_manual(
     values=c("black", "red"))+
   max.theme
 
@@ -724,6 +737,8 @@ summary(linearDensity.Genotype)
 
 linearDensity.Genotype_BO <- lsmeans(linearDensity.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
 summary(linearDensity.Genotype_BO)
+
+lsmip(linearDensity.model4, Genotype~BranchGroup)
 
 #linearDensity.Genotype_BO2 <- lsmeans(linearDensity.model3, pairwise ~ Genotype+BranchGroup, glhargs=list())
 #summary(linearDensity.Genotype_BO2)

@@ -3,6 +3,7 @@ library("lme4")
 library("lmerTest")
 library("lattice")
 library("plyr")
+library("dplyr")
 library("ggplot2")
 library("lsmeans")
 library("Rmisc")
@@ -33,57 +34,70 @@ max.theme <- theme_classic() +
 
 # load files
 ret_t <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_wt.csv", header=TRUE, sep = ",")
+ret_ret <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_ret.csv", header=TRUE, sep = ",")
 
-options(digits=9)
+#str(ret_t)
+#str(ret_ret)
+
+ret_t$Genotype<-"Ret+"
+ret_ret$Genotype<-"RetRet"
+
+#options(digits=9)
 ret_t$pO2<-as.numeric(as.character(ret_t$pO2))
+#ret_ret$pO2<-as.numeric(ret_ret$pO2)
+
+#combine data sets
+allData<-rbind(ret_t,ret_ret)
+#str(allData)
+allData$Genotype<- as.factor(allData$Genotype)
 
 # remove points from tissue or with noisy data
-ret_t<-subset(ret_t, ExcludeData==0)
-ret_t$Genotype<-"Ret+"
-ret_t$Genotype<- as.factor(ret_t$Genotype)
+allData<-subset(allData, ExcludeData==0)
 
-allData=ret_t
 
 
 #########
 # unique animal and spot name
-allData$Vesselname <-paste(allData$Animal, allData$Spot, allData$Point, sep= "_")
-
+allData$PointName <-paste(allData$Animal, allData$Spot, allData$AdjustedDepth, allData$Point, sep= "_")
+allData$BranchName <-paste(allData$Animal, allData$Spot, allData$VesselType, sep= "_")
 
 #allData$Genotype<- factor(allData$Genotype,levels = c("Ret+", "RetRet"))
 allData$BranchOrder<- as.factor(as.character(allData$BranchOrder))
-allData$BranchOrder<- as.factor(allData$BranchOrder)
+allData$Animal<- as.character(allData$Animal)
+allData$Spot<- as.character(allData$Spot)
+
 
 # group branch order to simplify analysis
-# groups 1-3, 4-6, 7-9
-allData$BranchGroup<-"0"
-allData$BranchGroup[allData$BranchOrder==1]<-"1-3"
-allData$BranchGroup[allData$BranchOrder==2]<-"1-3"
-allData$BranchGroup[allData$BranchOrder==3]<-"1-3"
-allData$BranchGroup[allData$BranchOrder==4]<-"4-6"
-allData$BranchGroup[allData$BranchOrder==5]<-"4-6"
-allData$BranchGroup[allData$BranchOrder==6]<-"4-6"
-allData$BranchGroup[allData$BranchOrder==7]<-"7-9"
-allData$BranchGroup[allData$BranchOrder==8]<-"7-9"
-allData$BranchGroup[allData$BranchOrder==9]<-"7-9"
+#eGFPpos$BranchGroup[eGFPpos$BranchOrder<=0]<-"arteriole"
+#eGFPpos$BranchGroup[eGFPpos$BranchOrder<=4]<-"sm-ensheathing"
+#eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC"
+#eGFPneg$BranchGroup[eGFPneg$BranchOrder>3]<-"capillary_PC"
+#eGFPneg$BranchGroup[eGFPneg$BranchOrder<=3]<-"venule_PC"
 
-allData$BranchGroup<- as.factor(allData$BranchGroup)
+#allData$BranchGroup<- as.factor(allData$BranchGroup)
 
-# only consider branch order greater than 4
 
-#allData<- allData[!allData$BranchGroup=="1-3",]
-
+# vessel classification based on O2 levels
 
 # classify as high and low pO2 based on the median value
 medianpO2=median(allData$pO2)
 
-allData$O2_type="high"
-allData$O2_type[allData$pO2<medianpO2]="low"
-allData$O2_type<-as.factor(allData$O2_type)
+allData$O2_type="artery"
+allData$O2_type[allData$pO2<medianpO2]="vein"
+
+surfacevessels<-subset(allData, AdjustedDepth<100)
+
+#surfacevessels$O2_type="artery"
+#surfacevessels$O2_type[surfacevessels$pO2<medianpO2]="vein"
+#surfacevessels$O2_type<-as.factor(surfacevessels$O2_type)
+
+#allData$O2_type=
+allData.vesselType<-merge(allData, surfacevessels[, c("BranchName", "O2_type")], by="BranchName", all.x=TRUE)
+allData.vesselType<-distinct(allData.vesselType, PointName, .keep_all = TRUE)
 
 ###############################
 
-ggplot(allData, aes(x = BranchOrder, y = pO2, fill = Genotype)) + 
+ggplot(allData.vesselType, aes(x = O2_type, y = pO2, fill = Genotype)) + 
   geom_boxplot() + 
   ylab("pO2 [mmHg]") + 
   scale_fill_manual(
@@ -91,32 +105,56 @@ ggplot(allData, aes(x = BranchOrder, y = pO2, fill = Genotype)) +
     guide=FALSE) + 
   max.theme
 
-# scatterplot- pO2eter vs depth
-ggplot(allData, aes(x=AdjustedDepth, y=pO2)) +
-  geom_point(aes(colour = Genotype), shape = 1, size=2)+
-  ggtitle("pO2 vs depth for all vessels") +
-  xlab("Depth [um]") + 
-  ylab("pO2 [mmHg") + 
-  scale_colour_manual(
-    values=c("black", "red"), 
-    guide=FALSE) + 
+#line graphs for each vessel
+ggplot(allData.vesselType[allData.vesselType$Genotype=="RetRet"& allData.vesselType$O2_type=="artery",], aes(x=AdjustedDepth, y=pO2)) +
+  geom_point(aes(colour = BranchName), size=2)+
+  geom_line(aes(colour = BranchName), size=1)+
+  ggtitle("Retret-pO2 vs depth for all artery") +
+  xlab("Depth") + 
+  ylab("pO2 [mmHg]") + 
+  ylim(0, 70) +
+  #scale_colour_manual(values=c("black", "red"), guide=FALSE) + 
+  max.theme
+
+ggplot(allData.vesselType[allData.vesselType$Genotype=="RetRet"& allData.vesselType$O2_type=="vein",], aes(x=AdjustedDepth, y=pO2)) +
+  geom_point(aes(colour = BranchName), size=2)+
+  geom_line(aes(colour = BranchName), size=1)+
+  ggtitle("Retret-pO2 vs depth for all veins") +
+  xlab("Depth") + 
+  ylab("pO2 [mmHg]") + 
+  ylim(0, 70) +
+  #scale_colour_manual(values=c("black", "red"), guide=FALSE) + 
+  max.theme
+
+ggplot(allData.vesselType[allData.vesselType$Genotype=="Ret+"& allData.vesselType$O2_type=="artery",], aes(x=AdjustedDepth, y=pO2)) +
+  geom_point(aes(colour = BranchName), size=2)+
+  geom_line(aes(colour = BranchName), size=1)+
+  ggtitle("Ret+-pO2 vs depth for all artery") +
+  xlab("Depth") + 
+  ylab("pO2 [mmHg]") + 
+  ylim(0, 70) +
+  #scale_colour_manual(values=c("black", "red"), guide=FALSE) + 
+  max.theme
+
+ggplot(allData.vesselType[allData.vesselType$Genotype=="Ret+"& allData.vesselType$O2_type=="vein",], aes(x=AdjustedDepth, y=pO2)) +
+  geom_point(aes(colour = BranchName), size=2)+
+  geom_line(aes(colour = BranchName), size=1)+
+  ggtitle("Ret+-pO2 vs depth for all veins") +
+  xlab("Depth") + 
+  ylab("pO2 [mmHg]") + 
+  ylim(0, 70) +
+  #scale_colour_manual(values=c("black", "red"), guide=FALSE) + 
   max.theme
 
 
+#######
+# mean pO2
 
-df1A<- summarySE(allData, measurevar="pO2", groupvars=c("Genotype"))
-df1B<- summarySE(allData, measurevar="pO2", groupvars=c("Genotype","BranchOrder"))
-df1C<- summarySE(allData, measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
-df1D<- summarySE(allData, measurevar="pO2", groupvars=c("Genotype","O2_type"))
+df1A<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype"))
+df1B<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchOrder"))
+#df1C<- summarySE(allData, measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
+df1D<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","O2_type"))
 
-
-ggplot(allData, aes(x=BranchOrder, y=pO2, colour=Genotype))+
-  geom_jitter() +
-  geom_crossbar(data=df1B,aes(x=BranchOrder,ymin=pO2, ymax=pO2,y=pO2,group=BranchOrder), width = 0.5) +
-  scale_colour_manual(
-    values=c("black", "red"), 
-    guide=FALSE) + 
-  max.theme
 
 ggplot(data=df1A, aes(x=Genotype, y=pO2, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
