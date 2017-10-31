@@ -53,7 +53,7 @@ eGFPpos<-subset(baseline1, eGFP==1)
 eGFPneg<-subset(baseline1, eGFP==0)
 
 #eGFPpos$BranchGroup[eGFPpos$BranchOrder<=0]<-"arteriole"
-eGFPpos$BranchGroup[eGFPpos$BranchOrder<=4]<-"sm-ensheathing"
+eGFPpos$BranchGroup[eGFPpos$BranchOrder<=4]<-"ensheathing_PC"
 eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC"
 eGFPneg$BranchGroup[eGFPneg$BranchOrder>3]<-"capillary_PC"
 eGFPneg$BranchGroup[eGFPneg$BranchOrder<=3]<-"venule_PC"

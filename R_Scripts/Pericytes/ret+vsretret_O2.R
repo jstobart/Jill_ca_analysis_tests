@@ -50,6 +50,7 @@ ret_t$pO2<-as.numeric(as.character(ret_t$pO2))
 allData<-rbind(ret_t,ret_ret)
 #str(allData)
 allData$Genotype<- as.factor(allData$Genotype)
+allData$Genotype<- factor(allData$Genotype,levels = c("Ret+", "RetRet"))
 
 # remove points from tissue or with noisy data
 allData<-subset(allData, ExcludeData==0)
@@ -61,20 +62,10 @@ allData<-subset(allData, ExcludeData==0)
 allData$PointName <-paste(allData$Animal, allData$Spot, allData$AdjustedDepth, allData$Point, sep= "_")
 allData$BranchName <-paste(allData$Animal, allData$Spot, allData$VesselType, sep= "_")
 
-#allData$Genotype<- factor(allData$Genotype,levels = c("Ret+", "RetRet"))
-allData$BranchOrder<- as.factor(as.character(allData$BranchOrder))
+#allData$BranchOrder<- as.factor(as.character(allData$BranchOrder))
 allData$Animal<- as.character(allData$Animal)
 allData$Spot<- as.character(allData$Spot)
 
-
-# group branch order to simplify analysis
-#eGFPpos$BranchGroup[eGFPpos$BranchOrder<=0]<-"arteriole"
-#eGFPpos$BranchGroup[eGFPpos$BranchOrder<=4]<-"sm-ensheathing"
-#eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC"
-#eGFPneg$BranchGroup[eGFPneg$BranchOrder>3]<-"capillary_PC"
-#eGFPneg$BranchGroup[eGFPneg$BranchOrder<=3]<-"venule_PC"
-
-#allData$BranchGroup<- as.factor(allData$BranchGroup)
 
 
 # vessel classification based on O2 levels
@@ -82,22 +73,52 @@ allData$Spot<- as.character(allData$Spot)
 # classify as high and low pO2 based on the median value
 medianpO2=median(allData$pO2)
 
-allData$O2_type="artery"
-allData$O2_type[allData$pO2<medianpO2]="vein"
+#allData$O2_type="artery"
+#allData$O2_type[allData$pO2<medianpO2]="vein"
 
 surfacevessels<-subset(allData, AdjustedDepth<100)
 
-#surfacevessels$O2_type="artery"
-#surfacevessels$O2_type[surfacevessels$pO2<medianpO2]="vein"
-#surfacevessels$O2_type<-as.factor(surfacevessels$O2_type)
+surfacevessels$O2_type="artery"
+surfacevessels$O2_type[surfacevessels$pO2<medianpO2]="vein"
+surfacevessels$O2_type<-as.factor(surfacevessels$O2_type)
 
-#allData$O2_type=
-allData.vesselType<-merge(allData, surfacevessels[, c("BranchName", "O2_type")], by="BranchName", all.x=TRUE)
+#excludes data from vessels that do not appear on the surface
+allData.vesselType<-merge(allData, surfacevessels[, c("BranchName", "O2_type")], by="BranchName")
 allData.vesselType<-distinct(allData.vesselType, PointName, .keep_all = TRUE)
 
+###########
+# group branch order to simplify analysis
+
+# arteriolar side
+allData.vesselType$BranchGroup="arteriole"
+allData.vesselType$BranchGroup[allData.vesselType$BranchOrder>0 & allData.vesselType$BranchOrder<=4 & allData.vesselType$O2_type=="artery"]<-"ensheathing_PC"
+allData.vesselType$BranchGroup[allData.vesselType$BranchOrder>4 & allData.vesselType$O2_type=="artery"]<-"capillary_PC"
+
+#venous side
+allData.vesselType$BranchGroup[allData.vesselType$BranchOrder<=3 & allData.vesselType$O2_type=="vein"]<-"venule_PC"
+allData.vesselType$BranchGroup[allData.vesselType$BranchOrder==0 & allData.vesselType$O2_type=="vein"]<-"vein"
+allData.vesselType$BranchGroup[allData.vesselType$BranchOrder>3 & allData.vesselType$O2_type=="vein"]<-"capillary_PC"
+
+allData.vesselType$BranchGroup<- as.factor(allData.vesselType$BranchGroup)
+allData.vesselType$BranchGroup<- factor(allData.vesselType$BranchGroup,levels = c("arteriole", "ensheathing_PC", "capillary_PC", "venule_PC", "vein"))
+
+
+
 ###############################
+# plots
+
+ggplot(allData.vesselType, aes(x=pO2, fill=Genotype)) + geom_histogram(binwidth=1, position="dodge") +
+  ggtitle("Distribution of pO2")
 
 ggplot(allData.vesselType, aes(x = O2_type, y = pO2, fill = Genotype)) + 
+  geom_boxplot() + 
+  ylab("pO2 [mmHg]") + 
+  scale_fill_manual(
+    values=c("black", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+ggplot(allData.vesselType, aes(x = BranchGroup, y = pO2, fill = Genotype)) + 
   geom_boxplot() + 
   ylab("pO2 [mmHg]") + 
   scale_fill_manual(
@@ -152,7 +173,7 @@ ggplot(allData.vesselType[allData.vesselType$Genotype=="Ret+"& allData.vesselTyp
 
 df1A<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype"))
 df1B<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchOrder"))
-#df1C<- summarySE(allData, measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
+df1C<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
 df1D<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","O2_type"))
 
 
@@ -193,24 +214,25 @@ ggplot(data=df1D, aes(x=O2_type, y=pO2, fill=Genotype)) +
 ######
 #Stats
 ## pO2 and genotype or branch order
-pO2.null = lmer(pO2 ~ (1|Animal) + (1|Spot), allData,REML=FALSE)
-#pO2.model1 = lmer(pO2~ Genotype + (1|Animal) + (1|Spot), allData,REML=FALSE)
-pO2.model2A = lmer(pO2~ BranchOrder + (1|Animal) + (1|Spot), allData,REML=FALSE)
-pO2.model2B = lmer(pO2~ BranchGroup + (1|Animal) + (1|Spot), allData,REML=FALSE)
-#pO2.model3 = lmer(pO2~ Genotype + BranchOrder + (1|Animal) + (1|Spot), allData,REML=FALSE)
-#pO2.model4 = lmer(pO2~ Genotype * BranchOrder + (1|Animal) + (1|Spot), allData,REML=FALSE)
-pO2.anova <- anova(pO2.null, pO2.model2A,pO2.model2B)
-#pO2.anova <- anova(pO2.null, pO2.model1,pO2.model2,pO2.model3,pO2.model4)
+pO2.null = lmer(pO2 ~ (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model1 = lmer(pO2~ Genotype + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model2A = lmer(pO2~ O2_type + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model2B = lmer(pO2~ BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model3A = lmer(pO2~ Genotype + O2_type + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model3B = lmer(pO2~ Genotype + BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model4A = lmer(pO2~ Genotype * O2_type + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.model4B = lmer(pO2~ Genotype * BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
+pO2.anova <- anova(pO2.null, pO2.model1, pO2.model2A,pO2.model2B,
+                   pO2.model3A,pO2.model3B,pO2.model4A,pO2.model4B)
 print(pO2.anova)
+
 # p values
-pO2.BranchGroup <- lsmeans(pO2.model2B, pairwise ~ BranchGroup, glhargs=list())
+pO2.BranchGroup <- lsmeans(pO2.model4B, pairwise ~ Genotype*BranchGroup, glhargs=list())
 summary(pO2.BranchGroup)
 
-#pO2.Genotype <- lsmeans(pO2.model1, pairwise ~ Genotype, glhargs=list())
-#summary(pO2.Genotype)
+pO2.O2type <- lsmeans(pO2.model4A, pairwise ~ Genotype*O2_type, glhargs=list())
+summary(pO2.BranchGroup)
 
-#pO2.Genotype_BO <- lsmeans(pO2.model4, pairwise ~ Genotype*BranchOrder, glhargs=list())
-#summary(pO2.Genotype_BO)
 
 # Look at the model residuals
 plot(pO2.model1)
