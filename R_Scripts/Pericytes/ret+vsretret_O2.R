@@ -36,6 +36,10 @@ max.theme <- theme_classic() +
 ret_t <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_wt.csv", header=TRUE, sep = ",")
 ret_ret <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_ret.csv", header=TRUE, sep = ",")
 
+ret_t <- read.csv("D:/Data/Pericytes/Results/Jill-Extracted-values+ret_wt.csv", header=TRUE, sep = ",")
+ret_ret <- read.csv("D:/Data/Pericytes/Results/Jill-Extracted-values+ret_ret.csv", header=TRUE, sep = ",")
+
+
 #str(ret_t)
 #str(ret_ret)
 
@@ -263,12 +267,21 @@ ggplot(allData.vesselType[allData.vesselType$Genotype=="Ret+"& allData.vesselTyp
 # mean pO2
 
 df1A<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype"))
+df1B<- summarySE(allData.vesselType[allData.vesselType$BranchOrder>4,], measurevar="pO2", groupvars=c("Genotype", "O2_type","BranchOrder"))
 df1C<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
 
 allData.vesselType$AdjustedDepth<-as.factor(allData.vesselType$AdjustedDepth)
 df1D<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchGroup","AdjustedDepth"))
 
 ggplot(data=df1A, aes(x=Genotype, y=pO2, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=pO2-se, ymax=pO2+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("pO2 [mmHg]") +
+  scale_fill_manual(
+    values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot(data=df1B, aes(x=interaction(O2_type,BranchOrder), y=pO2, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=pO2-se, ymax=pO2+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("pO2 [mmHg]") +

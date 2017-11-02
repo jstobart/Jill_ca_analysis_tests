@@ -10,7 +10,7 @@ library("MASS")
 library("multcomp")
 library("reshape2")
 library("data.table")
-library("Hmisc")
+#library("Hmisc")
 library("stringr")
 library("GGally")
 
@@ -300,8 +300,8 @@ depth.model4 = lmer(Depth~ Genotype * BranchGroup+ (1|AnimalName) + (1|Branchnam
 depth.anova <- anova(depth.null, depth.model1, depth.model2, depth.model3, depth.model4)
 print(depth.anova)
 
-depth.Genotype_BG <- lsmeansLT(depth.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
-summary(depth.Genotype_BG)
+depth.Genotype_BG <- lsmeansLT(depth.model4, test.effs="Genotype:BranchGroup")
+print(depth.Genotype_BG)
 
 
 # no significant different between genotypes and branch order at certain depths,
