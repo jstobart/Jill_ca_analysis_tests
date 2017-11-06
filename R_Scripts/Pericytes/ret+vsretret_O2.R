@@ -85,7 +85,7 @@ allData<-allData[complete.cases(allData$pO2),]
 ##############
 
 # classify as high and low pO2 based on the mean value
-surfacevessels<-subset(allData, AdjustedDepth<100 & BranchOrder<3)
+surfacevessels<-subset(allData, AdjustedDepth<100)
 
 surfacevessels.mean<- ddply(surfacevessels, c("Animal","Spot","FOVName","BranchName","Genotype"), 
                             summarise, meanpO2=mean(pO2))
@@ -132,7 +132,7 @@ ggplot(data=df1B.means, aes(x=variable, y=value, fill=Genotype)) +
   geom_errorbar(aes(ymin=value-se, ymax=value+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("mean pO2 [mmHg]") +
   scale_fill_manual(
-    values=c("black", "red"),guide=FALSE)+
+    values=c("blue", "red"),guide=FALSE)+
   max.theme
 
 ggplot(data=df1C.means, aes(x=interaction(variable,O2_type), y=value, fill=Genotype)) +
@@ -157,6 +157,27 @@ ggplot(data=df.pO2difference, aes(x=O2_type, y=difference, fill=Genotype)) +
     values=c("black", "red"),guide=FALSE)+
   max.theme
 
+ggplot() +
+  geom_jitter(data=surface.vs.deep, aes(y=difference, x=interaction(Genotype,O2_type), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df.pO2difference, aes(x=interaction(Genotype,O2_type), y=difference,ymin=difference, ymax=difference, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df.pO2difference, aes(x=interaction(Genotype,O2_type), ymin=difference-se, ymax=difference+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("O2 gradient between upper and lower cortical layers")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+
+ggplot() +
+  geom_bar(data=df.pO2difference, aes(x=interaction(Genotype,O2_type), y=difference, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=surface.vs.deep, aes(y=difference, x=interaction(Genotype,O2_type), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df.pO2difference, aes(x=interaction(Genotype,O2_type), ymin=difference-se, ymax=difference+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  geom_hline(yintercept = 0)+
+  ggtitle("difference all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
 
 #Stats
 ## pO2 and genotype or branch group
@@ -199,11 +220,16 @@ allData.vesselType$BranchGroup<- factor(allData.vesselType$BranchGroup,levels = 
 ###############################
 # plots
 
-ggplot(allData.vesselType, aes(x=pO2, fill=Genotype)) + geom_histogram(binwidth=1, position="dodge") +
-  ggtitle("Distribution of pO2")
+
+ggplot(allData.vesselType, aes(x=pO2, y=..density..,fill=Genotype)) +
+  geom_histogram(binwidth=2, position="dodge")+
+  scale_fill_manual(
+    values=c("blue", "red"))+
+  max.theme
 
 ggplot(surfacevessels.mean, aes(x=meanpO2, fill=Genotype)) + geom_histogram(binwidth=2, position="dodge") +
   ggtitle("Distribution of mean pO2 per vessel branch")
+
 
 ggplot(allData.vesselType, aes(x = O2_type, y = pO2, fill = Genotype)) + 
   geom_boxplot() + 
@@ -269,6 +295,7 @@ ggplot(allData.vesselType[allData.vesselType$Genotype=="Ret+"& allData.vesselTyp
 df1A<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype"))
 df1B<- summarySE(allData.vesselType[allData.vesselType$BranchOrder>4,], measurevar="pO2", groupvars=c("Genotype", "O2_type","BranchOrder"))
 df1C<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
+df1D<- summarySE(allData.vesselType[allData.vesselType$O2_type=="artery",], measurevar="pO2", groupvars=c("Genotype","BranchGroup"))
 
 allData.vesselType$AdjustedDepth<-as.factor(allData.vesselType$AdjustedDepth)
 df1D<- summarySE(allData.vesselType, measurevar="pO2", groupvars=c("Genotype","BranchGroup","AdjustedDepth"))
@@ -279,6 +306,27 @@ ggplot(data=df1A, aes(x=Genotype, y=pO2, fill=Genotype)) +
   ylab("pO2 [mmHg]") +
   scale_fill_manual(
     values=c("black", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_jitter(data=allData.vesselType, aes(y=pO2, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df1A, aes(x=Genotype, y=pO2,ymin=pO2, ymax=pO2, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df1A, aes(x=Genotype, ymin=pO2-se, ymax=pO2+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("pO2 all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+
+ggplot() +
+  geom_bar(data=df1A, aes(x=Genotype, y=pO2, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=allData.vesselType, aes(y=pO2, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df1A, aes(x=Genotype, ymin=pO2-se, ymax=pO2+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("pO2 all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
   max.theme
 
 ggplot(data=df1B, aes(x=interaction(O2_type,BranchOrder), y=pO2, fill=Genotype)) +
@@ -297,6 +345,18 @@ ggplot(data=df1C, aes(x=BranchGroup, y=pO2, fill=Genotype)) +
     values=c("black", "red"))+
   max.theme
 
+ggplot() +
+  geom_jitter(data=allData.vesselType, aes(y=pO2, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df1C, aes(x=interaction(Genotype,BranchGroup), y=pO2,ymin=pO2, ymax=pO2, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df1C, aes(x=interaction(Genotype,BranchGroup), ymin=pO2-se, ymax=pO2+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("pO2 all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+
+
 
 #line graphs for each type of vessel branch
 ggplot(df1D, aes(x=AdjustedDepth, y=pO2)) +
@@ -310,54 +370,148 @@ ggplot(df1D, aes(x=AdjustedDepth, y=pO2)) +
   max.theme
 
 
+#####
+library(zoo)
+# depth vs pO2
+
+ggplot(allData.vesselType, aes(x=AdjustedDepth, y=pO2, colour=interaction(O2_type,Genotype)))+
+  geom_jitter(position=position_jitter(width=0.12), size=4)+
+  geom_line(aes(y=rollmean(pO2,50, na.pad = TRUE)))+
+  ggtitle("pO2 vs depth by vessel type") +
+  xlab("depth") + 
+  ylab("pO2") + 
+  #scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+#plots like Chris Schaffer's paper from 2012
+
+#adjust depth
+allData.vesselType$AdjustedDepth<-as.numeric(as.character(allData.vesselType$AdjustedDepth))
+arteries<-subset(allData.vesselType, O2_type=="artery")
+veins<-subset(allData.vesselType, O2_type=="vein")
+
+veins$AdjustedDepth=-(veins$AdjustedDepth)
+veins$BranchOrder=-(veins$BranchOrder)
+veins$AdjustedpO2=veins$pO2
+arteries$AdjustedpO2=-(arteries$pO2)
+
+allVessels.adjusted<-rbind(arteries,veins)
+
+# plots
+
+#pO2 vs branch order
+ggplot(data=allVessels.adjusted, aes(x=BranchOrder, y=pO2, colour=Genotype)) +
+  geom_jitter(position=position_jitter(width=0.12), size=3, shape=1)+
+  #geom_line(aes(y=rollmean(pO2,7, na.pad = TRUE)))+
+  facet_grid(. ~O2_type,scales = "free" , space="free")+
+  ggtitle("pO2 vs branch order by vessel type") +
+  xlab("Branch order") + 
+  ylab("pO2") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+#pO2 vs depth
+ggplot(data=allVessels.adjusted, aes(x=AdjustedDepth, y=pO2, colour=Genotype)) +
+  geom_jitter(position=position_jitter(width=2), size=3, shape=1)+
+  #geom_line(aes(y=rollmean(pO2,7, na.pad = TRUE)))+
+  facet_grid(. ~O2_type,scales = "free" , space="free")+
+  ggtitle("pO2 vs depth by vessel type") +
+  xlab("depth") + 
+  ylab("pO2") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+
+# calculate the mean at each depth
+
+df2.depth<-summarySE(allVessels.adjusted, measurevar="pO2", groupvars=c("Genotype","AdjustedDepth","O2_type"))
+
+ggplot(df2.depth, aes(x=AdjustedDepth, y=pO2, colour=Genotype))+
+  geom_point(size=3)+
+  geom_errorbar(aes(ymin=pO2-se, ymax=pO2+se), colour="black", width=1,  position=position_dodge()) +
+  geom_line()+
+  facet_grid(. ~O2_type,scales = "free" , space="free")+
+  ggtitle("mean pO2 per depth by vessel type") +
+  xlab("depth") + 
+  ylab("mean pO2") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+  
+
 ######
 #Stats
-## pO2 and genotype or branch group
-pO2.null = lmer(pO2 ~ (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model1 = lmer(pO2~ Genotype + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model2B = lmer(pO2~ BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model3B = lmer(pO2~ Genotype + BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model4B = lmer(pO2~ Genotype * BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.anova <- anova(pO2.null, pO2.model1, pO2.model2B,
-                   pO2.model3B,pO2.model4B)
-print(pO2.anova)
+pO2.null = lmer(pO2 ~ (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model1B = lmer(pO2~ Genotype + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model2B = lmer(pO2~ O2_type + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model2C = lmer(pO2~ BranchGroup + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model3B = lmer(pO2~ Genotype + O2_type + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model3C = lmer(pO2~ Genotype + BranchGroup + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model4B = lmer(pO2~ Genotype * O2_type + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model4C = lmer(pO2~ Genotype * BranchGroup + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.anova2 <- anova(pO2.null, pO2.model1B, pO2.model2B,pO2.model2C,
+                   pO2.model3B,pO2.model3C,pO2.model4B,pO2.model4C)
+print(pO2.anova2)
 
 # p values
-pO2.BranchGroup <- lsmeans(pO2.model4B, pairwise ~ Genotype*BranchGroup, glhargs=list())
+pO2.genotype <- lsmeans(pO2.model1B, pairwise ~ Genotype, glhargs=list())
+summary(pO2.genotype)
+
+pO2.O2type <- lsmeans(pO2.model4B, pairwise ~ Genotype*O2_type, glhargs=list())
+summary(pO2.O2type)
+
+pO2.BranchGroup <- lsmeans(pO2.model4C, pairwise ~ Genotype*BranchGroup, glhargs=list())
 summary(pO2.BranchGroup)
-
-
-pO2.null = lmer(pO2 ~ (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model1 = lmer(pO2~ Genotype + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model2A = lmer(pO2~ O2_type + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model2B = lmer(pO2~ BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model3A = lmer(pO2~ Genotype + O2_type + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model3B = lmer(pO2~ Genotype + BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model4A = lmer(pO2~ Genotype * O2_type + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.model4B = lmer(pO2~ Genotype * BranchGroup + (1|Animal) + (1|Spot), allData.vesselType,REML=FALSE)
-pO2.anova <- anova(pO2.null, pO2.model1, pO2.model2A,pO2.model2B,
-                   pO2.model3A,pO2.model3B,pO2.model4A,pO2.model4B)
-print(pO2.anova)
-
-
-pO2.O2type <- lsmeans(pO2.model4A, pairwise ~ Genotype*O2_type, glhargs=list())
-summary(pO2.BranchGroup)
-
 
 # Look at the model residuals
-plot(pO2.model1)
-plot(pO2.model2)
-plot(pO2.model2B)
+plot(pO2.model1B)
+plot(pO2.model3B)
+plot(pO2.model3C)
+plot(pO2.model4B)
+plot(pO2.model4C)
 
-# pO2eter, genotype and depth
-pO2.nullB = lmer(pO2 ~ (1|Animal) + (1|Spot), allData,REML=FALSE)
-#pO2.model1B = lmer(pO2~ Genotype + (1|AnimalName) + (1|Spot), allData,REML=FALSE)
-pO2.model2C = lmer(pO2~ AdjustedDepth + (1|Animal) + (1|Spot), allData,REML=FALSE)
-#pO2.model3B = lmer(pO2~ Genotype + Depth + (1|AnimalName) + (1|Spot), allData,REML=FALSE)
-#pO2.model4B = lmer(pO2~ Genotype * Depth + (1|AnimalName) + (1|Spot), allData,REML=FALSE)
-pO2.anovaB <- anova(pO2.nullB, pO2.model2C)
-#pO2.anovaB <- anova(pO2.nullB, pO2.model1B,pO2.model2B,pO2.model3B,pO2.model4B)
-print(pO2.anovaB)
+# pO2, genotype and depth
+allData.vesselType$AdjustedDepth<-as.factor(allData.vesselType$AdjustedDepth)
+pO2.nullB = lmer(pO2 ~ (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model1D = lmer(pO2~ Genotype + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model2D = lmer(pO2~ AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model3D = lmer(pO2~ Genotype + AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model3E = lmer(pO2~ Genotype + AdjustedDepth + O2_type + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model4D = lmer(pO2~ Genotype * AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.model4E = lmer(pO2~ Genotype * AdjustedDepth*O2_type + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType,REML=FALSE)
+pO2.anova.depth <- anova(pO2.nullB, pO2.model1D, pO2.model2D,pO2.model3D,pO2.model3E,
+                         pO2.model4D,pO2.model4E)
+print(pO2.anova.depth)
 
+pO2.depth <- lsmeans(pO2.model4D, pairwise ~ Genotype*AdjustedDepth, glhargs=list())
+summary(pO2.depth)
+
+pO2.depth.type <- lsmeans(pO2.model4E, pairwise ~ Genotype*AdjustedDepth*O2_type, glhargs=list())
+summary(pO2.depth.type)
+
+
+#analyze arteries and veins separately
+# arteries
+pO2.null.art = lmer(pO2 ~ (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="artery",],REML=FALSE)
+pO2.model1.art = lmer(pO2~ Genotype + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="artery",],REML=FALSE)
+pO2.model2.art = lmer(pO2~ AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="artery",],REML=FALSE)
+pO2.model3.art = lmer(pO2~ Genotype + AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="artery",],REML=FALSE)
+pO2.model4.art = lmer(pO2~ Genotype * AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="artery",],REML=FALSE)
+pO2.anova.depth.art <- anova(pO2.null.art, pO2.model1.art, pO2.model2.art,pO2.model3.art,pO2.model4.art)
+print(pO2.anova.depth.art)
+
+pO2.depth.art <- lsmeans(pO2.model4.art, pairwise ~ Genotype*AdjustedDepth, glhargs=list())
+summary(pO2.depth.art)
+
+# veins
+pO2.null.vein = lmer(pO2 ~ (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="vein",],REML=FALSE)
+pO2.model1.vein = lmer(pO2~ Genotype + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="vein",],REML=FALSE)
+pO2.model2.vein = lmer(pO2~ AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="vein",],REML=FALSE)
+pO2.model3.vein = lmer(pO2~ Genotype + AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="vein",],REML=FALSE)
+pO2.model4.vein = lmer(pO2~ Genotype * AdjustedDepth + (1|Animal) + (1|Spot) + (1|BranchName), allData.vesselType[allData.vesselType$O2_type=="vein",],REML=FALSE)
+pO2.anova.depth.vein <- anova(pO2.null.vein, pO2.model1.vein, pO2.model2.vein,pO2.model3.vein,pO2.model4.vein)
+print(pO2.anova.depth.vein)
+
+pO2.depth.vein <- lsmeans(pO2.model4.vein, pairwise ~ Genotype*AdjustedDepth, glhargs=list())
+summary(pO2.depth.vein)
 
 ##############

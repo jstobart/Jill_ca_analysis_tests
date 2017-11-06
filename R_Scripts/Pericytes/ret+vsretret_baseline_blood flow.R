@@ -32,7 +32,7 @@ max.theme <- theme_classic() +
 # peak data
 
 # load files
-baseline1 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Diam_velocity_02_11_2017.csv", header=TRUE, sep = "\t")
+baseline1 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Diam_velocity_03_11_2017.csv", header=TRUE, sep = "\t")
 baseline1 <- read.delim("D:/Data/Pericytes/Results/Diam_velocity_27_10_2017.csv", header=TRUE, sep = "\t")
 
 
@@ -59,6 +59,8 @@ eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC_A"
 eGFPneg$BranchGroup[eGFPneg$BranchOrder>3]<-"capillary_PC_V"
 eGFPneg$BranchGroup[eGFPneg$BranchOrder<=3]<-"venule_PC"
 
+eGFPpos$BranchGroup<- factor(eGFPpos$BranchGroup,levels = c("ensheathing_PC", "capillary_PC_A"))
+
 baseline<-rbind(eGFPpos,eGFPneg)
 #baseline<-eGFPpos
 
@@ -78,7 +80,7 @@ baseline<-baseline[complete.cases(baseline$Velocity),]
 # CONSIDER each Branch
 
 # velocity for each branch at different branch orders
-ggplot(eGFPpos[e-GFPpos$Genotype=="Ret+",], aes(x=BranchOrder, y=Velocity)) +
+ggplot(eGFPpos[eGFPpos$Genotype=="Ret+",], aes(x=BranchOrder, y=Velocity)) +
   geom_point(aes(colour = Branchname, fill=Branchname), size=2)+
   geom_line(aes(colour = Branchname, fill=Branchname), size=1)+
   ggtitle("Ret+-Velocity vs order for all vessels") +
@@ -147,13 +149,35 @@ ggplot(data=df1A, aes(x=Genotype, y=Diameter, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=Diameter, x=Genotype, colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df1A, aes(x=Genotype, y=Diameter,ymin=Diameter, ymax=Diameter, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df1A, aes(x=Genotype, ymin=Diameter-se, ymax=Diameter+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Diameter, all Data")+
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
+
+
+ggplot() +
+  geom_bar(data=df1A, aes(x=Genotype, y=Diameter, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Diameter, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df1A, aes(x=Genotype, ymin=Diameter-se, ymax=Diameter+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Diameter all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df1C, aes(x=interaction(Genotype,BranchGroup), y=Diameter, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Diameter, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df1C, aes(x=interaction(Genotype,BranchGroup), ymin=Diameter-se, ymax=Diameter+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Diameter branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
 
 ggplot(data=df1B, aes(x=BranchOrder, y=Diameter, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -176,7 +200,7 @@ ggplot(data=df1C, aes(x=BranchGroup, y=Diameter, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=Diameter, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df1C, aes(x=interaction(Genotype,BranchGroup), y=Diameter,ymin=Diameter, ymax=Diameter, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df1C, aes(x=interaction(Genotype,BranchGroup), ymin=Diameter-se, ymax=Diameter+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Diameter, all Data")+
@@ -185,10 +209,12 @@ ggplot() +
   max.theme
 
 
-#scatterplot of genotypes- all Data
+
+
+#scatterplot of genotypes- arteriole
 ggplot() +
   geom_jitter(data=eGFPpos, aes(y=Diameter, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df1D, aes(x=interaction(Genotype,BranchGroup), y=Diameter,ymin=Diameter, ymax=Diameter, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df1D, aes(x=interaction(Genotype,BranchGroup), ymin=Diameter-se, ymax=Diameter+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Diameter, arteriole")+
@@ -222,43 +248,6 @@ ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = Diameter, fill =
   max.theme
 
 
-
-#######
-#diameter vs velocity plots (like Chris Schaffer's paper from 2012)
-
-eGFPpos$AdjDiam=-(eGFPpos$Diameter)
-eGFPpos$vessel="artery"
-eGFPneg$AdjDiam=eGFPneg$Diameter
-eGFPneg$vessel="vein"
-
-baseline.adjustedDiameter<-rbind(eGFPpos, eGFPneg)
-baseline.adjustedDiameter<-baseline.adjustedDiameter[!baseline.adjustedDiameter$Velocity>10,]
-baseline.adjustedDiameter<-baseline.adjustedDiameter[complete.cases(baseline.adjustedDiameter$Velocity),]
-  
-  
-# plots
-library(zoo)
-
-ggplot(data=baseline.adjustedDiameter, aes(x=AdjDiam, y=Velocity, colour=Genotype)) +
-  geom_point(size=2)+
-  geom_line(aes(y=rollmean(Velocity,20, na.pad = TRUE)))+
-  facet_grid(. ~vessel , scales="free", space="free")+
-  ggtitle("diam vs velocity by vessel type") +
-  xlab("Diameter") + 
-  ylab("Velocity [mm/s]") + 
-  scale_colour_manual(values=c("blue", "red"), guide=FALSE) + 
-  max.theme
-
-
-ggplot(data=baseline.adjustedDiameter[baseline.adjustedDiameter$AdjDiam>-5 & baseline.adjustedDiameter$AdjDiam<5,], aes(x=AdjDiam, y=Velocity, colour=Genotype)) +
-  geom_point(size=2)+
-  geom_line(aes(y=rollmean(Velocity,15, na.pad = TRUE)))+
-  facet_grid(. ~vessel , scales="free", space="free")+
-  ggtitle("diam vs velocity by vessel type") +
-  xlab("Diameter") + 
-  ylab("Velocity [mm/s]") + 
-  scale_colour_manual(values=c("blue", "red"), guide=FALSE) + 
-  max.theme
 
 
 ######
@@ -316,6 +305,7 @@ diam.model3B = lmer(Diameter~ Genotype + Depth + (1|AnimalName) + (1|Branchname)
 diam.model4B = lmer(Diameter~ Genotype * Depth + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
 diam.anovaB <- anova(diam.nullB, diam.model1B,diam.model2B,diam.model3B,diam.model4B)
 print(diam.anovaB)
+summary(diam.model3B)
 
 
 # no interaction between genotype and depth or diameter
@@ -327,9 +317,9 @@ print(diam.anovaB)
 #depth plots
 
 # only arteriole Side
-eGFPpos$BranchOrder<-as.factor(eGFPpos$BranchOrder)
+#eGFPpos$BranchOrder<-as.factor(eGFPpos$BranchOrder)
 eGFPpos$BranchGroup<- factor(eGFPpos$BranchGroup,levels = c("ensheathing_PC", "capillary_PC_A"))
-eGFPneg$BranchOrder<-as.factor(eGFPneg$BranchOrder)
+#eGFPneg$BranchOrder<-as.factor(eGFPneg$BranchOrder)
 eGFPneg$BranchGroup<- factor(eGFPneg$BranchGroup,levels = c("capillary_PC_V","venule_PC"))
 
 ggplot(eGFPpos, aes(x = BranchOrder, y = Depth, fill = Genotype)) + 
@@ -379,13 +369,25 @@ df.depth.ven<- summarySE(eGFPneg, measurevar="Depth", groupvars=c("Genotype","Br
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=eGFPpos, aes(y=Depth, x=interaction(Genotype, BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df.depth.art, aes(x=interaction(Genotype, BranchGroup), y=Depth,ymin=Depth, ymax=Depth, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df.depth.art, aes(x=interaction(Genotype, BranchGroup), ymin=Depth-se, ymax=Depth+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle(" Depth for each branch group arteriole side")+
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
+
+
+ggplot() +
+  geom_bar(data=df.depth.art, aes(x=interaction(Genotype,BranchGroup), y=Depth, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=eGFPpos, aes(y=Depth, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df.depth.art, aes(x=interaction(Genotype,BranchGroup), ymin=Depth-se, ymax=Depth+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Diameter depth arteriole")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
 
 ggplot(eGFPpos, aes(x = BranchGroup, y = Depth, fill = Genotype)) + 
   geom_boxplot() + 
@@ -399,7 +401,7 @@ ggplot(eGFPpos, aes(x = BranchGroup, y = Depth, fill = Genotype)) +
 
 ggplot() +
   geom_jitter(data=eGFPneg, aes(y=Depth, x=interaction(Genotype, BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df.depth.ven, aes(x=interaction(Genotype, BranchGroup), y=Depth,ymin=Depth, ymax=Depth, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df.depth.ven, aes(x=interaction(Genotype, BranchGroup), ymin=Depth-se, ymax=Depth+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle(" Depth for each branch group venule side")+
@@ -466,7 +468,7 @@ ggplot(data=df2A, aes(x=Genotype, y=Velocity, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=Velocity, x=Genotype, colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df2A, aes(x=Genotype, y=Velocity,ymin=Velocity, ymax=Velocity, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df2A, aes(x=Genotype, ymin=Velocity-se, ymax=Velocity+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle(" velocities, all Data")+
@@ -476,7 +478,7 @@ ggplot() +
 
 #scatterplot of genotypes- arteriole
 ggplot() +
-  geom_jitter(data=eGFPpos, aes(y=Velocity, x=Genotype, colour=Genotype), position=position_jitter(width=0.12), size=3, shape=21)+
+  geom_jitter(data=eGFPpos, aes(y=Velocity, x=Genotype, colour=Genotype), position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df2A2, aes(x=Genotype, y=Velocity,ymin=Velocity, ymax=Velocity, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df2A2, aes(x=Genotype, ymin=Velocity-se, ymax=Velocity+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle(" velocities, arteriole")+
@@ -485,7 +487,25 @@ ggplot() +
   max.theme
 
 
+ggplot() +
+  geom_bar(data=df2A, aes(x=Genotype, y=Velocity, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Velocity, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df2A, aes(x=Genotype, ymin=Velocity-se, ymax=Velocity+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Velocity all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
 
+ggplot() +
+  geom_bar(data=df2C, aes(x=interaction(Genotype,BranchGroup), y=Velocity, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Velocity, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df2C, aes(x=interaction(Genotype,BranchGroup), ymin=Velocity-se, ymax=Velocity+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Velocity branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
 
 
 ggplot(data=df2B, aes(x=BranchOrder, y=Velocity, fill=Genotype)) +
@@ -507,7 +527,7 @@ ggplot(data=df2C, aes(x=BranchGroup, y=Velocity, fill=Genotype)) +
 
 ggplot() +
   geom_jitter(data=baseline, aes(y=Velocity, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df2C, aes(x=interaction(Genotype,BranchGroup), y=Velocity,ymin=Velocity, ymax=Velocity, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df2C, aes(x=interaction(Genotype,BranchGroup), ymin=Velocity-se, ymax=Velocity+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle(" velocities, all Data")+
@@ -522,6 +542,26 @@ ggplot(data=df2D, aes(x=BranchGroup, y=Velocity, fill=Genotype)) +
   ylab("Velocity [mm/s]") +
   scale_fill_manual(
     values=c("blue", "red"))+
+  max.theme
+
+ggplot() +
+  geom_jitter(data=eGFPpos, aes(y=Velocity, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df2D, aes(x=interaction(Genotype,BranchGroup), y=Velocity,ymin=Velocity, ymax=Velocity, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df2D, aes(x=interaction(Genotype,BranchGroup), ymin=Velocity-se, ymax=Velocity+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle(" velocities, arteriole side")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df2D, aes(x=interaction(Genotype,BranchGroup), y=Velocity, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=eGFPpos, aes(y=Velocity, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df2D, aes(x=interaction(Genotype,BranchGroup), ymin=Velocity-se, ymax=Velocity+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Velocity branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
   max.theme
 
 ###########
@@ -563,9 +603,20 @@ ggplot(eGFPpos, aes(x = BranchGroup, y = Velocity, fill = Genotype)) +
 #depth plots
 # scatterplot- Velocity vs depth
 ggplot(baseline, aes(x=Velocity, y=Depth)) +
-  geom_point(aes(colour = Genotype), shape = 1, size=2)+
+  geom_point(aes(colour = Genotype), shape = 1, size=4)+
   ggtitle("Velocity vs depth for all vessels") +
   xlab("Velocity [mm/s]") + 
+  ylab("Depth [mm/s]") + 
+  scale_colour_manual(
+    values=c("blue", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+# scatterplot- Diameter vs depth
+ggplot(baseline, aes(x=Diameter, y=Depth)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=4)+
+  ggtitle("Diameter vs depth for all vessels") +
+  xlab("Diameter]") + 
   ylab("Depth [mm/s]") + 
   scale_colour_manual(
     values=c("blue", "red"), 
@@ -672,10 +723,20 @@ ggplot(data=df6A, aes(x=Genotype, y=PulsatilityIndex, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=Genotype, colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df6A, aes(x=Genotype, y=PulsatilityIndex,ymin=PulsatilityIndex, ymax=PulsatilityIndex, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df6A, aes(x=Genotype, ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("PulsatilityIndex, all Data")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df6A, aes(x=Genotype, y=PulsatilityIndex, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df6A, aes(x=Genotype, ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("PulsatilityIndex all vessels")+
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
@@ -703,7 +764,7 @@ ggplot(data=df6C, aes(x=BranchGroup, y=PulsatilityIndex, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df6C, aes(x=interaction(Genotype,BranchGroup), y=PulsatilityIndex,ymin=PulsatilityIndex, ymax=PulsatilityIndex, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df6C, aes(x=interaction(Genotype,BranchGroup), ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("PulsatilityIndex, all Data")+
@@ -714,7 +775,7 @@ ggplot() +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=eGFPpos, aes(y=PulsatilityIndex, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df6D, aes(x=interaction(Genotype,BranchGroup), y=PulsatilityIndex,ymin=PulsatilityIndex, ymax=PulsatilityIndex, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df6D, aes(x=interaction(Genotype,BranchGroup), ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("PulsatilityIndex, arteriole")+
@@ -723,7 +784,18 @@ ggplot() +
   max.theme
 
 
-## boxplots
+ggplot() +
+  geom_bar(data=df6D, aes(x=interaction(Genotype,BranchGroup), y=PulsatilityIndex, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=eGFPpos, aes(y=PulsatilityIndex, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df6D, aes(x=interaction(Genotype,BranchGroup), ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("PulsatilityIndex branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+######
+#boxplots
 ggplot(baseline, aes(x = Genotype, y = PulsatilityIndex, fill = Genotype)) + 
   geom_boxplot() + 
   ylab("PulsatilityIndex") + 
@@ -748,19 +820,71 @@ ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = PulsatilityIndex
     guide=FALSE) + 
   max.theme
 
-
+######
 #depth plots
 # scatterplot- PulsatilityIndex vs depth
 ggplot(baseline, aes(x=PulsatilityIndex, y=Depth)) +
   geom_point(aes(colour = Genotype), shape = 1, size=2)+
   ggtitle("PulsatilityIndex vs depth for all vessels") +
-  xlab("PulsatilityIndex [RBCs/mm]") + 
+  xlab("PulsatilityIndex") + 
   ylab("Depth [um]") + 
   scale_colour_manual(
     values=c("blue", "red"), 
     guide=FALSE) + 
   max.theme
 
+
+# pulsatility vs velocity
+ggplot(baseline, aes(x=PulsatilityIndex, y=Velocity)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=3)+
+  ggtitle("PulsatilityIndex vs velocity for all vessels") +
+  xlab("PulsatilityIndex") + 
+  ylab("velocity") + 
+  scale_colour_manual(
+    values=c("blue", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+
+ggplot(baseline, aes(x=PulsatilityIndex, y=Diameter)) +
+  geom_point(aes(colour = Genotype), shape = 1, size=3)+
+  ggtitle("PulsatilityIndex vs velocity for all vessels") +
+  xlab("PulsatilityIndex") + 
+  ylab("diameter") + 
+  scale_colour_manual(
+    values=c("blue", "red"), 
+    guide=FALSE) + 
+  max.theme
+
+##########
+# slow vs fast vessels
+medianVelocity=median(baseline$Velocity)
+
+baseline$speed<-"fast"
+baseline$speed[baseline$Velocity<medianVelocity]<-"slow"
+
+df6E<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype","speed"), na.rm=TRUE)
+
+
+ggplot() +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=interaction(Genotype,speed), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df6E, aes(x=interaction(Genotype,speed), y=PulsatilityIndex,ymin=PulsatilityIndex, ymax=PulsatilityIndex, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df6E, aes(x=interaction(Genotype,speed), ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("PulsatilityIndex, speed")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df6E, aes(x=interaction(Genotype,speed), y=PulsatilityIndex, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=interaction(Genotype,speed), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df6E, aes(x=interaction(Genotype,speed), ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("PulsatilityIndex branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
 
 ######
 #Stats
@@ -823,6 +947,32 @@ PulsatilityIndex.model4B = lmer(PulsatilityIndex~ Genotype * Depth + (1|AnimalNa
 PulsatilityIndex.anovaB <- anova(PulsatilityIndex.nullB, PulsatilityIndex.model1B,PulsatilityIndex.model2B,PulsatilityIndex.model3B,PulsatilityIndex.model4B)
 print(PulsatilityIndex.anovaB)
 
+# pulsatility and velocity
+PulsatilityIndex.nullC = lmer(PulsatilityIndex ~ (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.model1C = lmer(PulsatilityIndex~ Genotype + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.model2C = lmer(PulsatilityIndex~ Velocity + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.model3C = lmer(PulsatilityIndex~ Genotype + Velocity  + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.model4C = lmer(PulsatilityIndex~ Genotype * Velocity  + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.anovaC <- anova(PulsatilityIndex.nullC, PulsatilityIndex.model1C,PulsatilityIndex.model2C,PulsatilityIndex.model3C,PulsatilityIndex.model4C)
+print(PulsatilityIndex.anovaC)
+
+
+# pulsatility and speed
+PulsatilityIndex.speed.null = lmer(PulsatilityIndex ~ (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.model1 = lmer(PulsatilityIndex~ Genotype + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.model2 = lmer(PulsatilityIndex~ speed + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.model3 = lmer(PulsatilityIndex~ Genotype + speed  + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.model4 = lmer(PulsatilityIndex~ Genotype * speed  + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.model5 = lmer(PulsatilityIndex~ Genotype + speed +BranchGroup  + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.model6 = lmer(PulsatilityIndex~ Genotype * speed *BranchGroup  + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+PulsatilityIndex.speed.anova <- anova(PulsatilityIndex.speed.null, PulsatilityIndex.speed.model1,
+                                      PulsatilityIndex.speed.model2,PulsatilityIndex.speed.model3,
+                                      PulsatilityIndex.speed.model4,PulsatilityIndex.speed.model5,
+                                      PulsatilityIndex.speed.model6)
+print(PulsatilityIndex.speed.anova)
+
+PulsatilityIndex.speed.Genotype<- lsmeans(PulsatilityIndex.speed.model4, pairwise ~ Genotype*speed, glhargs=list())
+summary(PulsatilityIndex.speed.Genotype)
 
 ##########################
 # vessel data with NO FLOW
@@ -832,7 +982,7 @@ baseline.withNoFlow$flow[baseline.withNoFlow$NoFlow==1]<-"no"
 df.diam.noflow1<- summarySE(baseline.withNoFlow, measurevar="Diameter", groupvars=c("Genotype", "flow"), na.rm=TRUE)
 df.diam.noflow3<- summarySE(baseline.withNoFlow, measurevar="Diameter", groupvars=c("Genotype","BranchGroup","flow"), na.rm=TRUE)
 
-ggplot(data=df.diam.noflow1, aes(x=Genotype, y=Diameter, fill=flow)) +
+ggplot(data=df.diam.noflow1, aes(x=flow, y=Diameter, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=Diameter-se, ymax=Diameter+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Diameter") +
@@ -887,13 +1037,35 @@ ggplot(data=df3A, aes(x=Genotype, y=Flux, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=Flux, x=Genotype, colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df3A, aes(x=Genotype, y=Flux,ymin=Flux, ymax=Flux, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df3A, aes(x=Genotype, ymin=Flux-se, ymax=Flux+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Flux, all Data")+
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
+
+
+ggplot() +
+  geom_bar(data=df3A, aes(x=Genotype, y=Flux, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Flux, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df3A, aes(x=Genotype, ymin=Flux-se, ymax=Flux+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Flux all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df3D, aes(x=interaction(Genotype,BranchGroup), y=Flux, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=eGFPpos, aes(y=Flux, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df3D, aes(x=interaction(Genotype,BranchGroup), ymin=Flux-se, ymax=Flux+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Flux branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
 
 ggplot(data=df3B, aes(x=BranchOrder, y=Flux, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -914,7 +1086,7 @@ ggplot(data=df3C, aes(x=BranchGroup, y=Flux, fill=Genotype)) +
 
 ggplot() +
   geom_jitter(data=baseline, aes(y=Flux, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df3C, aes(x=interaction(Genotype,BranchGroup), y=Flux,ymin=Flux, ymax=Flux, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df3C, aes(x=interaction(Genotype,BranchGroup), ymin=Flux-se, ymax=Flux+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Flux, all Data")+
@@ -933,7 +1105,7 @@ ggplot(data=df3D, aes(x=BranchGroup, y=Flux, fill=Genotype)) +
 
 ggplot() +
   geom_jitter(data=eGFPpos, aes(y=Flux, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df3D, aes(x=interaction(Genotype,BranchGroup), y=Flux,ymin=Flux, ymax=Flux, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df3D, aes(x=interaction(Genotype,BranchGroup), ymin=Flux-se, ymax=Flux+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Flux, arteriole")+
@@ -941,6 +1113,7 @@ ggplot() +
     values=c("blue", "red"),guide=FALSE)+
   max.theme
 
+######
 ## boxplots
 ggplot(baseline, aes(x = Genotype, y = Flux, fill = Genotype)) + 
   geom_boxplot() + 
@@ -1051,7 +1224,7 @@ ggplot(data=df4A, aes(x=Genotype, y=linearDensity, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=linearDensity, x=Genotype, colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df4A, aes(x=Genotype, y=linearDensity,ymin=linearDensity, ymax=linearDensity, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df4A, aes(x=Genotype, ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("linearDensity, all Data")+
@@ -1079,7 +1252,7 @@ ggplot(data=df4C, aes(x=BranchGroup, y=linearDensity, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=baseline, aes(y=linearDensity, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df4C, aes(x=interaction(Genotype,BranchGroup), y=linearDensity,ymin=linearDensity, ymax=linearDensity, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df4C, aes(x=interaction(Genotype,BranchGroup), ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("linearDensity, all Data")+
@@ -1098,7 +1271,7 @@ ggplot(data=df4D, aes(x=BranchGroup, y=linearDensity, fill=Genotype)) +
 #scatterplot of genotypes- all Data
 ggplot() +
   geom_jitter(data=eGFPpos, aes(y=linearDensity, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df4D, aes(x=interaction(Genotype,BranchGroup), y=linearDensity,ymin=linearDensity, ymax=linearDensity, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df4D, aes(x=interaction(Genotype,BranchGroup), ymin=linearDensity-se, ymax=linearDensity+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("linearDensity, all Data")+
@@ -1106,6 +1279,7 @@ ggplot() +
     values=c("blue", "red"),guide=FALSE)+
   max.theme
 
+#######
 ## boxplots
 ggplot(baseline, aes(x = Genotype, y = linearDensity, fill = Genotype)) + 
   geom_boxplot() + 
@@ -1210,11 +1384,25 @@ print(linearDensity.anovaB)
 
 # only data that has flux
 
-df5A<- summarySE(baseline, measurevar="Hematocrit", groupvars=c("Genotype"), na.rm=TRUE)
-df5A2<- summarySE(eGFPpos, measurevar="Hematocrit", groupvars=c("Genotype"), na.rm=TRUE)
-df5B<- summarySE(eGFPpos, measurevar="Hematocrit", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
-df5C<- summarySE(baseline, measurevar="Hematocrit", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
-df5D<- summarySE(eGFPpos, measurevar="Hematocrit", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+# NOTE!!! One weird number in retret data!
+
+# outlier test
+source("http://goo.gl/UUyEzD")
+outlierKD(baseline, Hematocrit)
+y
+baseline.HC<-baseline[complete.cases(baseline$Hematocrit),]
+
+source("http://goo.gl/UUyEzD")
+outlierKD(eGFPpos, Hematocrit)
+y
+eGFPpos.HC<-eGFPpos[complete.cases(eGFPpos$Hematocrit),]
+
+df5A<- summarySE(baseline.HC, measurevar="Hematocrit", groupvars=c("Genotype"), na.rm=TRUE)
+df5A2<- summarySE(eGFPpos.HC, measurevar="Hematocrit", groupvars=c("Genotype"), na.rm=TRUE)
+df5B<- summarySE(eGFPpos.HC, measurevar="Hematocrit", groupvars=c("Genotype","BranchOrder"), na.rm=TRUE)
+df5C<- summarySE(baseline.HC, measurevar="Hematocrit", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+df5D<- summarySE(eGFPpos.HC, measurevar="Hematocrit", groupvars=c("Genotype","BranchGroup"), na.rm=TRUE)
+df5E<- summarySE(baseline.HC, measurevar="Hematocrit", groupvars=c("Genotype","speed"), na.rm=TRUE)
 
 ggplot(data=df5A, aes(x=Genotype, y=Hematocrit, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1226,14 +1414,36 @@ ggplot(data=df5A, aes(x=Genotype, y=Hematocrit, fill=Genotype)) +
 
 #scatterplot of genotypes- all Data
 ggplot() +
-  geom_jitter(data=baseline, aes(y=Hematocrit, x=Genotype, colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+  geom_jitter(data=baseline.HC, aes(y=Hematocrit, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df5A, aes(x=Genotype, y=Hematocrit,ymin=Hematocrit, ymax=Hematocrit, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df5A, aes(x=Genotype, ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=0.1,  position=position_dodge()) +
   ggtitle("Hematocrit, all Data")+
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
+
+
+ggplot() +
+  geom_bar(data=df5A, aes(x=Genotype, y=Hematocrit, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Hematocrit, x=Genotype, colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df5A, aes(x=Genotype, ymin=Hematocrit-se, ymax=Hematocrit+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Hematocrit all vessels")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df5D, aes(x=interaction(Genotype,BranchGroup), y=Hematocrit, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=eGFPpos, aes(y=Hematocrit, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df5D, aes(x=interaction(Genotype,BranchGroup), ymin=Hematocrit-se, ymax=Hematocrit+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("Hematocrit branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
 
 ggplot(data=df5B, aes(x=BranchOrder, y=Hematocrit, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1253,15 +1463,37 @@ ggplot(data=df5C, aes(x=BranchGroup, y=Hematocrit, fill=Genotype)) +
   max.theme
 
 ggplot() +
-  geom_jitter(data=eGFPpos, aes(y=Hematocrit, x=interaction(Genotype,BranchGroup), colour=Genotype), 
-              position=position_jitter(width=0.12), size=3, shape=21)+
+  geom_jitter(data=baseline.HC, aes(y=Hematocrit, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
   geom_crossbar(data=df5C, aes(x=interaction(Genotype,BranchGroup), y=Hematocrit,ymin=Hematocrit, ymax=Hematocrit, colour=Genotype),  width=0.2,position=position_dodge()) +
   geom_errorbar(data=df5C, aes(x=interaction(Genotype,BranchGroup), ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=0.1,  position=position_dodge()) +
-  ggtitle("linearDensity, all Data")+
+  ggtitle("hematocrit all groups")+
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
 
+
+ggplot() +
+  geom_jitter(data=eGFPpos.HC, aes(y=Hematocrit, x=interaction(Genotype,BranchGroup), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df5D, aes(x=interaction(Genotype,BranchGroup), y=Hematocrit,ymin=Hematocrit, ymax=Hematocrit, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df5D, aes(x=interaction(Genotype,BranchGroup), ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("hematocrit, all Data")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_jitter(data=baseline.HC, aes(y=Hematocrit, x=interaction(Genotype,speed), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4, shape=21)+
+  geom_crossbar(data=df5E, aes(x=interaction(Genotype,speed), y=Hematocrit,ymin=Hematocrit, ymax=Hematocrit, colour=Genotype),  width=0.2,position=position_dodge()) +
+  geom_errorbar(data=df5E, aes(x=interaction(Genotype,speed), ymin=Hematocrit-se, ymax=Hematocrit+se), colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("hematocrit, all Data")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+#######
 ## boxplots
 ggplot(baseline, aes(x = Genotype, y = Hematocrit, fill = Genotype)) + 
   geom_boxplot() + 
@@ -1315,18 +1547,18 @@ ggplot(baseline, aes(x=Hematocrit, y=Depth)) +
 ######
 #Stats
 ## Hematocrit and genotype or branch order
-Hematocrit.null = lmer(Hematocrit ~ (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model1 = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model2 = lmer(Hematocrit~ BranchOrder + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model3 = lmer(Hematocrit~ Genotype + BranchOrder + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model4 = lmer(Hematocrit~ Genotype * BranchOrder + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
+Hematocrit.null = lmer(Hematocrit ~ (1|AnimalName) + (1|Branchname), baseline.HC,REML=FALSE)
+Hematocrit.model1 = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Branchname), baseline.HC,REML=FALSE)
+Hematocrit.model2 = lmer(Hematocrit~ BranchGroup + (1|AnimalName) + (1|Branchname), baseline.HC,REML=FALSE)
+Hematocrit.model3 = lmer(Hematocrit~ Genotype + BranchGroup + (1|AnimalName) + (1|Branchname), baseline.HC,REML=FALSE)
+Hematocrit.model4 = lmer(Hematocrit~ Genotype * BranchGroup + (1|AnimalName) + (1|Branchname), baseline.HC,REML=FALSE)
 Hematocrit.anova <- anova(Hematocrit.null, Hematocrit.model1,Hematocrit.model2,Hematocrit.model3,Hematocrit.model4)
 print(Hematocrit.anova)
 # p values
 Hematocrit.Genotype <- lsmeans(Hematocrit.model1, pairwise ~ Genotype, glhargs=list())
 summary(Hematocrit.Genotype)
 
-Hematocrit.Genotype_BO <- lsmeans(Hematocrit.model4, pairwise ~ Genotype*BranchOrder, glhargs=list())
+Hematocrit.Genotype_BO <- lsmeans(Hematocrit.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
 summary(Hematocrit.Genotype_BO)
 
 
@@ -1343,19 +1575,20 @@ plot(Hematocrit.model2)
 plot(Hematocrit.model3)
 
 ## Hematocrit and genotype or branch group
-Hematocrit.null = lmer(Hematocrit ~ (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model1 = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model2 = lmer(Hematocrit~ BranchGroup + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model3 = lmer(Hematocrit~ Genotype + BranchGroup + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.model4 = lmer(Hematocrit~ Genotype * BranchGroup + (1|AnimalName) + (1|Branchname), baseline,REML=FALSE)
-Hematocrit.anova <- anova(Hematocrit.null, Hematocrit.model1,Hematocrit.model2,Hematocrit.model3,Hematocrit.model4)
-print(Hematocrit.anova)
+Hematocrit.art.null = lmer(Hematocrit ~ (1|AnimalName) + (1|Branchname), eGFPpos.HC,REML=FALSE)
+Hematocrit.art.model1 = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Branchname), eGFPpos.HC,REML=FALSE)
+Hematocrit.art.model2 = lmer(Hematocrit~ BranchGroup + (1|AnimalName) + (1|Branchname), eGFPpos.HC,REML=FALSE)
+Hematocrit.art.model3 = lmer(Hematocrit~ Genotype + BranchGroup + (1|AnimalName) + (1|Branchname), eGFPpos.HC,REML=FALSE)
+Hematocrit.art.model4 = lmer(Hematocrit~ Genotype * BranchGroup + (1|AnimalName) + (1|Branchname), eGFPpos.HC,REML=FALSE)
+Hematocrit.art.anova <- anova(Hematocrit.art.null, Hematocrit.art.model1,Hematocrit.art.model2,
+                              Hematocrit.art.model3,Hematocrit.art.model4)
+print(Hematocrit.art.anova)
 # p values
-Hematocrit.Genotype <- lsmeans(Hematocrit.model1, pairwise ~ Genotype, glhargs=list())
-summary(Hematocrit.Genotype)
+Hematocrit.art.Genotype <- lsmeans(Hematocrit.art.model1, pairwise ~ Genotype, glhargs=list())
+summary(Hematocrit.art.Genotype)
 
-Hematocrit.Genotype_BO <- lsmeans(Hematocrit.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
-summary(Hematocrit.Genotype_BO)
+Hematocrit.art.Genotype_BO <- lsmeans(Hematocrit.art.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
+summary(Hematocrit.art.Genotype_BO)
 
 #Hematocrit.Genotype_BO2 <- lsmeans(Hematocrit.model3, pairwise ~ Genotype+BranchGroup, glhargs=list())
 #summary(Hematocrit.Genotype_BO2)
@@ -1371,3 +1604,108 @@ print(Hematocrit.anovaB)
 
 
 ######################
+
+
+
+#plots (like Chris Schaffer's paper from 2012)
+
+eGFPpos$AdjDiam=-(eGFPpos$Diameter)
+eGFPpos$AdjBO=eGFPpos$BranchOrder
+eGFPpos$AdjVel=-(eGFPpos$Velocity)
+eGFPpos$vessel="artery"
+eGFPneg$AdjDiam=eGFPneg$Diameter
+eGFPneg$AdjBO=-(eGFPneg$BranchOrder)
+eGFPneg$AdjVel=eGFPneg$Velocity
+eGFPneg$vessel="vein"
+
+baseline.adjustedDiameter<-rbind(eGFPpos, eGFPneg)
+baseline.adjustedDiameter<-baseline.adjustedDiameter[!baseline.adjustedDiameter$Velocity>10,]
+baseline.adjustedDiameter<-baseline.adjustedDiameter[complete.cases(baseline.adjustedDiameter$Velocity),]
+
+
+# plots
+library(zoo)
+
+#velocity vs diameter
+ggplot(data=baseline.adjustedDiameter, aes(x=AdjDiam, y=Velocity, colour=Genotype)) +
+  geom_point(size=3)+
+  #geom_line(aes(y=rollmean(Velocity,31, na.pad = TRUE)))+
+  facet_grid(. ~vessel,scales = "free" , space="free")+
+  ggtitle("diam vs velocity by vessel type") +
+  xlab("Diameter") + 
+  ylab("Velocity [mm/s]") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+
+ggplot(data=baseline.adjustedDiameter[baseline.adjustedDiameter$AdjDiam>-6 & baseline.adjustedDiameter$AdjDiam<6,], aes(x=AdjDiam, y=Velocity, colour=Genotype)) +
+  geom_point(size=3)+
+  #geom_line(aes(y=rollmean(Velocity,31, na.pad = TRUE)))+
+  facet_grid(. ~vessel , scales="free", space="free")+
+  ggtitle("diam vs velocity capillaries") +
+  xlab("Diameter") + 
+  ylab("Velocity [mm/s]") + 
+  scale_colour_manual(values=c("blue", "red"), guide=FALSE) + 
+  max.theme
+
+
+# velocity vs branch order
+
+AdjustedBO<-baseline.adjustedDiameter[baseline.adjustedDiameter$BranchGroup=="capillary_PC_A" | baseline.adjustedDiameter$BranchGroup=="capillary_PC_V",]
+ggplot(data=AdjustedBO, aes(x=AdjBO, y=Velocity, colour=Genotype)) +
+  geom_point(size=3)+
+  geom_line(aes(y=rollmean(Velocity,7, na.pad = TRUE)))+
+  facet_grid(. ~vessel , scales="free", space="free")+
+  ggtitle("branchvs velocity- capillaries") +
+  xlab("Branch Order") + 
+  ylab("Velocity [mm/s]") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+
+# diameter vs pulsatility
+ggplot(data=baseline.adjustedDiameter, aes(x=AdjDiam, y=PulsatilityIndex, colour=Genotype)) +
+  geom_point(size=3)+
+  #geom_line(aes(y=rollmean(Velocity,31, na.pad = TRUE)))+
+  facet_grid(. ~vessel,scales = "free" , space="free")+
+  ggtitle("diam vs pulsatility by vessel type") +
+  xlab("Diameter") + 
+  ylab("PI") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+
+ggplot(data=baseline.adjustedDiameter, aes(x=AdjVel, y=PulsatilityIndex, colour=Genotype)) +
+  geom_point(size=3)+
+  #geom_line(aes(y=rollmean(Velocity,31, na.pad = TRUE)))+
+  facet_grid(. ~vessel,scales = "free" , space="free")+
+  ggtitle("diam vs pulsatility by vessel type") +
+  xlab("velocity") + 
+  ylab("PI") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+
+
+# linear density vs diameter
+ggplot(data=baseline.adjustedDiameter, aes(x=AdjDiam, y=linearDensity, colour=Genotype)) +
+  geom_point(size=3)+
+  #geom_line(aes(y=rollmean(Velocity,31, na.pad = TRUE)))+
+  facet_grid(. ~vessel,scales = "free" , space="free")+
+  ggtitle("diam vs LD by vessel type") +
+  xlab("diameter") + 
+  ylab("LD") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
+# linear density vs branch order
+ggplot(data=AdjustedBO, aes(x=AdjBO, y=Hematocrit, colour=Genotype)) +
+  geom_point(size=3)+
+  #geom_line(aes(y=rollmean(Velocity,31, na.pad = TRUE)))+
+  facet_grid(. ~vessel,scales = "free" , space="free")+
+  ggtitle("BO vs LD by vessel type") +
+  xlab("BO") + 
+  ylab("LD") + 
+  scale_colour_manual(values=c("blue", "red")) + 
+  max.theme
+
