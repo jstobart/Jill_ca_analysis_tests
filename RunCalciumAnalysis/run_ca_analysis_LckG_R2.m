@@ -10,15 +10,15 @@ Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
 
 Settings.AnimalNames = {
     'RG14',...
-    'RG16',...
-    'RG17',...
-    'RG18',...
+%     'RG16',...
+%     'RG17',...
+%     'RG18',...
     };
 Settings.ScoreSheetNames = {
-    'RG14_Scoresheet_AllTrials.xls',...
-    'RG16_Scoresheet_AllTrials.xls',...
-    'RG17_Scoresheet_AllTrials.xls',...
-    'RG18_Scoresheet_AllTrials.xls',...
+    'RG14_Scoresheet_test.xls',...
+%     'RG16_Scoresheet_AllTrials.xls',...
+%     'RG17_Scoresheet_AllTrials.xls',...
+%     'RG18_Scoresheet_AllTrials.xls',...
     };
 Settings.NameConditions = {'Nostim'};
 
@@ -219,6 +219,12 @@ for iAnimal = 1:numAnimals
             % Astrocyte FLIKA
             for itrial=1:length(CSArray_Ch1_FLIKA)
                 
+                % get fraction of active MD area
+                [nFluoPix, nActivePix, nTotalPix] = getFracActive(CSArray_Ch1_FLIKA(itrial));
+                
+                % Manually input threshold value
+                % [nFluoPix, nActivePix, nTotalPix] = getFracActive(CSArray_Ch1_FLIKA(itrial), 550);
+                
                 % peak output
                 temp=CSArray_Ch1_FLIKA(1,itrial).calcDetectSigs.data;
                 temp2.trialname ={};
@@ -301,6 +307,8 @@ for iAnimal = 1:numAnimals
                     data.area = {};
                     data.overlap = {};
                     data.pixelsize={};
+                    data.nFluoPix = {};
+                    data.nActivePix = {};
                 end
                 data.Trial= [data.Trial; temp2.trialname];
                 data.Animal= [data.Animal; temp2.animalname];
@@ -311,7 +319,9 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 data.pixelsize= [data.pixelsize; temp2.pixelsize];
-                
+                data.nFluoPix = [data.nFluoPix; nFluoPix];
+                data.nActivePix = [data.nActivePix; nActivePix];
+
                 %traces output processes
                 if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
                     continue
@@ -417,6 +427,8 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 data.pixelsize= [data.pixelsize; temp2.pixelsize];
+                data.nFluoPix = [data.nFluoPix; {}];
+                data.nActivePix = [data.nActivePix; {}];
                 
                 %traces output
                 traces= CSArray_Ch1_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
@@ -445,6 +457,9 @@ for iAnimal = 1:numAnimals
             
             % Neuronal 2D FLIKA
             for itrial=1:length(CSArray_Ch2_FLIKA)
+                
+                % get fraction of active DD area
+                [nFluoPix, nActivePix, nTotalPix] = getFracActive(CSArray_Ch2_FLIKA(itrial));
                 
                 % peak output
                 temp=CSArray_Ch2_FLIKA(1,itrial).calcDetectSigs.data;
@@ -522,6 +537,8 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 data.pixelsize= [data.pixelsize; temp2.pixelsize];
+                data.nFluoPix = [data.nFluoPix; nFluoPix];
+                data.nActivePix = [data.nActivePix; nActivePix];
                 
                 %traces output processes
                 if strcmp(CSArray_Ch2_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
@@ -629,6 +646,8 @@ for iAnimal = 1:numAnimals
                 data.area= [data.area; temp2.area];
                 data.overlap= [data.overlap; temp2.overlap];
                 data.pixelsize= [data.pixelsize; temp2.pixelsize];
+                data.nFluoPix = [data.nFluoPix; {}];
+                data.nActivePix = [data.nActivePix; {}];
                 
                 %traces output
                 traces= CSArray_Ch2_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
@@ -673,10 +692,5 @@ cd(fullfile(Settings.MainDir, 'Results'));
 cell2csv(SaveFiles{1,1}, AllData2);
 save(SaveFiles{1,3}, 'All_traces','-v7.3');
 save(SaveFiles{1,2}, 'AllData2','-v7.3');
-
-
-
-
-
 
 

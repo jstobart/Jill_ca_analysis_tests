@@ -920,14 +920,14 @@ plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 % stupid subsetting
 
 for iROI=1:length(RCaMP)
-respOTIdx1(iROI)=~isempty(find(RCaMP{iROI,16}<6));
+respOTIdx1(iROI)=~isempty(find(RCaMP{iROI,16}<8));
 end
 
 RCaMP2=RCaMP(respOTIdx1,:);
 
 OT_RCaMP_traces=[];
 for iROI=1:length(RCaMP2)
-respOTIdx3(iROI)=~isempty(find(RCaMP2{iROI,16}>5));
+respOTIdx3(iROI)=~isempty(find(RCaMP2{iROI,16}>7));
     tempY= RCaMP2{iROI,8};
     if length(tempY)>590
         tempY=tempY(1:nframes); %(stimwindow*FrameRate));
@@ -937,14 +937,22 @@ respOTIdx3(iROI)=~isempty(find(RCaMP2{iROI,16}>5));
     end
 end
 
-RrespOT=RCaMP2(respOTIdx3',:); % responding neurons 
+
+
+for iROI=1:length(RCaMP)
+respOTIdx1(iROI)=isempty(find(8>RCaMP{iROI,16}>7));
+    tempY= RCaMP{iROI,8};
+    if length(tempY)>590
+        tempY=tempY(1:nframes); %(stimwindow*FrameRate));
+        if respOTIdx1(iROI)
+            OT_RCaMP_traces= horzcat(OT_RCaMP_traces, tempY);
+        end
+    end
+end
+RrespOT=RCaMP(respOTIdx1',:); % responding neurons 
 OT_RCaMP_mean= mean(OT_RCaMP_traces');
 
-x1 = -2;
-y1 = -2;
-txt1=num2str(length(RrespOT));
-
-figure ('name', 'Overlaid traces: RCaMP ROIs with onset between 5 and 6')
+figure ('name', 'Overlaid traces: RCaMP ROIs with onset between 7 and 8')
 hold on
 axis off
 for xROI= 1:size(OT_RCaMP_traces,2)
@@ -956,5 +964,3 @@ for xROI= 1:size(OT_RCaMP_traces,2)
     end
 end
 plot(TimeX, OT_RCaMP_mean, 'Color', 'k','LineWidth',1);
-rectangle('Position', [5 -1 8 5.5])
-text(x1,y1,txt1)

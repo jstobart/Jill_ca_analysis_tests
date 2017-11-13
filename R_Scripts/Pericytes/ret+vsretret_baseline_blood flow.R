@@ -858,12 +858,19 @@ ggplot(baseline, aes(x=PulsatilityIndex, y=Diameter)) +
 
 ##########
 # slow vs fast vessels
-medianVelocity=median(baseline$Velocity)
 
-baseline$speed<-"fast"
-baseline$speed[baseline$Velocity<medianVelocity]<-"slow"
+
+VelocityQuantiles=quantile(baseline$Velocity[baseline$Genotype=="Ret+"], 
+                           probs = seq(0, 1, 0.1),type = 5)
+#medianVelocity=median(baseline$Velocity)
+
+#baseline$speed<-"fast"
+baseline$speed[baseline$Velocity<VelocityQuantiles[2]]<-"slow"
+baseline$speed[baseline$Velocity<VelocityQuantiles[5]& baseline$Velocity>=VelocityQuantiles[2]]<-"mid"
+baseline$speed[baseline$Velocity>=VelocityQuantiles[5]]<-"fast"
 
 df6E<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype","speed"), na.rm=TRUE)
+df6F<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype","speed", "BranchGroup"), na.rm=TRUE)
 
 
 ggplot() +
@@ -885,6 +892,18 @@ ggplot() +
   scale_colour_manual(
     values=c("blue", "red"),guide=FALSE)+
   max.theme
+
+
+ggplot() +
+  geom_bar(data=df6F, aes(x=interaction(BranchGroup,speed), y=PulsatilityIndex, colour=Genotype), fill="white" ,stat="identity", width=0.5, position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=interaction(BranchGroup,speed), colour=Genotype), 
+              position=position_jitter(width=0.12), size=4)+
+  geom_errorbar(data=df6F, aes(x=interaction(BranchGroup,speed), ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se), size=2,colour="black", width=0.1,  position=position_dodge()) +
+  ggtitle("PulsatilityIndex branch groups")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
 
 ######
 #Stats
