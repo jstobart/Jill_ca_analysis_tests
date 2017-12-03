@@ -2500,7 +2500,8 @@ print(OT.lck.RC.short.NSvsS.kstest)
 
 
 
-######
+
+
 
 ######
 # Astrocyte Duration histograms
@@ -3204,6 +3205,27 @@ summary(group.dur.cond.pv)
 group.dur.Group_type.pv<- glht(group.dur.model3, mcp(Group_type= "Tukey"))
 summary(group.dur.Group_type.pv)
 
+
+
+
+######
+# fraction of active pixels from all the astrocyte pixels
+# active pixels from any ROI with a signal (not just those during stimulation)
+
+spot.lck.stim<-ddply(all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(unique(ROIs_Cond)), nFluoPix=nFluoPix,
+                     nActivePix=nActivePix, PixelSize=pixelsize)
+
+spot.lck.stim$FracActive=spot.lck.stim$nActivePix/spot.lck.stim$nFluoPix
+spot.lck.stim$FracActivePerROI=spot.lck.stim$FracActive/spot.lck.stim$nROIs
+
+df.FracActive<- summarySE(spot.lck.stim, measurevar = "FracActive", groupvars = c("Condition"))
+
+ggplot(data=df.FracActive, aes(x=Condition, y= FracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActive") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 #################
 # conditional probabilty of astrocyte response given a nearby neuronal response

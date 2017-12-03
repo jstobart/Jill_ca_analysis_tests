@@ -3,7 +3,7 @@
 % NOTE:::::: RUN FROM THE 1D branch!
 
 % finds ROIs and outputs traces from linescans
-% 
+%
 %% 1 lck no stim vs long stim for all mice (independent of genotype)
 clearvars
 
@@ -51,8 +51,8 @@ for iAnimal = 1:numAnimals
     Settings = readScoresheet2(CurrentSheet, Settings);
     
     % load spectral unmixing matrix of RCaMP and GCaMP
-        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_4Ch.mat'));
-        
+    load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_4Ch.mat'));
+    
     % Get SpotID
     spots = unique(Settings.SpotIDs);
     
@@ -87,7 +87,7 @@ for iAnimal = 1:numAnimals
             % Create an array of ScanImage Tiffs
             ImgArray =  SCIM_Tif(fnList, channel, CalFile);
             
-                        
+            
             % Spectral Unmixing of GCaMP and RCaMP
             ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
             
@@ -99,7 +99,7 @@ for iAnimal = 1:numAnimals
             % ASTROCYTES
             load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_LckGC.mat
             CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
-             
+            
             % NEURONS
             load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_RC.mat
             CSArray_Ch2_FLIKA = CellScan(fnList, ImgArray, confObj, 2);
@@ -109,8 +109,8 @@ for iAnimal = 1:numAnimals
             CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
             CSArray_Ch2_FLIKA =CSArray_Ch2_FLIKA.process();
             
-%             CSArray_Ch1_FLIKA.plot();
-%             CSArray_Ch2_FLIKA.plot();
+            %             CSArray_Ch1_FLIKA.plot();
+            %             CSArray_Ch2_FLIKA.plot();
             
             % CSArray_Ch1_FLIKA.opt_config();
             %% Calculate onset time for first peak and Output data
@@ -121,7 +121,7 @@ for iAnimal = 1:numAnimals
             % loop through cellscans
             for iScan=1:size(CellScans,1)
                 for itrial=1:size(CellScans,2)
-                                      
+                    
                     % make a table of trace info
                     if strcmp(CellScans(iScan,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
                         continue
@@ -132,12 +132,12 @@ for iAnimal = 1:numAnimals
                         for iROI = 1:size(traces,2)
                             Trace_data{iROI,1}= CellScans(iScan,itrial).calcFindROIs.data.roiNames{iROI,1};
                             Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
-                            if iScan==1 
+                            if iScan==1
                                 Trace_data{iROI,3}= 'GCaMP';
                             else
                                 Trace_data{iROI,3}= 'RCaMP';
                             end
-                                                      
+                            
                             Trace_data{iROI,4}= spotId;
                             Trace_data{iROI,5}= CurrentAnimal;
                             Trace_data{iROI,6}= CurrentCondition;
@@ -145,75 +145,45 @@ for iAnimal = 1:numAnimals
                             Trace_data{iROI,8} = CurrentBaseline(1,1);
                             Trace_data{iROI,9} = traces(:,iROI);
                             Trace_data{iROI,10} = CellScans(iScan,itrial).calcFindROIs.data.roiIdxs{iROI,1};
-                            Trace_data{iROI,11} = CellScans(iScan,itrial).rawImg.metadata.pixelSize; 
+                            Trace_data{iROI,11} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
                             
                             % line rate- time for one line scan
                             lineTime=CellScans(1,1).rawImg.metadata.lineTime;
                             Trace_data{iROI,12} = lineTime; %lineRate
                             nLines=length(traces(:,iROI));
                             TimeX(1:nLines) = (1:nLines)*lineTime;
-
+                            
                             % Calculate the first peak onset time and AUC after stim
-
+                            
                             baselineCorrectedTime=TimeX-BL_frames;
-
-                            % peak onsets and AUC in the first second after stim for each ROI
-
-    %first 1 sec after stim onset
-    x1=round(FrameRate*5);
-    x2=round(FrameRate*6);
-    x3= round(FrameRate*10);
-    x4= round(FrameRate*15);
-    % onset time
-    if size(trace,1)>590
-        Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:592),2.5,2);
-        if isempty(Onsets)
-            Onsets=nan(1,1);
-        end
-        Shortstim{iROI, 16}= Onsets;
-        % AUC
-        Shortstim{iROI,17}=trapz(trace(x1:x2));
-        Shortstim{iROI,18}=trapz(trace(x3:x4));
-    else
-        Shortstim{iROI,16}=NaN;
-        Shortstim{iROI,17}=NaN;
-        Shortstim{iROI,18}=NaN;
-    end  
-                             
-                        end                       
+                            
+                            % onset time
+                            Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:end),2.5,5);
+                            if isempty(Onsets)
+                                Onsets=nan(1,1);
+                            end
+                            Trace_data{iROI,13}= Onsets;                           
+                            
+                        end
                         
                     end
                     All_traces=vertcat(All_traces, Trace_data);
                     clearvars Trace_data
                 end
             end
-
+            
         end
     end
 end
 
 
 
-  
-
-
 % table for importing into R
-if ~exist('saveFiles3','file')
-    ShortstimSave=Shortstim;
-    ShortstimSave(:,8)=[];
-    ShortstimSave(:,8)=[];
-    ShortstimSave(:,8)=[];
-    names2={'ROI','Trial','Channel','Spot','Animal', 'Condition','depth','PixelSize','Overlap',...
-        'ROIType','Spot_trial','ROIs_trial','OnsetTime','TraceAUC1','TraceAUC10'};
-    ShortstimSave2=vertcat(names2, ShortstimSave);
-    cell2csv(saveFiles3,ShortstimSave2);
-end
-    
-
-
+    names={'ROI','Trial','Channel','Spot','Animal', 'Condition','depth','baseline',...
+        'traces','ROIIdx','PixelSize','lineTime','OnsetTime'};
+    All_traces=vertcat(names, All_traces);
 
 % %% Save traces table
-
 cd(fullfile(Settings.MainDir, 'Results'));
 % write date to created file
 save(SaveFiles{1,1}, 'All_traces','-v7.3');
