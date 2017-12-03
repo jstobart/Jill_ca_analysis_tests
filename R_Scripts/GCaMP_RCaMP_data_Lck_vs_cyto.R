@@ -103,12 +103,23 @@ all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_"
 all.lck.OT.2s$Spot_trial_Cond<-paste(all.lck.OT.2s$Spot_trial, all.lck.OT.2s$Condition, sep="_")
 all.lck.OT.2s$ROIs_Cond<-paste(all.lck.OT.2s$ROIs_trial, all.lck.OT.2s$Condition, sep="_")
 
+# REMOVE duplicate entries from onset time and peak time data frames 
+# only the first entry will be used
+all.lck.OT2=all.lck.OT[order(all.lck.OT$OnsetTime),] # sort by ascending onset time
+all.lck.OT2.2s=all.lck.OT.2s[order(all.lck.OT.2s$OnsetTime),] # sort by ascending onset time
 
-# remove trials with no ROIs
-#all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="none"),]
+# remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
+all.lck.OT<-distinct(all.lck.OT2, ROIs_Cond, .keep_all = TRUE)
+all.lck.OT.2s<-distinct(all.lck.OT2.2s, ROIs_Cond, .keep_all = TRUE)
+
+#adjust onset time for the data with 2 s before stimulation included:
+
+all.lck.OT.2s$OnsetTimeAdjust<-all.lck.OT.2s$OnsetTime-2
+
+rm(all.lck.OT2,all.lck.OT2.2s)
 
 
-all.lck.peaks$ROIType= 0
+all.lck.peaks$ROIType= "none"
 all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
 all.lck.peaksB<- subset(all.lck.peaks, Channel=="RCaMP")
 
@@ -134,6 +145,10 @@ all.lck.peaks$ROIs_Cond<-paste(all.lck.peaks$ROIs_trial, all.lck.peaks$Condition
 # count number of trials per spot
 Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Spot","Condition"), summarise, nTrials=length(unique(Trial)))
 
+
+# remove ROIs with no peaks
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="none"),]
+
 # exclude the neuropil ROIs, because they were hand selected and not necessary
 all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="np"),]
 
@@ -148,30 +163,17 @@ all.lck.peaks$peakStart<- all.lck.peaks$peakStart-5
 all.lck.peaks$peakStartHalf<- all.lck.peaks$peakStartHalf-5
 all.lck.peaks$Duration<- all.lck.peaks$halfWidth*2
 
+
+
 # drop peaks that occur before the start of stimulation
 all.lck.peaks2<-subset(all.lck.peaks,peakTime>0)
 
-
-
-# REMOVE duplicate entries from onset time and peak time data frames 
 # only the first entry will be used
-all.lck.OT2=all.lck.OT[order(all.lck.OT$OnsetTime),] # sort by ascending onset time
-all.lck.OT2.2s=all.lck.OT.2s[order(all.lck.OT.2s$OnsetTime),] # sort by ascending onset time
-
-# remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
-all.lck.OT<-distinct(all.lck.OT2, ROIs_Cond, .keep_all = TRUE)
-all.lck.OT.2s<-distinct(all.lck.OT2.2s, ROIs_Cond, .keep_all = TRUE)
-
-# only the first entry will be used
-all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascending onset time
+all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascending peak time
 
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
 
-
-#adjust onset time for the data with 2 s before stimulation included:
-
-all.lck.OT.2s$OnsetTimeAdjust<-all.lck.OT.2s$OnsetTime-2
 
 
 
@@ -186,14 +188,14 @@ ggplot(NeuronalStim,aes(x=OnsetTime)) +
 
 # should have an onset time in 8 s stimulus
 
-ggplot(NeuronalStim[NeuronalStim$OnsetTime<8,],aes(x=OnsetTime)) +
+ggplot(NeuronalStim[NeuronalStim$OnsetTime<10,],aes(x=OnsetTime)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("RCaMP onset times between 0 and 10 s from stim trials")+
   max.theme
 
 Neuron95Onset<-quantile(NeuronalStim$OnsetTime[NeuronalStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 print(Neuron95Onset)
-OnsetNear7to8<-subset(NeuronalStim, Channel=="RCaMP" & OnsetTime<8 & OnsetTime>7)
+
 
 ##### 
 # cytoGCaMP6s data
@@ -210,6 +212,24 @@ all.cyto.OT$Spot_trial_Cond<-paste(all.cyto.OT$Spot_trial, all.cyto.OT$Condition
 all.cyto.OT$ROIs_Cond<-paste(all.cyto.OT$ROIs_trial, all.cyto.OT$Condition, sep="_")
 all.cyto.OT.2s$Spot_trial_Cond<-paste(all.cyto.OT.2s$Spot_trial, all.cyto.OT.2s$Condition, sep="_")
 all.cyto.OT.2s$ROIs_Cond<-paste(all.cyto.OT.2s$ROIs_trial, all.cyto.OT.2s$Condition, sep="_")
+
+# REMOVE duplicate entries from onset time and peak time data frames 
+# only the first entry will be used
+all.cyto.OT2=all.cyto.OT[order(all.cyto.OT$OnsetTime),] # sort by ascending onset time
+
+# remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
+all.cyto.OT<-distinct(all.cyto.OT2, ROIs_Cond,.keep_all = TRUE)
+
+# REMOVE duplicate entries from onset time and peak time data frames 
+# only the first entry will be used
+all.cyto.OT2=all.cyto.OT[order(all.cyto.OT$OnsetTime),] # sort by ascending onset time
+all.cyto.OT2.2s=all.cyto.OT.2s[order(all.cyto.OT.2s$OnsetTime),] # sort by ascending onset time
+
+#adjust onset time for the data with 2 s before stimulation included:
+
+all.cyto.OT.2s$OnsetTimeAdjust<-all.cyto.OT.2s$OnsetTime-2
+
+
 
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
@@ -258,13 +278,6 @@ all.cyto.peaks$Duration<- all.cyto.peaks$halfWidth*2
 # drop peaks that occur before the start of stimulation
 all.cyto.peaks2<-subset(all.cyto.peaks,peakTime>0)
 
-# REMOVE duplicate entries from onset time and peak time data frames 
-# only the first entry will be used
-all.cyto.OT2=all.cyto.OT[order(all.cyto.OT$OnsetTime),] # sort by ascending onset time
-
-# remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
-all.cyto.OT<-distinct(all.cyto.OT2, ROIs_Cond,.keep_all = TRUE)
-
 # only the first entry will be used
 all.cyto.peaks3<-all.cyto.peaks2[order(all.cyto.peaks2$peakTime),] # sort by ascending onset time
 
@@ -272,14 +285,7 @@ all.cyto.peaks3<-all.cyto.peaks2[order(all.cyto.peaks2$peakTime),] # sort by asc
 all.cyto.peaks<-distinct(all.cyto.peaks3, ROIs_Cond,.keep_all = TRUE)
 
 
-# REMOVE duplicate entries from onset time and peak time data frames 
-# only the first entry will be used
-all.cyto.OT2=all.cyto.OT[order(all.cyto.OT$OnsetTime),] # sort by ascending onset time
-all.cyto.OT2.2s=all.cyto.OT.2s[order(all.cyto.OT.2s$OnsetTime),] # sort by ascending onset time
 
-#adjust onset time for the data with 2 s before stimulation included:
-
-all.cyto.OT.2s$OnsetTimeAdjust<-all.cyto.OT.2s$OnsetTime-2
 
 
 ######
@@ -3197,3 +3203,163 @@ summary(group.dur.cond.pv)
 
 group.dur.Group_type.pv<- glht(group.dur.model3, mcp(Group_type= "Tukey"))
 summary(group.dur.Group_type.pv)
+
+
+#################
+# conditional probabilty of astrocyte response given a nearby neuronal response
+
+
+# find total number of astrocyte ROIs or neuronal ROIs in a field of view
+# find number of responding astrocytes or responding neuronal per trial
+# find the number of fast astrocytes per field of view
+
+
+# number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
+
+stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
+
+ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+
+
+# number of ROIs
+
+
+
+# find total number of astrocyte ROIs or neuronal ROIs with a peak at some point during the trial
+# use this for response probability calculation
+
+Spot.TotalROIs<- ddply(all.lck.peaks[all.lck.peaks$Condition=="Stim",], c("trials","trials_Cond", "Channel"), summarise, nROIs=length(peakTime))
+
+
+# if there were no ROIs with a signal during the trial, make it zero
+
+
+
+noPeaks.stim<-subset(all.lck.peaks, ROIname=="none" & Condition=="Stim")
+
+Spot.noPeaks<- ddply(noPeaks.stim, c("trials_Cond", "Channel"), summarise, nROIs=0)
+
+Spot.TotalROIs<-merge(Spot.TotalROIs2, Spot.noPeaks[, c("trials_Cond", "nROIs")], by="trials_Cond", all.x=TRUE)
+
+
+
+#remove peaks with zero peakAUC
+
+count.peaks <- ddply (post30.sig.peaks, c("Animal", "Spot", "Layer", "Condition","ROI","ROIType","peakType"), summarise,
+                      Peaks = length(numPeaks))
+
+#divide by the number of trials for each ROI
+count.peaks$peakPertrial <-0
+
+#Nostim
+#NS.peaks <- subset(count.peaks,Condition=="Nostim")
+#NS.ROI.p30 <- subset(post30.ROI,Condition=="Nostim")
+sigROInamesNS <-as.character(unique(post30.ROI$ROI))
+count.peaks2 <-data.frame()
+for (ii in 1:length(sigROInamesNS))
+{
+  name =sigROInamesNS[ii]
+  subset1 = subset(post30.ROI, ROI == name)
+  subset2 = subset(count.peaks, ROI == name)
+  for (iii in 1:length(subset2$ROI))
+  {
+    #subset2$peakPertrial<- subset2$Peaks[iii]/subset1$N    
+    subset2$Trial<- subset1$N[1]   
+  }
+  count.peaks2<- rbind(count.peaks2,subset2)
+}
+
+
+# if no peak of a particular type exists for individual ROI, it becomes zero
+ROI = as.character(unique(count.peaks$ROI))
+count.peaks3 <- data.frame()
+
+for (ii in 1:length(ROI))
+{
+  name = ROI[ii]
+  ROIubset.NS = subset(count.peaks2 , ROI == name & Condition == "Nostim")
+  ROIubset.S = subset(count.peaks2 , ROI == name & Condition == "Stim")
+  # use data from stim if there are no peaks during no stim
+  if ((nrow(ROIubset.NS) ==0)==TRUE)
+  {ROIubset.NS<- head(ROIubset.S,1)
+  ROIubset.NS$Condition ="Nostim"
+  ROIubset.NS$peakType ="NaN"
+  }
+  # fill in zero ROI for each type
+  if ((nrow(ROIubset.NS) ==3)==TRUE)
+  {count.peaks3<- rbind(count.peaks3,ROIubset.NS)
+  } else {
+    # find peakTypes with matches
+    single.NS = grepl("Singlepeak",ROIubset.NS$peakType)
+    multi.NS = grepl("Multipeak",ROIubset.NS$peakType)
+    plateau.NS = grepl("Plateau",ROIubset.NS$peakType)
+    
+    if (nrow(ROIubset.NS[single.NS,])>0)
+    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[single.NS,])
+    } else {
+      zeros <- head(ROIubset.NS,1)
+      zeros$peakType = "Singlepeak"
+      zeros$Peaks = 0
+      zeros$peakPertrial = 0
+      count.peaks3<- rbind(count.peaks3,zeros)  
+    }
+    if (nrow(ROIubset.NS[multi.NS,])>0)
+    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[multi.NS,])
+    } else {
+      zeros <- head(ROIubset.NS,1)
+      zeros$peakType = "Multipeak"
+      zeros$Peaks = 0
+      zeros$peakPertrial = 0
+      count.peaks3<- rbind(count.peaks3,zeros)  
+    }
+    if (nrow(ROIubset.NS[plateau.NS,])>0)
+    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[plateau.NS,])
+    } else {
+      zeros <- head(ROIubset.NS,1)
+      zeros$peakType = "Plateau"
+      zeros$Peaks = 0
+      zeros$peakPertrial = 0
+      count.peaks3<- rbind(count.peaks3,zeros)  
+    }  
+  }
+  
+  if ((nrow(ROIubset.S) ==3)==TRUE)
+  {count.peaks3<- rbind(count.peaks3,ROIubset.S)
+  } else {
+    # find peakTypes with matches
+    single.S = grepl("Singlepeak",ROIubset.S$peakType)
+    multi.S = grepl("Multipeak",ROIubset.S$peakType)
+    plateau.S = grepl("Plateau",ROIubset.S$peakType)
+    
+    if (nrow(ROIubset.S[single.S,])>0)
+    { count.peaks3<- rbind(count.peaks3,ROIubset.S[single.S,])
+    } else {
+      zeros <- head(ROIubset.S,1)
+      zeros$peakType = "Singlepeak"
+      zeros$Peaks = 0
+      zeros$peakPertrial = 0
+      count.peaks3<- rbind(count.peaks3,zeros)  
+    }
+    if (nrow(ROIubset.S[multi.S,])>0)
+    { count.peaks3<- rbind(count.peaks3,ROIubset.S[multi.S,])
+    } else {
+      zeros <- head(ROIubset.S,1)
+      zeros$peakType = "Multipeak"
+      zeros$Peaks = 0
+      zeros$peakPertrial = 0
+      count.peaks3<- rbind(count.peaks3,zeros)  
+    }
+    if (nrow(ROIubset.S[plateau.S,])>0)
+    { count.peaks3<- rbind(count.peaks3,ROIubset.S[plateau.S,])
+    } else {
+      zeros <- head(ROIubset.S,1)
+      zeros$peakType = "Plateau"
+      zeros$Peaks = 0
+      zeros$peakPertrial = 0
+      count.peaks3<- rbind(count.peaks3,zeros)  
+    }  
+  }
+}
+
+
+count.peaks3$peakPertrial<- count.peaks3$Peaks/count.peaks3$Trial 

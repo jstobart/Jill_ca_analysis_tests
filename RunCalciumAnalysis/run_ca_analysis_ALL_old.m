@@ -335,11 +335,10 @@ for iAnimal = 1:numAnimals
                         Trace_data{iROI,5}= CurrentAnimal;
                         Trace_data{iROI,6}= CurrentCondition;
                         Trace_data{iROI,7} = CurrentDepth(1,1);
-                        Trace_data{iROI,8} = CurrentBaseline(1,1);
-                        Trace_data{iROI,9} = traces(:,iROI);
-                        Trace_data{iROI,10} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.centroid{iROI,1};
-                        Trace_data{iROI,11} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
-                        Trace_data{iROI,12} = CSArray_Ch1_FLIKA(1,itrial).rawImg.metadata.pixelSize;
+                        Trace_data{iROI,8} = traces(:,iROI);
+                        Trace_data{iROI,9} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.centroid{iROI,1};
+                        Trace_data{iROI,10} = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
+                        Trace_data{iROI,11} = CSArray_Ch1_FLIKA(1,itrial).rawImg.metadata.pixelSize;
                         
                         % get the indices  and area for a particular ROI
                         ROIpuffIdx = CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.puffIdxs{iROI,1};
@@ -369,9 +368,9 @@ for iAnimal = 1:numAnimals
                         
                         if exist('spatialcorr','var')
                             indx = find(spatialcorr>0);
-                            Trace_data{iROI,13}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{indx};
+                            Trace_data{iROI,12}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{indx};
                         else
-                            Trace_data{iROI,13} = 0;
+                            Trace_data{iROI,12} = 0;
                         end
                         clear spatialcorr
                         

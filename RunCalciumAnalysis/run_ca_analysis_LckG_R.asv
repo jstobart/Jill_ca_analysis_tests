@@ -296,7 +296,7 @@ for iAnimal = 1:numAnimals
                             yclose = round(y_pix*0.03); % 3 percent of pixels
                             
                             if isempty(jx)
-                                temp2.overlap{iPeak,1} = 0;
+                                Trace_data{iROI,12} = 0;
                             else
                                 % find FLIKA ROIs and hand selected ROIS that have
                                 % similar centroids
@@ -305,7 +305,7 @@ for iAnimal = 1:numAnimals
                                 elseif iScan==3;
                                     compScan=4;
                                 end
-                                for kROI= 1:size(CellScans(compScan,1).calcFindROIs.data.roiNames,1)
+                                for kROI= 1:length(CellScans(compScan,1).calcFindROIs.data.roiNames)
                                     % get the centroids of the handclicked ROIs
                                     kx = CellScans(compScan,itrial).calcFindROIs.data.centroidX(kROI,1);
                                     ky = CellScans(compScan,itrial).calcFindROIs.data.centroidY(kROI,1);

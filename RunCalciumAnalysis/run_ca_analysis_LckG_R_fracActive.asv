@@ -2,10 +2,8 @@
 
 % NOTE:::::: RUN FROM THE CHIPS RELEASE!
 
-% with calculate of fraction of active pixels in astrocyte channel
-% export of baseline frame number
-%
-%% 1 lck no stim vs long stim for all mice (independent of genotype)
+
+%% 1 lck no stim
 clearvars
 
 AllData= [];
@@ -17,25 +15,11 @@ Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
 
 Settings.AnimalNames = {
     'ARG2',...
-    'IPRG1',...
-    'IPRG2',...
-    'IPRG3',...
-    'IPRG4',...
-    'RG14',...
-    'RG16',...
-    'RG17',...
-    'RG18',...
+   % 'RG16',...
     };
 Settings.ScoreSheetNames = {
     'ARG2_Scoresheet_AllTrials.xls',...
-    'IPRG1_Scoresheet_AllTrials.xls',...
-    'IPRG2_Scoresheet_AllTrials.xls',...
-    'IPRG3_Scoresheet_AllTrials.xls',...
-    'IPRG4_Scoresheet_AllTrials.xls',...
-    'RG14_Scoresheet_AllTrials.xls',...
-    'RG16_Scoresheet_AllTrials.xls',...
-    'RG17_Scoresheet_AllTrials.xls',...
-    'RG18_Scoresheet_AllTrials.xls',...
+    %'RG16_Scoresheet_test.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim'};
 
@@ -43,12 +27,12 @@ channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 plotMotion =0;
 
 % final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'Peaks_allMice_Lck_nostim_vs_longstim_12_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','Traces_allMice_Lck_nostim_vs_longstim_12_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'fracActive_test_11_2017.csv');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'fracActive_test_11_2017.mat');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','fracActive_test_11_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 %% Load calibration file
-calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
+calibration ='E:\matlab\2p-img-analysis\tests\res\calibration_20x.mat';
 CalFile = CalibrationPixelSize.load(calibration);
 
 
@@ -66,11 +50,11 @@ for iAnimal = 1:numAnimals
     
     % load spectral unmixing matrix of RCaMP and GCaMP
     if Settings.PMTnum(1,1)==2
-        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_2Ch.mat'));
+        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_Ch2.mat'));
     elseif Settings.PMTnum(1,1)==4
-        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_4Ch.mat'));
+        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_Ch4.mat'));
     end
-    
+        
     % Get SpotID
     spots = unique(Settings.SpotIDs);
     
@@ -216,8 +200,8 @@ for iAnimal = 1:numAnimals
             CSArray_Ch2_Hand =CSArray_Ch2_Hand.process();
             CSArray_Ch2_FLIKA =CSArray_Ch2_FLIKA.process();
             
-            %             CSArray_Ch1_FLIKA.plot();
-            %             CSArray_Ch2_FLIKA.plot();
+%             CSArray_Ch1_FLIKA.plot();
+%             CSArray_Ch2_FLIKA.plot();
             
             % CSArray_Ch1_FLIKA.opt_config();
             %% Output data
@@ -225,7 +209,7 @@ for iAnimal = 1:numAnimals
             % make a giant data table
             listFields = {'amplitude', 'fullWidth', 'halfWidth', ...
                 'numPeaks', 'peakTime', 'peakStart', 'peakStartHalf', ...
-                'peakType', 'prominence', 'roiName', 'peakAUC'};
+                'peakType', 'prominence', 'ROIname', 'peakAUC'};
             
             CellScans=vertcat(CSArray_Ch1_FLIKA, CSArray_Ch1_Hand,...
                 CSArray_Ch2_FLIKA, CSArray_Ch2_Hand);
@@ -255,8 +239,6 @@ for iAnimal = 1:numAnimals
                     temp2.overlap = {};
                     temp2.area = {};
                     temp2.pixelsize = {};
-                    temp2.nFluoPix = {};
-                    temp2.nActivePix = {};
                     
                     % extract fields from Class
                     for jField = 1:numel(listFields)
@@ -281,50 +263,50 @@ for iAnimal = 1:numAnimals
                         temp2.Cond{iPeak,1} = CurrentCondition;
                         temp2.depth{iPeak,1} = CurrentDepth(1,1);
                         temp2.pixelsize{iPeak,1} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
-                        temp2.nFluoPix{iPeak,1} = nFluoPix;
-                        temp2.nActivePix{iPeak,1} = nActivePix;
                         
                         % get the indices  and area for a particular ROI
                         if iScan==1 || iScan==3
-                            jROIname = temp.roiName{iPeak};
+                            jROIname = temp.ROIname{iPeak};
                             ROIindex= strcmp(CellScans(iScan,itrial).calcFindROIs.data.roiNames,jROIname);
                             temp2.area{iPeak,1} = CellScans(iScan,itrial).calcFindROIs.data.area(ROIindex);
                             
-                            jx = CellScans(iScan,itrial).calcFindROIs.data.centroidX(ROIindex,1);
-                            jy = CellScans(iScan,itrial).calcFindROIs.data.centroidY(ROIindex,1);
+                            ROIpuffIdx = CellScans(iScan,itrial).calcFindROIs.data.roiIdxs(ROIindex);
+                            x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
+                            [jy,jx,~] = ind2sub([y_pix,x_pix],cell2mat(ROIpuffIdx));
+                            jx = round(mean(jx));
+                            jy = round(mean(jy));
                             xclose = round(x_pix*0.03); % 3 percent of pixels
                             yclose = round(y_pix*0.03); % 3 percent of pixels
                             
-                            if isempty(jx)
-                                temp2.overlap{iPeak,1} = 0;
-                            else
-                                % find FLIKA ROIs and hand selected ROIS that have
-                                % similar centroids
-                                if iScan==1
-                                    compScan=2;
-                                elseif iScan==3;
-                                    compScan=4;
-                                end
-                                for kROI= 1:size(CellScans(compScan,1).calcFindROIs.data.roiNames,1)
-                                    % get the centroids of the handclicked ROIs
-                                    kx = CellScans(compScan,itrial).calcFindROIs.data.centroidX(kROI,1);
-                                    ky = CellScans(compScan,itrial).calcFindROIs.data.centroidY(kROI,1);
-                                    
-                                    % check if they are too close (actually same region)
-                                    if jx<=(kx+xclose) && jx>=(kx-xclose) && jy<=(ky+yclose) && jy>=(ky-yclose) % only %3 of pixels apart
-                                        spatialcorr(kROI)  = 1;
-                                    end
-                                end
-                                
-                                if exist('spatialcorr','var')
-                                    indx = find(spatialcorr>0);
-                                    temp2.overlap{iPeak,1}= CellScans(compScan,1).calcFindROIs.data.roiNames{indx};
-                                else
-                                    temp2.overlap{iPeak,1} = 0;
-                                end
-                                
-                                clear spatialcorr
+                            % find FLIKA ROIs and hand selected ROIS that have
+                            % similar centroids
+                            if iScan==1
+                                compScan=2;
+                            elseif iScan==3;
+                                compScan=4;
                             end
+                            for kROI= 1:length(CellScans(compScan,1).calcFindROIs.data.roiNames)
+                                % get the indices of the handclicked ROIs
+                                ROIMask{kROI}= CellScans(compScan,1).calcFindROIs.data.roiMask(:,:,kROI);
+                                ROI_Idx{kROI} = find(ROIMask{kROI});
+                                % mean pixels for soma ROI
+                                [ky,kx,~] = ind2sub([y_pix,x_pix],ROI_Idx{kROI});
+                                kx = round(mean(kx));
+                                ky = round(mean(ky));
+                                
+                                % check if they are too close (actually same region)
+                                if jx<=(kx+xclose) && jx>=(kx-xclose) && jy<=(ky+yclose) && jy>=(ky-yclose) % only %3 of pixels apart
+                                    spatialcorr(kROI)  = 1;
+                                end
+                            end
+                            
+                            if exist('spatialcorr','var')
+                                indx = find(spatialcorr>0);
+                                temp2.overlap{iPeak,1}= CellScans(compScan,1).calcFindROIs.data.roiNames{indx};
+                            else
+                                temp2.overlap{iPeak,1} = 0;
+                            end
+                            clear spatialcorr
                         else
                             temp2.area{iPeak,1} = 0;
                             temp2.overlap{iPeak,1} = 0;
@@ -332,9 +314,6 @@ for iAnimal = 1:numAnimals
                         
                     end
                     
-                    
-                    
-                    %%
                     isFirst = (itrial == 1 && iScan == 1);
                     if isFirst
                         data.Trial = {};
@@ -358,8 +337,8 @@ for iAnimal = 1:numAnimals
                     data.area= [data.area; temp2.area];
                     data.overlap= [data.overlap; temp2.overlap];
                     data.pixelsize= [data.pixelsize; temp2.pixelsize];
-                    data.nFluoPix = [data.nFluoPix; temp2.nFluoPix];
-                    data.nActivePix = [data.nActivePix; temp2.nActivePix];
+                    data.nFluoPix = [data.nFluoPix; nFluoPix];
+                    data.nActivePix = [data.nActivePix; nActivePix];
                     
                     clearvars temp temp2
                     
@@ -387,58 +366,62 @@ for iAnimal = 1:numAnimals
                             Trace_data{iROI,5}= CurrentAnimal;
                             Trace_data{iROI,6}= CurrentCondition;
                             Trace_data{iROI,7} = CurrentDepth(1,1);
-                            Trace_data{iROI,8} = CurrentBaseline(1,1);
-                            Trace_data{iROI,9} = traces(:,iROI);
+                            Trace_data{iROI,8} = traces(:,iROI);
                             if iScan==1 || iScan==3
-                                Trace_data{iROI,10} = CellScans(iScan,itrial).calcFindROIs.data.roiIdxs{iROI,1};
+                                Trace_data{iROI,9} = CellScans(iScan,itrial).calcFindROIs.data.centroid{iROI,1};
+                                Trace_data{iROI,10} = CellScans(iScan,itrial).calcFindROIs.data.puffIdxs{iROI,1};
                                 Trace_data{iROI,11} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
                             else
                                 
+                                
+                                Trace_data{iROI,9} = 0;
                                 Trace_data{iROI,10} = CellScans(iScan,itrial).calcFindROIs.data.roiMask(:,:,iROI);
                                 Trace_data{iROI,11} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
                             end
                             
                             % get the indices  and area for a particular ROI
                             if iScan==1 || iScan==3
-                                jx = CellScans(iScan,itrial).calcFindROIs.data.centroidX(iROI,1);
-                                jy = CellScans(iScan,itrial).calcFindROIs.data.centroidY(iROI,1);
+                                ROIpuffIdx = CellScans(iScan,itrial).calcFindROIs.data.roiIdxs{iROI,1};
+                                x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
+                                [jy,jx,~] = ind2sub([y_pix,x_pix],cell2mat(ROIpuffIdx));
+                                jx = round(mean(jx));
+                                jy = round(mean(jy));
                                 xclose = round(x_pix*0.03); % 3 percent of pixels
                                 yclose = round(y_pix*0.03); % 3 percent of pixels
                                 
-                                if isempty(jx)
-                                    Trace_data{iROI,12} = 0;
-                                else
-                                    % find FLIKA ROIs and hand selected ROIS that have
-                                    % similar centroids
-                                    if iScan==1
-                                        compScan=2;
-                                    elseif iScan==3;
-                                        compScan=4;
-                                    end
-                                    for kROI= 1:length(CellScans(compScan,1).calcFindROIs.data.roiNames)
-                                        % get the centroids of the handclicked ROIs
-                                        kx = CellScans(compScan,itrial).calcFindROIs.data.centroidX(kROI,1);
-                                        ky = CellScans(compScan,itrial).calcFindROIs.data.centroidY(kROI,1);
-                                        
-                                        % check if they are too close (actually same region)
-                                        if jx<=(kx+xclose) && jx>=(kx-xclose) && jy<=(ky+yclose) && jy>=(ky-yclose) % only %3 of pixels apart
-                                            spatialcorr(kROI)  = 1;
-                                        end
-                                    end
-                                    
-                                    
-                                    if exist('spatialcorr','var')
-                                        indx = find(spatialcorr>0);
-                                        Trace_data{iROI,12}= CellScans(compScan,1).calcFindROIs.data.roiNames{indx};
-                                    else
-                                        Trace_data{iROI,12} = 0;
-                                    end
-                                    clear spatialcorr
+                                % find FLIKA ROIs and hand selected ROIS that have
+                                % similar borders
+                                if iScan==1
+                                    compScan=2;
+                                elseif iScan==3;
+                                    compScan=4;
                                 end
+                                for kROI= 1:length(CellScans(compScan,1).calcFindROIs.data.roiNames)
+                                    % get the indices of the handclicked ROIs
+                                    ROIMask{kROI}= CellScans(compScan,1).calcFindROIs.data.roiMask(:,:,kROI);
+                                    ROI_Idx{kROI} = find(ROIMask{kROI});
+                                    % mean pixels for soma ROI
+                                    [ky,kx,~] = ind2sub([y_pix,x_pix],ROI_Idx{kROI});
+                                    kx = round(mean(kx));
+                                    ky = round(mean(ky));
+                                    
+                                    % check if they are too close (actually same region)
+                                    if jx<=(kx+xclose) && jx>=(kx-xclose) && jy<=(ky+yclose) && jy>=(ky-yclose) % only %3 of pixels apart
+                                        spatialcorr(kROI)  = 1;
+                                    end
+                                end
+                                
+                                if exist('spatialcorr','var')
+                                    indx = find(spatialcorr>0);
+                                    Trace_data{iROI,12}= CellScans(compScan,1).calcFindROIs.data.roiNames{indx};
+                                else
+                                    Trace_data{iROI,12} = 0;
+                                end
+                                clear spatialcorr
                             else
                                 Trace_data{iROI,12} = 0;
                             end
-                            Trace_data{iROI,13} = CellScans(1, 1).rawImg.metadata.frameRate; % frameRate
+                            
                         end
                         
                         
@@ -450,6 +433,9 @@ for iAnimal = 1:numAnimals
             end
             
             
+            All_traces=vertcat(All_traces, Trace_data);
+            clearvars Trace_data
+            
             dataNames=fieldnames(data);
             data2= struct2cell(data);
             data3= [data2{:}];
@@ -457,7 +443,7 @@ for iAnimal = 1:numAnimals
             AllData=vertcat(AllData, data3);
             
             
-            clearvars data data3
+            clearvars data data3 temp temp2
         end
     end
 end
