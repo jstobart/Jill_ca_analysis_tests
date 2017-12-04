@@ -305,6 +305,7 @@ for iAnimal = 1:numAnimals
                                 elseif iScan==3;
                                     compScan=4;
                                 end
+                                
                                 for kROI= 1:size(CellScans(compScan,1).calcFindROIs.data.roiNames,1)
                                     % get the centroids of the handclicked ROIs
                                     kx = CellScans(compScan,itrial).calcFindROIs.data.centroidX(kROI,1);
