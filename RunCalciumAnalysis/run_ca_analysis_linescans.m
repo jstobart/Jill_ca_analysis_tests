@@ -32,7 +32,8 @@ Settings.NameConditions = {'Nostim','Stim'};
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 
 % final data file name
-SaveFiles{1,1}= fullfile(Settings.MainDir, 'Results','Traces_allMice_Lck_nostim_vs_longstim_12_2017.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,1}= fullfile(Settings.MainDir, 'Results','LinescanTraces_allMice_Lck_nostim_vs_longstim_12_2017.mat'); 
+SaveFiles{1,2}= fullfile(Settings.MainDir, 'Results','LinescanOnsets_allMice_Lck_nostim_vs_longstim_12_2017.mat'); 
 
 %% Load calibration file
 calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
@@ -148,17 +149,19 @@ for iAnimal = 1:numAnimals
                             Trace_data{iROI,11} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
                             
                             % line rate- time for one line scan
-                            lineTime=CellScans(1,1).rawImg.metadata.lineTime;
+                            lineTime=(CellScans(1,1).rawImg.metadata.lineTime)/1000;  % time in s
                             Trace_data{iROI,12} = lineTime; %lineRate
                             nLines=length(traces(:,iROI));
                             TimeX(1:nLines) = (1:nLines)*lineTime;
                             
                             % Calculate the first peak onset time and AUC after stim
-                            
-                            baselineCorrectedTime=TimeX-BL_frames;
+                            BL_time=round(BL_frames/CellScans(1,1).rawImg.metadata.frameRate);  % number of s for baseline
+                            nBL_lines=BL_time/lineTime; % number of lines in baseline time
+                            stimStart=TimeX(1,round(nBL_lines));  % exact time of stimulus start
+                            baselineCorrectedTime=TimeX-stimStart;  
                             
                             % onset time
-                            Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:end),2.5,5);
+                            Onsets=find_first_onset_time(baselineCorrectedTime(10:end), traces(10:end,iROI),2.5,5);
                             if isempty(Onsets)
                                 Onsets=nan(1,1);
                             end
@@ -179,14 +182,17 @@ end
 
 
 % table for importing into R
-    names={'ROI','Trial','Channel','Spot','Animal', 'Condition','depth','baseline',...
-        'traces','ROIIdx','PixelSize','lineTime','OnsetTime'};
-    All_traces=vertcat(names, All_traces);
+names={'ROI','Trial','Channel','Spot','Animal', 'Condition','depth','baseline',...
+    'traces','ROIIdx','PixelSize','lineTime','OnsetTime'};
+All_traces2=vertcat(names, All_traces);
+All_traces2(:,9)=[];
+All_traces2(:,9)=[];
 
 % %% Save traces table
 cd(fullfile(Settings.MainDir, 'Results'));
 % write date to created file
 save(SaveFiles{1,1}, 'All_traces','-v7.3');
+cell2csv(SaveFiles{1,2},All_traces2);
 
 
 
