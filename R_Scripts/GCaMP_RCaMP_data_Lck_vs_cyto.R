@@ -38,9 +38,15 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-long.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+
+
+######
+#OLD DATA
+#long.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#nostim.lck <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
 long.cyto<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
 short.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
@@ -52,12 +58,12 @@ nostim.cyto <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Resu
 #shortstim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 #nostim.OT.comp <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_firstonset_comparisons.csv", header=TRUE, sep = ",")
 
-longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_longstim_onset&AUC.csv", header=TRUE, sep = ",")
-shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-nostim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_nostim_onset&AUC.csv", header=TRUE, sep = ",")
+#longstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_longstim_onset&AUC.csv", header=TRUE, sep = ",")
+#shortstim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+#nostim.lck.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_nostim_onset&AUC.csv", header=TRUE, sep = ",")
 
-longstim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_longstim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
-nostim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/Lck_nostim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
+longstim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/First_Neuron_Submission/Lck_longstim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
+nostim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/First_Neuron_Submission/Lck_nostim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
 longstim.cyto.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
 nostim.cyto.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
 
@@ -67,36 +73,40 @@ nostim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/R
 
 ##### 
 #home files
-long.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+#long.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#nostim.lck <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LckGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
-long.cyto<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
-short.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
-nostim.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
+#long.cyto<- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_longstim_28_04_2017.csv", header=TRUE, sep = ",")
+#short.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_shortstim_28_04_2017.csv", header=TRUE, sep = ",")
+#nostim.cyto <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cytoGC&RC_2D_nostim_28_04_2017.csv", header=TRUE, sep = ",")
 
 
-longstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
-shortstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-nostim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
+#longstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/longstim_onset&AUC.csv", header=TRUE, sep = ",")
+#shortstim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+#nostim.lck.OT <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/nostim_onset&AUC.csv", header=TRUE, sep = ",")
 
-longstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
-shortstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
-nostim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
+#longstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_longstim_onset&AUC.csv", header=TRUE, sep = ",")
+#shortstim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_shortstim_onset&AUC.csv", header=TRUE, sep = ",")
+#nostim.cyto.OT <- read.table("D:/Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/cyto_nostim_firstonset&AUC.csv", header=TRUE, sep = ",")
 
 
 ##########
 
 lsm.options(pbkrtest.limit = 100000)
 
-all.lck.peaks<-rbind(nostim.lck,long.lck,short.lck)
-all.lck.OT<-rbind(nostim.lck.OT,longstim.lck.OT,shortstim.lck.OT)
-all.lck.OT.2s<-rbind(nostim.lck.OT.2s,longstim.lck.OT.2s)
+#all.lck.peaks<-rbind(nostim.lck,long.lck,short.lck)
+#all.lck.OT<-rbind(nostim.lck.OT,longstim.lck.OT,shortstim.lck.OT)
+#all.lck.OT.2s<-rbind(nostim.lck.OT.2s,longstim.lck.OT.2s)
 
 
 # remove the data frames that are combined
-rm(nostim.lck, long.lck, short.lck, nostim.lck.OT, longstim.lck.OT, shortstim.lck.OT, nostim.lck.OT.2s, longstim.lck.OT.2s)
+#rm(nostim.lck, long.lck, short.lck, nostim.lck.OT, longstim.lck.OT, shortstim.lck.OT, nostim.lck.OT.2s, longstim.lck.OT.2s)
 
+
+# only consider wildtype mice, remove IP3R2KO
+all.lck.peaks<-all.lck.peaks[!(grepl("IP",all.lck.peaks$Animal)),]
+all.lck.OT<-all.lck.OT[!(grepl("IP",all.lck.OT$Animal)),]
 
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
@@ -124,18 +134,17 @@ all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
 all.lck.peaksB<- subset(all.lck.peaks, Channel=="RCaMP")
 
 # ROITypes
-all.lck.peaksA$ROIType[grepl("r",all.lck.peaksA$ROIname)]="Process"
-all.lck.peaksA$ROIType[grepl("E",all.lck.peaksA$ROIname)]="Endfoot"
-all.lck.peaksB$ROIType[grepl("r",all.lck.peaksB$ROIname)]="Dendrite"
-all.lck.peaksB$ROIType[grepl("D",all.lck.peaksB$ROIname)]="Dendrite"
-all.lck.peaksB$ROIType[grepl("N",all.lck.peaksB$ROIname)]="Neuron"
+all.lck.peaksA$ROIType[grepl("r",all.lck.peaksA$roiName)]="Process"
+all.lck.peaksA$ROIType[grepl("E",all.lck.peaksA$roiName)]="Endfoot"
+all.lck.peaksB$ROIType[grepl("r",all.lck.peaksB$roiName)]="Dendrite"
+all.lck.peaksB$ROIType[grepl("D",all.lck.peaksB$roiName)]="Dendrite"
+all.lck.peaksB$ROIType[grepl("N",all.lck.peaksB$roiName)]="Neuron"
 
 all.lck.peaks<-rbind(all.lck.peaksA, all.lck.peaksB)
-rm(all.lck.peaksA, all.lck.peaksB)
 all.lck.peaks$ROIType<- as.factor(all.lck.peaks$ROIType)
 
 #unique ROI names
-all.lck.peaks$ROIs_trial<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, all.lck.peaks$Trial,all.lck.peaks$ROIname, sep= "_")
+all.lck.peaks$ROIs_trial<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, all.lck.peaks$Trial,all.lck.peaks$roiName, sep= "_")
 all.lck.peaks$trials<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, all.lck.peaks$Trial, sep= "_")
 all.lck.peaks$trials_Cond<-paste(all.lck.peaks$trials, all.lck.peaks$Condition, sep= "_")
 
@@ -147,20 +156,25 @@ Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Spot","Condition"), summarise
 
 
 # remove ROIs with no peaks
-all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="none"),]
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$peakType=="NoPeak"),]
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIname=="np"),]
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$roiName=="np"),]
 
 # remove matching astrocyte process and soma ROIs
 Overlap= all.lck.peaks$overlap!=0
 all.lck.peaks<-all.lck.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
+
+#add baseline time to peaks table
+all.lck.OT$BL_time<-all.lck.OT$baseline/all.lck.OT$FrameRate
+all.lck.peaks<-merge(all.lck.peaks, all.lck.OT[, c("ROIs_Cond", "BL_time")], by="ROIs_Cond", all.x=TRUE)
+
 # adjust peak time and duration
-all.lck.peaks$peakTime<- all.lck.peaks$peakTime-5
-all.lck.peaks$peakStart<- all.lck.peaks$peakStart-5
-all.lck.peaks$peakStartHalf<- all.lck.peaks$peakStartHalf-5
+all.lck.peaks$peakTime<- all.lck.peaks$peakTime-all.lck.peaks$BL_time
+all.lck.peaks$peakStart<- all.lck.peaks$peakStart-all.lck.peaks$BL_time
+all.lck.peaks$peakStartHalf<- all.lck.peaks$peakStartHalf-all.lck.peaks$BL_time
 all.lck.peaks$Duration<- all.lck.peaks$halfWidth*2
 
 
@@ -175,7 +189,7 @@ all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascend
 all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
 
 
-
+rm(all.lck.peaks2,all.lck.peaks3, all.lck.peaksA, all.lck.peaksB)
 
 
 # neuronal responses to stimulation
@@ -233,8 +247,8 @@ all.cyto.OT.2s$OnsetTimeAdjust<-all.cyto.OT.2s$OnsetTime-2
 
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$ROIname=="np"),]
-all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$ROIname=="none"),]
+all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$ROIName=="np"),]
+all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$peakType=="NoPeak"),]
 
 # no stim peak data
 all.cyto.peaks$ROIType= 0
@@ -242,18 +256,18 @@ all.cyto.peaksA<- subset(all.cyto.peaks, Channel=="GCaMP")
 all.cyto.peaksB<- subset(all.cyto.peaks, Channel=="RCaMP")
 
 # ROITypes
-all.cyto.peaksA$ROIType[grepl("r",all.cyto.peaksA$ROIname)]="Process"
-all.cyto.peaksA$ROIType[grepl("E",all.cyto.peaksA$ROIname)]="Endfoot"
-all.cyto.peaksA$ROIType[grepl("S",all.cyto.peaksA$ROIname)]="Soma"
-all.cyto.peaksB$ROIType[grepl("r",all.cyto.peaksB$ROIname)]="Dendrite"
-all.cyto.peaksB$ROIType[grepl("D",all.cyto.peaksB$ROIname)]="Dendrite"
-all.cyto.peaksB$ROIType[grepl("N",all.cyto.peaksB$ROIname)]="Neuron"
+all.cyto.peaksA$ROIType[grepl("r",all.cyto.peaksA$ROIName)]="Process"
+all.cyto.peaksA$ROIType[grepl("E",all.cyto.peaksA$ROIName)]="Endfoot"
+all.cyto.peaksA$ROIType[grepl("S",all.cyto.peaksA$ROIName)]="Soma"
+all.cyto.peaksB$ROIType[grepl("r",all.cyto.peaksB$ROIName)]="Dendrite"
+all.cyto.peaksB$ROIType[grepl("D",all.cyto.peaksB$ROIName)]="Dendrite"
+all.cyto.peaksB$ROIType[grepl("N",all.cyto.peaksB$ROIName)]="Neuron"
 
 all.cyto.peaks<-rbind(all.cyto.peaksA, all.cyto.peaksB)
 all.cyto.peaks$ROIType<- as.factor(all.cyto.peaks$ROIType)
 
 #unique ROI names
-all.cyto.peaks$ROIs_trial<-paste(all.cyto.peaks$Animal, all.cyto.peaks$Spot, all.cyto.peaks$Trial,all.cyto.peaks$ROIname, sep= "_")
+all.cyto.peaks$ROIs_trial<-paste(all.cyto.peaks$Animal, all.cyto.peaks$Spot, all.cyto.peaks$Trial,all.cyto.peaks$roiName, sep= "_")
 all.cyto.peaks$trials<-paste(all.cyto.peaks$Animal, all.cyto.peaks$Spot, all.cyto.peaks$Trial, sep= "_")
 all.cyto.peaks$trials_Cond<-paste(all.cyto.peaks$trials, all.cyto.peaks$Condition, sep= "_")
 all.cyto.peaks$ROIs_Cond<-paste(all.cyto.peaks$ROIs_trial, all.cyto.peaks$Condition, sep= "_")
@@ -268,10 +282,14 @@ Overlap= all.cyto.peaks$overlap!=0
 all.cyto.peaks<-all.cyto.peaks[!Overlap,]
 #OverlapROIs<-unique(nostim$ROIs_trial[Overlap])
 
+
+
 # adjust peak time and duration
-all.cyto.peaks$peakTime<- all.cyto.peaks$peakTime-5
-all.cyto.peaks$peakStart<- all.cyto.peaks$peakStart-5
-all.cyto.peaks$peakStartHalf<- all.cyto.peaks$peakStartHalf-5
+# FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+all.cyto.peaks$peakTime<- all.cyto.peaks$peakTime-all.cyto.peaks$BL_time
+all.cyto.peaks$peakStart<- all.cyto.peaks$peakStart-all.cyto.peaks$BL_time
+all.cyto.peaks$peakStartHalf<- all.cyto.peaks$peakStartHalf-all.cyto.peaks$BL_time
 all.cyto.peaks$Duration<- all.cyto.peaks$halfWidth*2
 
 
@@ -284,7 +302,7 @@ all.cyto.peaks3<-all.cyto.peaks2[order(all.cyto.peaks2$peakTime),] # sort by asc
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.cyto.peaks<-distinct(all.cyto.peaks3, ROIs_Cond,.keep_all = TRUE)
 
-
+rm(all.cyto.peaks2,all.cyto.peaks3, all.cyto.peaksA, all.cyto.peaksB)
 
 
 
@@ -348,8 +366,8 @@ short.lck.OT.window<-rbind(short.lck.OT.R, short.lck.OT.G)
 
 #cyto
 stim.cyto.OT<-subset(all.cyto.OT,Condition!="shortstim")
-stim.cyto.OT.R<-subset(stim.cyto.OT, Channel=="RCaMP" & OnsetTime<=LongN_OTwind)
-stim.cyto.OT.G<-subset(stim.cyto.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind)
+stim.cyto.OT.R<-subset(stim.cyto.OT, Channel=="RCaMP" & OnsetTime<=LongN_OTwind2)
+stim.cyto.OT.G<-subset(stim.cyto.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind2)
 
 stim.cyto.OT.window<-rbind(stim.cyto.OT.R, stim.cyto.OT.G)
 
@@ -364,7 +382,7 @@ short.cyto.OT.window<-rbind(short.cyto.OT.R, short.cyto.OT.G)
 # lck
 stim.lck.PT<-subset(all.lck.peaks,Condition!="shortstim")
 
-stim.lck.PT.window<-subset(stim.lck.OT, peakTime<=Long_PTwind & peakTime>=0 & Duration<45)
+stim.lck.PT.window<-subset(stim.lck.PT, peakTime<=Long_PTwind & peakTime>=0 & Duration<45)
 
 stim.lck.PT.R<-subset(stim.lck.PT, Channel=="RCaMP" & peakTime<=LongN_PTwind2 & peakTime>=0 & Duration<45)
 stim.lck.PT.G<-subset(stim.lck.PT, Channel=="GCaMP" & peakTime<=LongAC_PTwind2 & peakTime>=0 & Duration<45)
@@ -939,7 +957,7 @@ pT.cyto.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
 print(pT.cyto.RC.NSvsS.adtest)
 
 ###########################################
-# combine cyto and cyto data sets for onset times
+# combine lck and cyto data sets for onset times
 stim.lck.OT.window$sensor<- "lck"
 stim.cyto.OT.window$sensor<-"cyto"
 stim.lck.OT.window$Channel<-paste(stim.lck.OT.window$sensor, stim.lck.OT.window$Channel, sep="_")
@@ -1229,8 +1247,10 @@ summary(nROI.both.stim.Cond_Channel)
 #######
 # peak times only for ROIs with onset times?
 
-stim.both.alldata<-merge(stim.both.peaks.window, stim.both.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
+#stim.both.alldata<-merge(stim.both.peaks.window, stim.both.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
+stim.lck.alldata<-merge(stim.lck.peaks.window2, stim.lck.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
 
+stim.both.peaks.window<-rbind(
 
 # onset times
 ggplot(stim.both.alldata, aes(x=Channel,y=OnsetTime, fill= Condition)) +
@@ -2950,16 +2970,16 @@ summary(amp.cyto.Condition_type)
 #mean peak amplitude for each ROI with peaks from the stim window
 # use this to calculate high, mid and low responding neuronal somas
 
-ROIwise<- ddply(all.lck.peaks, c("Animal", "Spot","Trial","Channel","ROIname","Condition","trials", "ROIs_trial" ,"ROIType"), 
+ROIwise<- ddply(all.lck.peaks, c("Animal", "Spot","Trial","Channel","roiName","Condition","trials", "ROIs_trial" ,"ROIType"), 
                 summarise, meanAmp=mean(amplitude), meanDur= mean(Duration), meanProm=mean(prominence),
                 meanPAUC=mean(peakAUC), nPeaks= length(amplitude))
 
-ROIwise$ROInameUnique<-paste(ROIwise$Animal,ROIwise$Spot,ROIwise$ROIname, sep="_")
+ROIwise$roiNameUnique<-paste(ROIwise$Animal,ROIwise$Spot,ROIwise$roiName, sep="_")
 ROIwise.Neurons<-subset(ROIwise, Condition!="Nostim" & ROIType=="Neuron")
 ROIwise.Dendrites<-subset(ROIwise, Condition!="Nostim" & ROIType=="Dendrite")
 
 # MEAN info for each ROI for trials of short OR long stim
-NeuronSomas<-ddply(ROIwise.Neurons, c("Animal", "Spot", "ROInameUnique"),
+NeuronSomas<-ddply(ROIwise.Neurons, c("Animal", "Spot", "roiNameUnique"),
                    summarise, meanAmp2=mean(meanAmp), meanProm2=mean(meanProm),
                    meanDur2=mean(meanDur), meanPAUC2=mean(meanPAUC))
 NeuronDendrites<-ROIwise.Dendrites
@@ -3011,22 +3031,22 @@ for (ii in 1:nrow(NeuronDendrites))
   }
 }
 
-all.lck.peaks.group$ROInameUnique<-paste(all.lck.peaks.group$Animal,all.lck.peaks.group$Spot,all.lck.peaks.group$ROIname, sep="_")
+all.lck.peaks.group$roiNameUnique<-paste(all.lck.peaks.group$Animal,all.lck.peaks.group$Spot,all.lck.peaks.group$roiName, sep="_")
 #GCaMP_RCaMP.groups$Nresponders=0
 for (ii in 1:nrow(NeuronSomas))
 {
-  Soma=NeuronSomas$ROInameUnique[ii]
+  Soma=NeuronSomas$roiNameUnique[ii]
   RespType=NeuronSomas$responders[ii]
-  subset1=subset(all.lck.peaks.group, ROInameUnique==Soma)
+  subset1=subset(all.lck.peaks.group, roiNameUnique==Soma)
   if (nrow(subset1)>0)
   {
     subset1$Nresponders=RespType
-    subset1$ROInameUnique=NULL
+    subset1$roiNameUnique=NULL
     all.lck.peaks.Nresp<-rbind(all.lck.peaks.Nresp, subset1)
   }
 }
 
-all.lck.peaks.group$ROInameUnique=NULL
+all.lck.peaks.group$roiNameUnique=NULL
 all.lck.peaks.Nresp<-rbind(all.lck.peaks.Nresp, all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",])
 
 ###### 
@@ -3257,7 +3277,7 @@ Spot.TotalROIs<- ddply(all.lck.peaks[all.lck.peaks$Condition=="Stim",], c("trial
 
 
 
-noPeaks.stim<-subset(all.lck.peaks, ROIname=="none" & Condition=="Stim")
+noPeaks.stim<-subset(all.lck.peaks, roiName=="none" & Condition=="Stim")
 
 Spot.noPeaks<- ddply(noPeaks.stim, c("trials_Cond", "Channel"), summarise, nROIs=0)
 
@@ -3276,11 +3296,11 @@ count.peaks$peakPertrial <-0
 #Nostim
 #NS.peaks <- subset(count.peaks,Condition=="Nostim")
 #NS.ROI.p30 <- subset(post30.ROI,Condition=="Nostim")
-sigROInamesNS <-as.character(unique(post30.ROI$ROI))
+sigroiNamesNS <-as.character(unique(post30.ROI$ROI))
 count.peaks2 <-data.frame()
-for (ii in 1:length(sigROInamesNS))
+for (ii in 1:length(sigroiNamesNS))
 {
-  name =sigROInamesNS[ii]
+  name =sigroiNamesNS[ii]
   subset1 = subset(post30.ROI, ROI == name)
   subset2 = subset(count.peaks, ROI == name)
   for (iii in 1:length(subset2$ROI))

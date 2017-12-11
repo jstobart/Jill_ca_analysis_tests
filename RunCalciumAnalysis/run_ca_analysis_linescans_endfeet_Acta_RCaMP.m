@@ -2,9 +2,9 @@
 
 % NOTE:::::: RUN FROM THE 1D branch!
 
-% finds ROIs and outputs traces from linescans
+
 %
-%% 1 lck no stim vs long stim for all mice (independent of genotype)
+%% hand selected ROIs for vessel R-CaMP vs FLIKA GCaMP ROIs from endfeet
 clearvars
 
 All_traces= [];
@@ -15,17 +15,9 @@ Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
 
 Settings.AnimalNames = {
     'ARG2',...
-    'IPRG1',...
-    'IPRG2',...
-    'IPRG3',...
-    'IPRG4',...
     };
 Settings.ScoreSheetNames = {
-    'ARG2_Scoresheet_LineScans.xls',...
-    'IPRG1_Scoresheet_LineScans.xls',...
-    'IPRG2_Scoresheet_LineScans.xls',...
-    'IPRG3_Scoresheet_LineScans.xls',...
-    'IPRG4_Scoresheet_LineScans.xls',...
+    'ARG2_Scoresheet_ActaRCaMP.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim'};
 Settings.IP3R2KO = {'IPRG1','IPRG4'};
@@ -34,8 +26,8 @@ Settings.IP3R2WT = {'IPRG2','IPRG3'};
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 
 % final data file name
-SaveFiles{1,1}= fullfile(Settings.MainDir, 'Results','FilesforMatlab','LinescanTraces_allMice_Lck_nostim_vs_longstim_12_2017.mat');
-SaveFiles{1,2}= fullfile(Settings.MainDir, 'Results','FilesforR','LinescanOnsets_allMice_Lck_nostim_vs_longstim_12_2017.csv');
+SaveFiles{1,1}= fullfile(Settings.MainDir, 'Results','FilesforMatlab','LinescanTraces_ActaRCaMP_vs_LckGCaMP_12_2017.mat');
+SaveFiles{1,2}= fullfile(Settings.MainDir, 'Results','FilesforR','LinescanOnsets_ActaRCaMP_vs_LckGCaMP_12_2017.csv');
 
 %% Load calibration file
 calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
@@ -119,8 +111,14 @@ for iAnimal = 1:numAnimals
                 CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
                 CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
                 
-                % NEURONS
+                % ActaRCaMP (vessels) from hand clicked ROIs
                 load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_RC.mat
+                
+                % load hand selected vessel ROIs
+                x_pix= ImgArray(1,1).metadata.nLinesPerFrameOrig; 
+                y_pix= ImgArray(1,1).metadata.nPixelsPerLineOrig;
+                confObj.configFindROIs = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'Vessel.zip'), x_pix, y_pix,1);
+                
                 CSArray_Ch2_FLIKA = CellScan(fnList, ImgArray, confObj, 2);
                 CSArray_Ch2_FLIKA =CSArray_Ch2_FLIKA.process();
                 
