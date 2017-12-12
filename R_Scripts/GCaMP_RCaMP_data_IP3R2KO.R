@@ -1,10 +1,9 @@
 library("lme4")
 library("lmerTest")
-#library("lattice")
+library("lattice")
 library("plyr")
 library("dplyr")
 library("ggplot2")
-#library("gplots")
 library("lsmeans")
 library("Rmisc")
 #library("MASS")
@@ -14,6 +13,15 @@ library("tidyr")
 #library("data.table")
 library("Hmisc")
 library("stringr")
+
+#################
+# TO DO:
+# onset time distribution
+#fract active pixels
+#onset times, peak times of fast vs. delayed
+
+#amp, duration RC and GC
+
 
 ########################
 
@@ -225,10 +233,10 @@ ggplot(stim.lck.alldata, aes(x=interaction(Channel, Genotype),y=peakTime, fill= 
 
 # identify "FAST" astrocytes
 stim.lck.alldata$Group<-0
-stim.lck.alldata$Group[stim.lck.alldata$OnsetTime<1]<-"fast"
-stim.lck.alldata$Group[stim.lck.alldata$OnsetTime>=1]<-"delayed"
+stim.lck.alldata$Group[stim.lck.alldata$OnsetTime<1]<-"fast_MDs"
+stim.lck.alldata$Group[stim.lck.alldata$OnsetTime>=1]<-"delayed_MDs"
 
-stim.lck.alldata$Group <- factor(stim.lck.alldata$Group, levels = c("fast","delayed"))
+stim.lck.alldata$Group <- factor(stim.lck.alldata$Group, levels = c("fast_MDs","delayed_MDs"))
 #stim.both.alldata$Channel <- factor(stim.both.alldata$Channel, levels = c("cyto_RCaMP","cyto_GCaMP","lck_RCaMP","lck_GCaMP"))
 
 
@@ -236,7 +244,7 @@ stim.lck.alldata$Group <- factor(stim.lck.alldata$Group, levels = c("fast","dela
 stim.lck.alldata$Channel_Group<-interaction(stim.lck.alldata$Channel, stim.lck.alldata$Group)
 stim.lck.alldata$Channel_Group<-as.factor(stim.lck.alldata$Channel_Group)
 
-stim.lck.compdata<-stim.lck.alldata[!(stim.lck.alldata$Channel=="RCaMP"& stim.lck.alldata$Group=="delayed"),]
+stim.lck.compdata<-stim.lck.alldata[!(stim.lck.alldata$Channel=="RCaMP"& stim.lck.alldata$Group=="delayed_MDs"),]
 
 # take out the effect of Condition
 # we are only interested in stim case
@@ -253,12 +261,12 @@ RCaMP.KO<-subset(stim.lck.alldata,Channel=="RCaMP" & Genotype=="IP3R2_KO" & Cond
 RCaMP.WT<-subset(stim.lck.alldata,Channel=="RCaMP" & Genotype=="IP3R2_WT" & Condition=="Stim")
 
 allROIs.KO<-length(unique(GCaMP.KO$ROIs_trial))
-fastROIs.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="fast"]))
-delayedROIs.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="delayed"]))
+fastROIs.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="fast_MDs"]))
+delayedROIs.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="delayed_MDs"]))
 
 allROIs.WT<-length(unique(GCaMP.WT$ROIs_trial))
-fastROIs.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="fast"]))
-delayedROIs.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="delayed"]))
+fastROIs.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="fast_MDs"]))
+delayedROIs.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="delayed_MDs"]))
 
 #proportion
 propfast.KO=fastROIs.KO/allROIs.KO
@@ -270,12 +278,12 @@ propdelayed.WT=delayedROIs.WT/allROIs.WT
 
 #ef vs proc  wildtypes
 allROIs.ef.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$ROIType=="Endfoot"]))
-fastROIs.ef.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="fast"&GCaMP.WT$ROIType=="Endfoot"]))
-delayedROIs.ef.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="delayed"&GCaMP.WT$ROIType=="Endfoot"]))
+fastROIs.ef.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="fast_MDs"&GCaMP.WT$ROIType=="Endfoot"]))
+delayedROIs.ef.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="delayed_MDs"&GCaMP.WT$ROIType=="Endfoot"]))
 
 allROIs.proc.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$ROIType=="Process"]))
-fastROIs.proc.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="fast"&GCaMP.WT$ROIType=="Process"]))
-delayedROIs.proc.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="delayed"&GCaMP.WT$ROIType=="Process"]))
+fastROIs.proc.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="fast_MDs"&GCaMP.WT$ROIType=="Process"]))
+delayedROIs.proc.WT<-length(unique(GCaMP.WT$ROIs_trial[GCaMP.WT$Group=="delayed_MDs"&GCaMP.WT$ROIType=="Process"]))
 
 
 propfast.ef.WT=fastROIs.ef.WT/allROIs.ef.WT
@@ -286,12 +294,12 @@ propdelayed.proc.WT=delayedROIs.proc.WT/allROIs.proc.WT
 
 #ef vs proc knockouts
 allROIs.ef.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$ROIType=="Endfoot"]))
-fastROIs.ef.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="fast"&GCaMP.KO$ROIType=="Endfoot"]))
-delayedROIs.ef.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="delayed"&GCaMP.KO$ROIType=="Endfoot"]))
+fastROIs.ef.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="fast_MDs"&GCaMP.KO$ROIType=="Endfoot"]))
+delayedROIs.ef.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="delayed_MDs"&GCaMP.KO$ROIType=="Endfoot"]))
 
 allROIs.proc.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$ROIType=="Process"]))
-fastROIs.proc.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="fast"&GCaMP.KO$ROIType=="Process"]))
-delayedROIs.proc.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="delayed"&GCaMP.KO$ROIType=="Process"]))
+fastROIs.proc.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="fast_MDs"&GCaMP.KO$ROIType=="Process"]))
+delayedROIs.proc.KO<-length(unique(GCaMP.KO$ROIs_trial[GCaMP.KO$Group=="delayed_MDs"&GCaMP.KO$ROIType=="Process"]))
 
 
 propfast.ef.KO=fastROIs.ef.KO/allROIs.ef.KO
@@ -300,25 +308,41 @@ propdelayed.ef.KO=delayedROIs.ef.KO/allROIs.ef.KO
 propfast.proc.KO=fastROIs.proc.KO/allROIs.proc.KO
 propdelayed.proc.KO=delayedROIs.proc.KO/allROIs.proc.KO
 
-
 ######
+
+# fraction of active pixels from all the astrocyte pixels
+# active pixels from any ROI with a signal (not just those during stimulation)
+
 # number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
 
-stim.lck.OT.window$Channel <- factor(stim.lck.OT.window$Channel, levels = c("RCaMP","GCaMP"))
+stim.lck.alldata$Channel <- factor(stim.lck.alldata$Channel, levels = c("RCaMP","GCaMP"))
 
-ROInum.lck.stim<-ddply(stim.lck.OT.window, c("Animal","Spot","Genotype","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+spot.lck.stim<-ddply(stim.lck.alldata, c("Animal","Spot","Genotype","Condition","Channel"), summarise, nROIs=length(unique(ROIs_Cond)), nFluoPix=nFluoPix,
+                      nActivePix=nActivePix, PixelSize=pixelsize)
 
 # add in number of trials
-ROInum.lck.stim$Ani_Spot_Cond<-paste(ROInum.lck.stim$Animal, ROInum.lck.stim$Spot, ROInum.lck.stim$Condition, sep="_")
+spot.lck.stim$Ani_Spot_Cond<-paste(spot.lck.stim$Animal, spot.lck.stim$Spot, spot.lck.stim$Condition, sep="_")
 Spot.lck.ntrials$Ani_Spot_Cond<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot, Spot.lck.ntrials$Condition, sep="_")
 
-ROInum.lck.stim<-merge(ROInum.lck.stim, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+spot.lck.stim<-merge(spot.lck.stim, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
 
-ROInum.lck.stim$ROIsPerTrial<-ROInum.lck.stim$nROIs/ROInum.lck.stim$nTrials
+spot.lck.stim$ROIsPerTrial<-spot.lck.stim$nROIs/spot.lck.stim$nTrials
 
+spot.lck.stim$FracActive=spot.lck.stim$nActivePix/spot.lck.stim$nFluoPix
+spot.lck.stim$FracActivePerROI=spot.lck.stim$FracActive/spot.lck.stim$nROIs
+
+# mean fraction of active pixels
+df.FracActive<- summarySE(spot.lck.stim, measurevar = "FracActive", groupvars = c("Condition"))
+
+ggplot(data=df.FracActive, aes(x=Condition, y= FracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActive") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 # mean number of total ROIs per trial
-df.lck.ROInum.mean<-summarySE(ROInum.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Genotype","Condition"))
+df.lck.ROInum.mean<-summarySE(spot.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Genotype","Condition"))
 
 
 ggplot(df.lck.ROInum.mean, aes(x=interaction(Genotype,Channel),y=ROIsPerTrial, fill= Condition)) +
@@ -327,15 +351,15 @@ ggplot(df.lck.ROInum.mean, aes(x=interaction(Genotype,Channel),y=ROIsPerTrial, f
   ylab("num ROIs/trial per field of view") +
   max.theme
 
-Condition_Channel2= interaction(ROInum.lck.stim$Condition,ROInum.lck.stim$Channel)
-Condition_Channel_Genotype= interaction(ROInum.lck.stim$Condition,ROInum.lck.stim$Channel,ROInum.lck.stim$Genotype)
-nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Genotype + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model4 = lmer(ROIsPerTrial ~ Condition_Channel2 + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model5 = lmer(ROIsPerTrial ~ Condition_Channel2 + Genotype + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model6 = lmer(ROIsPerTrial ~ Condition_Channel_Genotype + (1|Animal), ROInum.lck.stim,REML=FALSE)
+Condition_Channel2= interaction(spot.lck.stim$Condition,spot.lck.stim$Channel)
+Condition_Channel_Genotype= interaction(spot.lck.stim$Condition,spot.lck.stim$Channel,spot.lck.stim$Genotype)
+nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), spot.lck.stim,REML=FALSE)
+nROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel + (1|Animal), spot.lck.stim,REML=FALSE)
+nROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), spot.lck.stim,REML=FALSE)
+nROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Genotype + (1|Animal), spot.lck.stim,REML=FALSE)
+nROI.lck.stim.model4 = lmer(ROIsPerTrial ~ Condition_Channel2 + (1|Animal), spot.lck.stim,REML=FALSE)
+nROI.lck.stim.model5 = lmer(ROIsPerTrial ~ Condition_Channel2 + Genotype + (1|Animal), spot.lck.stim,REML=FALSE)
+nROI.lck.stim.model6 = lmer(ROIsPerTrial ~ Condition_Channel_Genotype + (1|Animal), spot.lck.stim,REML=FALSE)
 nROI.lck.stim.anova <- anova(nROI.lck.stim.null, nROI.lck.stim.model1,nROI.lck.stim.model2,nROI.lck.stim.model3,
                              nROI.lck.stim.model4,nROI.lck.stim.model5,nROI.lck.stim.model6)
 print(nROI.lck.stim.anova)
@@ -357,6 +381,7 @@ FastROInum.lck.stim$ROIsPerTrial<-FastROInum.lck.stim$nROIs/FastROInum.lck.stim$
 
 # mean number of total ROIs per trial
 df.lck.FastROInum.mean<-summarySE(FastROInum.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel_Group", "Genotype"))
+df.lck.FastROInum.GC<-summarySE(FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Group", "Genotype"))
 
 
 ggplot(df.lck.FastROInum.mean, aes(x=Channel_Group,y=ROIsPerTrial, fill= Genotype)) +
@@ -365,26 +390,31 @@ ggplot(df.lck.FastROInum.mean, aes(x=Channel_Group,y=ROIsPerTrial, fill= Genotyp
   ylab("num ROIs/trial per field of view during stimulation") +
   max.theme
 
+ggplot(df.lck.FastROInum.GC, aes(x=Group,y=ROIsPerTrial, fill= Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during stimulation") +
+  max.theme
 
-
-Channel_Genotype= interaction(FastROInum.lck.stim$Channel_Group,FastROInum.lck.stim$Genotype)
-FastnROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), FastROInum.lck.stim,REML=FALSE)
-FastnROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel_Group + (1|Animal), FastROInum.lck.stim,REML=FALSE)
-FastnROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal), FastROInum.lck.stim,REML=FALSE)
-FastnROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Channel_Group + Genotype + (1|Animal), FastROInum.lck.stim,REML=FALSE)
-FastnROI.lck.stim.model4 = lmer(ROIsPerTrial ~ Channel_Genotype + (1|Animal), FastROInum.lck.stim,REML=FALSE)
+#only astrocytes
+Group_Genotype= interaction(FastROInum.lck.stim$Group[FastROInum.lck.stim$Channel=="GCaMP"],FastROInum.lck.stim$Genotype[FastROInum.lck.stim$Channel=="GCaMP"])
+FastnROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
+FastnROI.lck.stim.model1 = lmer(ROIsPerTrial~ Group + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
+FastnROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
+FastnROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Group + Genotype + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
+FastnROI.lck.stim.model4 = lmer(ROIsPerTrial ~ Group_Genotype + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
 FastnROI.lck.stim.anova <- anova(FastnROI.lck.stim.null, FastnROI.lck.stim.model1,FastnROI.lck.stim.model2,
                                  FastnROI.lck.stim.model3,FastnROI.lck.stim.model4)
 print(FastnROI.lck.stim.anova)
 
-FastnROI.lck.stim.Channel_Genotype<- glht(FastnROI.lck.stim.model4, mcp(Channel_Genotype= "Tukey"))
-summary(FastnROI.lck.stim.Channel_Genotype)
+FastnROI.lck.stim.Group_Genotype<- glht(FastnROI.lck.stim.model4, mcp(Group_Genotype= "Tukey"))
+summary(FastnROI.lck.stim.Group_Genotype)
 
 
 #########
 # mean onset times
 df.OT1<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "OnsetTime", groupvars = c("Channel_Group", "Genotype"))
-df.OT2<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="GCaMP",], measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group", "Genotype"))
+df.OT2<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata$Channel=="GCaMP",], measurevar = "OnsetTime", groupvars = c("Group", "Genotype"))
 df.OT3<- summarySE(stim.lck.compdata.STIM, measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group", "Genotype"))
 
 ggplot(df.OT1, aes(x=interaction(Genotype,Channel_Group),y=OnsetTime, fill=Genotype)) +
@@ -394,7 +424,14 @@ ggplot(df.OT1, aes(x=interaction(Genotype,Channel_Group),y=OnsetTime, fill=Genot
   scale_fill_manual(values=cbbPalette)+
   max.theme
 
-ggplot(df.OT2, aes(x=Channel_Group,y=OnsetTime, fill=ROIType)) +
+ggplot(df.OT2, aes(x=Group,y=OnsetTime, fill=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean Onset Time (s)") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.OT3, aes(x=interaction(Channel_Group,ROIType),y=OnsetTime, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Mean Onset Time (s)") +
@@ -402,11 +439,6 @@ ggplot(df.OT2, aes(x=Channel_Group,y=OnsetTime, fill=ROIType)) +
   max.theme
 
 
-ggplot(stim.lck.alldata, aes(x=Channel_Group,y=OnsetTime, fill=Channel_Group)) +
-  geom_boxplot(notch=TRUE)+
-  ylab("Onset Time (s)") +
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
 
 # stats
 Group_Channel_Type_Gen=interaction(stim.lck.alldata$Group,stim.lck.alldata$Channel,stim.lck.alldata$ROIType, stim.lck.alldata$Genotype)
@@ -453,6 +485,20 @@ plot(fitted(OT.stim.model4), residuals(OT.stim.model4),
      xlab = "Fitted Values", ylab = "Residuals")
 abline(h=0, lty=2)
 lines(smooth.spline(fitted(OT.stim.model4), residuals(OT.stim.model4)), col=46, lwd=2.5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ########
@@ -1069,58 +1115,6 @@ all.lck.peaks.group$roiNameUnique=NULL
 all.lck.peaks.Nresp<-rbind(all.lck.peaks.Nresp, all.lck.peaks.group[all.lck.peaks.group$Channel=="GCaMP",])
 
 ###### 
-# proportion of ROIs that are fast or delayed
-
-#what about proportion of each group based on ROI type??
-
-GCaMP<-subset(all.lck.peaks.Nresp,Channel=="GCaMP")
-RCaMP<-subset(all.lck.peaks.Nresp,Channel=="RCaMP")
-
-GCaMP$Group<-factor(GCaMP$Group,levels= c("fast","delayed"))
-
-fastROIs<-unique(GCaMP$ROIs_trial[GCaMP$Group=="fast"])
-
-allROIs.all<-length(unique(GCaMP$ROIs_trial))
-fastROIs.all<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="fast"]))
-delayedROIs.all<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="delayed"]))
-
-longstim.GC<-subset(GCaMP, Condition=="Stim")
-allROIs.L<-length(unique(longstim.GC$ROIs_trial))
-fastROIs.L<-length(unique(longstim.GC$ROIs_trial[longstim.GC$Group=="fast"]))
-delayedROIs.L<-length(unique(longstim.GC$ROIs_trial[longstim.GC$Group=="delayed"]))
-
-shortstim.GC<-subset(GCaMP, Condition=="shortstim")
-allROIs.S<-length(unique(shortstim.GC$ROIs_trial))
-fastROIs.S<-length(unique(shortstim.GC$ROIs_trial[shortstim.GC$Group=="fast"]))
-delayedROIs.S<-length(unique(shortstim.GC$ROIs_trial[shortstim.GC$Group=="delayed"]))
-
-#proportion
-propfast.all=fastROIs.all/allROIs.all
-propdelayed.all=delayedROIs.all/allROIs.all
-
-propfast.L=fastROIs.L/allROIs.L
-propdelayed.L=delayedROIs.L/allROIs.L
-
-propfast.S=fastROIs.S/allROIs.S
-propdelayed.S=delayedROIs.S/allROIs.S
-
-
-#ef vs proc
-allROIs.ef<-length(unique(GCaMP$ROIs_trial[GCaMP$ROIType=="Endfoot"]))
-fastROIs.ef<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="fast"&GCaMP$ROIType=="Endfoot"]))
-delayedROIs.ef<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="delayed"&GCaMP$ROIType=="Endfoot"]))
-
-allROIs.proc<-length(unique(GCaMP$ROIs_trial[GCaMP$ROIType=="Process"]))
-fastROIs.proc<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="fast"&GCaMP$ROIType=="Process"]))
-delayedROIs.proc<-length(unique(GCaMP$ROIs_trial[GCaMP$Group=="delayed"&GCaMP$ROIType=="Process"]))
-
-
-propfast.ef=fastROIs.ef/allROIs.ef
-propdelayed.ef=delayedROIs.ef/allROIs.ef
-
-propfast.proc=fastROIs.proc/allROIs.proc
-propdelayed.proc=delayedROIs.proc/allROIs.proc
-
 
 #####
 
@@ -1247,180 +1241,4 @@ summary(group.dur.Group_type.pv)
 
 
 
-######
-# fraction of active pixels from all the astrocyte pixels
-# active pixels from any ROI with a signal (not just those during stimulation)
 
-spot.lck.stim<-ddply(all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(unique(ROIs_Cond)), nFluoPix=nFluoPix,
-                     nActivePix=nActivePix, PixelSize=pixelsize)
-
-spot.lck.stim$FracActive=spot.lck.stim$nActivePix/spot.lck.stim$nFluoPix
-spot.lck.stim$FracActivePerROI=spot.lck.stim$FracActive/spot.lck.stim$nROIs
-
-df.FracActive<- summarySE(spot.lck.stim, measurevar = "FracActive", groupvars = c("Condition"))
-
-ggplot(data=df.FracActive, aes(x=Condition, y= FracActive, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("FracActive") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-#################
-# conditional probabilty of astrocyte response given a nearby neuronal response
-
-
-# find total number of astrocyte ROIs or neuronal ROIs in a field of view
-# find number of responding astrocytes or responding neuronal per trial
-# find the number of fast astrocytes per field of view
-
-
-# number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
-
-stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
-
-ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
-
-
-# number of ROIs
-
-
-
-# find total number of astrocyte ROIs or neuronal ROIs with a peak at some point during the trial
-# use this for response probability calculation
-
-Spot.TotalROIs<- ddply(all.lck.peaks[all.lck.peaks$Condition=="Stim",], c("trials","trials_Cond", "Channel"), summarise, nROIs=length(peakTime))
-
-
-# if there were no ROIs with a signal during the trial, make it zero
-
-
-
-noPeaks.stim<-subset(all.lck.peaks, roiName=="none" & Condition=="Stim")
-
-Spot.noPeaks<- ddply(noPeaks.stim, c("trials_Cond", "Channel"), summarise, nROIs=0)
-
-Spot.TotalROIs<-merge(Spot.TotalROIs2, Spot.noPeaks[, c("trials_Cond", "nROIs")], by="trials_Cond", all.x=TRUE)
-
-
-
-#remove peaks with zero peakAUC
-
-count.peaks <- ddply (post30.sig.peaks, c("Animal", "Spot", "Layer", "Condition","ROI","ROIType","peakType"), summarise,
-                      Peaks = length(numPeaks))
-
-#divide by the number of trials for each ROI
-count.peaks$peakPertrial <-0
-
-#Nostim
-#NS.peaks <- subset(count.peaks,Condition=="Nostim")
-#NS.ROI.p30 <- subset(post30.ROI,Condition=="Nostim")
-sigroiNamesNS <-as.character(unique(post30.ROI$ROI))
-count.peaks2 <-data.frame()
-for (ii in 1:length(sigroiNamesNS))
-{
-  name =sigroiNamesNS[ii]
-  subset1 = subset(post30.ROI, ROI == name)
-  subset2 = subset(count.peaks, ROI == name)
-  for (iii in 1:length(subset2$ROI))
-  {
-    #subset2$peakPertrial<- subset2$Peaks[iii]/subset1$N    
-    subset2$Trial<- subset1$N[1]   
-  }
-  count.peaks2<- rbind(count.peaks2,subset2)
-}
-
-
-# if no peak of a particular type exists for individual ROI, it becomes zero
-ROI = as.character(unique(count.peaks$ROI))
-count.peaks3 <- data.frame()
-
-for (ii in 1:length(ROI))
-{
-  name = ROI[ii]
-  ROIubset.NS = subset(count.peaks2 , ROI == name & Condition == "Nostim")
-  ROIubset.S = subset(count.peaks2 , ROI == name & Condition == "Stim")
-  # use data from stim if there are no peaks during no stim
-  if ((nrow(ROIubset.NS) ==0)==TRUE)
-  {ROIubset.NS<- head(ROIubset.S,1)
-  ROIubset.NS$Condition ="Nostim"
-  ROIubset.NS$peakType ="NaN"
-  }
-  # fill in zero ROI for each type
-  if ((nrow(ROIubset.NS) ==3)==TRUE)
-  {count.peaks3<- rbind(count.peaks3,ROIubset.NS)
-  } else {
-    # find peakTypes with matches
-    single.NS = grepl("Singlepeak",ROIubset.NS$peakType)
-    multi.NS = grepl("Multipeak",ROIubset.NS$peakType)
-    plateau.NS = grepl("Plateau",ROIubset.NS$peakType)
-    
-    if (nrow(ROIubset.NS[single.NS,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[single.NS,])
-    } else {
-      zeros <- head(ROIubset.NS,1)
-      zeros$peakType = "Singlepeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.NS[multi.NS,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[multi.NS,])
-    } else {
-      zeros <- head(ROIubset.NS,1)
-      zeros$peakType = "Multipeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.NS[plateau.NS,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[plateau.NS,])
-    } else {
-      zeros <- head(ROIubset.NS,1)
-      zeros$peakType = "Plateau"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }  
-  }
-  
-  if ((nrow(ROIubset.S) ==3)==TRUE)
-  {count.peaks3<- rbind(count.peaks3,ROIubset.S)
-  } else {
-    # find peakTypes with matches
-    single.S = grepl("Singlepeak",ROIubset.S$peakType)
-    multi.S = grepl("Multipeak",ROIubset.S$peakType)
-    plateau.S = grepl("Plateau",ROIubset.S$peakType)
-    
-    if (nrow(ROIubset.S[single.S,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.S[single.S,])
-    } else {
-      zeros <- head(ROIubset.S,1)
-      zeros$peakType = "Singlepeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.S[multi.S,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.S[multi.S,])
-    } else {
-      zeros <- head(ROIubset.S,1)
-      zeros$peakType = "Multipeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.S[plateau.S,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.S[plateau.S,])
-    } else {
-      zeros <- head(ROIubset.S,1)
-      zeros$peakType = "Plateau"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }  
-  }
-}
-
-
-count.peaks3$peakPertrial<- count.peaks3$Peaks/count.peaks3$Trial 
