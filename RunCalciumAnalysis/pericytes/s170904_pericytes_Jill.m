@@ -211,7 +211,11 @@ for iDrug = 1:numDrugs
                 
                 % look for overlap between somata and processes
                 maskOverlap2= AllSomaMask & maskROI;
-                isSoma{iStacks}(iROI) = any(maskOverlap2(:));
+                SomaArea= nnz(AllSomaMask);  % # of pixels of soma Mask
+                OverlapArea= nnz(maskOverlap2); % number of pixels that overlap
+                % to be a soma ROI the overlap area of the two masks must
+                % be greater than 50% of the hand selected soma ROI
+                isSoma{iStacks}(iROI) = OverlapArea>=(SomaArea*0.5); 
             end
         end
         

@@ -1250,7 +1250,7 @@ summary(nROI.both.stim.Cond_Channel)
 #stim.both.alldata<-merge(stim.both.peaks.window, stim.both.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
 stim.lck.alldata<-merge(stim.lck.peaks.window2, stim.lck.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
 
-stim.both.peaks.window<-rbind(
+
 
 # onset times
 ggplot(stim.both.alldata, aes(x=Channel,y=OnsetTime, fill= Condition)) +
