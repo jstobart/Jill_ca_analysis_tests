@@ -109,7 +109,7 @@ for iAnimal = 1:numAnimals
                 % Spectral Unmixing of GCaMP and RCaMP
                 ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
                 
-                %ImgArray(1,1).plot();
+                ImgArray(1,1).plot();
                 
                 
                 %% Create CellScan objects
@@ -118,6 +118,8 @@ for iAnimal = 1:numAnimals
                 load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_LckGC.mat
                 CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
                 CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
+                
+                CSArray_Ch1_FLIKA.opt_config();
                 
                 % NEURONS
                 load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_RC.mat
@@ -128,7 +130,7 @@ for iAnimal = 1:numAnimals
                 %             CSArray_Ch1_FLIKA.plot();
                 %             CSArray_Ch2_FLIKA.plot();
                 
-                % CSArray_Ch1_FLIKA.opt_config();
+
                 %% Calculate onset time for first peak and Output data
                 
                 CellScans=vertcat(CSArray_Ch1_FLIKA, CSArray_Ch2_FLIKA);

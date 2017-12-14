@@ -32,7 +32,6 @@ Settings.ScoreSheetNames = {
     'RG18_Scoresheet_AllTrials.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim'};
-
 channel = struct('Ca_Cyto_Astro',1,'Ca_Neuron',2);
 plotMotion =0;
 
@@ -59,7 +58,7 @@ for iAnimal = 1:numAnimals
     Settings = readScoresheet2(CurrentSheet, Settings);
     
     % load spectral unmixing matrix of RCaMP and GCaMP
-        load(fullfile(Settings.MainDir, 'Results','RCaMP_cGCaMP_Matrix.mat'));
+    load(fullfile(Settings.MainDir, 'Results','RCaMP_cGCaMP_Matrix.mat'));
     
     % Get SpotID
     spots = unique(Settings.SpotIDs);
@@ -220,21 +219,22 @@ for iAnimal = 1:numAnimals
             CellScans=vertcat(CSArray_Ch1_FLIKA, CSArray_Ch1_Hand,...
                 CSArray_Ch2_FLIKA, CSArray_Ch2_Hand);
             
-            matchingGenotypeIdx = find(~cellfun(@isempty, regexp(Settings.IP3R2KO, CurrentAnimal)));
-            matchingGenotypeIdx2 = find(~cellfun(@isempty, regexp(Settings.IP3R2WT, CurrentAnimal)));
             
             % loop through cellscans
-            for iScan=1:size(CellScans,1)
-                for itrial=1:size(CellScans,2)
+            
+            for itrial=1:size(CellScans,2)
+                % get fraction of active MD area
+                neuroMask = CellScans(4,itrial).calcFindROIs.data.roiMask;
+                if ndims(neuroMask) == 3
+                    neuroMask = max(neuroMask, [], 3);
+                end
+                [nFluoPix, nActivePix, nTotalPix] = ...
+                    getFracActive(CellScans(1,itrial), 'nanMask', ...
+                    neuroMask);
+                
+                for iScan=1:size(CellScans,1)
                     
-                    % get fraction of active MD area
-                    neuroMask = CellScans(4,itrial).calcFindROIs.data.roiMask;
-                    if ndims(neuroMask) == 3
-                        neuroMask = max(neuroMask, [], 3);
-                    end
-                    [nFluoPix, nActivePix, nTotalPix] = ...
-                        getFracActive(CellScans(1,itrial), 'nanMask', ...
-                        neuroMask);
+                    
                     
                     % peak output
                     temp=CellScans(iScan,itrial).calcDetectSigs.data;
@@ -272,14 +272,7 @@ for iAnimal = 1:numAnimals
                         temp2.Spot{iPeak,1}= spotId;
                         temp2.animalname{iPeak,1}= CurrentAnimal;
                         temp2.Cond{iPeak,1} = CurrentCondition;
-                        
-                        if ~isempty(matchingGenotypeIdx)
-                            temp2.Genotype{iPeak,1}= 'IP3R2_KO';
-                        elseif ~isempty(matchingGenotypeIdx2)
-                            temp2.Genotype{iPeak,1}= 'IP3R2_WT';
-                        else
-                            temp2.Genotype{iPeak,1}= NaN;
-                        end
+                        temp2.Genotype{iPeak,1}= NaN;
                         temp2.depth{iPeak,1} = CurrentDepth(1,1);
                         temp2.pixelsize{iPeak,1} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
                         temp2.nFluoPix{iPeak,1} = nFluoPix;
@@ -389,13 +382,7 @@ for iAnimal = 1:numAnimals
                             Trace_data{iROI,4}= spotId;
                             Trace_data{iROI,5}= CurrentAnimal;
                             Trace_data{iROI,6}= CurrentCondition;
-                            if ~isempty(matchingGenotypeIdx)
-                                Trace_data{iROI,7}= 'IP3R2_KO';
-                            elseif ~isempty(matchingGenotypeIdx2)
-                                Trace_data{iROI,7}= 'IP3R2_WT';
-                            else
-                                Trace_data{iROI,7}= NaN;
-                            end
+                            Trace_data{iROI,7}= NaN;
                             Trace_data{iROI,8} = CurrentDepth(1,1);
                             Trace_data{iROI,9} = CurrentBaseline(1,1);
                             Trace_data{iROI,10} = traces(:,iROI);
@@ -471,7 +458,7 @@ for iAnimal = 1:numAnimals
                             x2=round(FrameRate*(BL_time+1));
                             x3= round(FrameRate*(BL_time+10));
                             Trace_data{iROI,16}=trapz(traces(BL_frames:x2,iROI));
-                            Trace_data{iROI,17}=trapz(traces(BL_frames:x3,iROI));                     
+                            Trace_data{iROI,17}=trapz(traces(BL_frames:x3,iROI));
                             
                         end
                         
@@ -479,6 +466,7 @@ for iAnimal = 1:numAnimals
                     All_traces=vertcat(All_traces, Trace_data);
                     clearvars Trace_data
                 end
+                clearvars nFluoPix nActivePix
             end
             
             
