@@ -47,16 +47,27 @@ all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/
 ##### 
 #home files
 
-all.lck.peaks <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-all.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+pharm.lck.peaks <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+pharm.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
 
+control.lck.peaks <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+control.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
 
 ##########
 
 lsm.options(pbkrtest.limit = 100000)
 
+
+control.lck.peaks$Drug="Control"
+control.lck.peaks<-subset(control.lck.peaks, Animal!="IPRG1")
+control.lck.peaks<-subset(control.lck.peaks, Animal!="IPRG4")
+
+control.lck.OT$ROIs_trial=NULL
+control.lck.OT$Spot_trial=NULL
+control.lck.OT$ROIType= NULL
+
 #unique ROI names
-all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial,all.lck.OT$roiName, sep= "_")
+all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial,all.lck.OT$ROI, sep= "_")
 all.lck.OT$Spot_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, sep= "_")
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
@@ -74,6 +85,8 @@ all.lck.OT<-distinct(all.lck.OT2, ROIs_Cond, .keep_all = TRUE)
 rm(all.lck.OT2)
 
 
+all.lck.peaks<-rbind(control.lck.peaks, pharm.lck.peaks)
+
 all.lck.peaks$ROIType= "none"
 all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
 all.lck.peaksB<- subset(all.lck.peaks, Channel=="RCaMP")
@@ -84,6 +97,9 @@ all.lck.peaksA$ROIType[grepl("E",all.lck.peaksA$roiName)]="Endfoot"
 all.lck.peaksB$ROIType[grepl("r",all.lck.peaksB$roiName)]="Dendrite"
 all.lck.peaksB$ROIType[grepl("D",all.lck.peaksB$roiName)]="Dendrite"
 all.lck.peaksB$ROIType[grepl("N",all.lck.peaksB$roiName)]="Neuron"
+
+all.lck.peaksB<-subset(all.lck.peaksB, ROIType!="none")
+#all.lck.peaksB$ROIType[grepl("S",all.lck.peaksB$roiName)]="SmoothMuscle"
 
 all.lck.peaks<-rbind(all.lck.peaksA, all.lck.peaksB)
 rm(all.lck.peaksA, all.lck.peaksB)
@@ -132,7 +148,8 @@ all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascend
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
 
-
+all.lck.OT$Drug<- factor(all.lck.OT$Drug, levels=c("Control","Atropine","Prazosin","Trazodone"))
+all.lck.peaks$Drug<- factor(all.lck.peaks$Drug, levels=c("Control","Atropine","Prazosin","Trazodone"))
 
 
 
