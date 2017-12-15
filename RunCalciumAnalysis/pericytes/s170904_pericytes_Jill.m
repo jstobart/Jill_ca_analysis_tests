@@ -306,9 +306,9 @@ for iDrug = 1:numDrugs
             for jROI = 1:nROIs
                 traceExists = ...
                     FLIKA_3D(iStacks).calcMeasureROIs.data.tracesExist(:,jROI);
-                traceExtract = FLIKA_2p5D(iStacks).calcMeasureROIs.data.tracesNorm(...
-                    traceExists, jROI);
-                timeExtract = FLIKA_2p5D(iStacks).calcMeasureROIs.data.time(traceExists);
+                traceExtract = smooth(FLIKA_2p5D(iStacks).calcMeasureROIs.data.tracesNorm(...
+                    traceExists, jROI), 3);
+                timeExtract = smooth(FLIKA_2p5D(iStacks).calcMeasureROIs.data.time(traceExists),3);
                 amplitude(jROI) = max(traceExtract); %
                 auc(jROI) = trapz(timeExtract, traceExtract);
                 

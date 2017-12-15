@@ -117,9 +117,8 @@ for iAnimal = 1:numAnimals
                 % ASTROCYTES
                 load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_LckGC.mat
                 
-                % hand select ROI
                 %confObj.configFindROIs = ConfigFindROIsDummy();
-                %confObj.configFindROIs.roiMask = utils.select_LS_ROI(ImgArray(1,1).rawdata(:,:,1,1));
+                confObj.configFindROIs.roiMask = utils.select_LS_ROI(ImgArray(1,1).rawdata(:,:,1,1));
 
                 CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
                 CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
@@ -127,16 +126,14 @@ for iAnimal = 1:numAnimals
                 CSArray_Ch1_FLIKA.opt_config();
                 
                 % NEURONS
-                %load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_RC.mat
-                
-                % hand select ROI
-                %confObj.configFindROIs = ConfigFindROIsDummy();
-                %confObj.configFindROIs.roiMask = utils.select_LS_ROI(ImgArray(1,1).rawdata(:,:,2,1));
+                load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_RC.mat
+                                %confObj.configFindROIs = ConfigFindROIsDummy();
+                confObj.configFindROIs.roiMask = utils.select_LS_ROI(ImgArray(1,1).rawdata(:,:,1,1));
                 
                 CSArray_Ch2_FLIKA = CellScan(fnList, ImgArray, confObj, 2);
                 CSArray_Ch2_FLIKA =CSArray_Ch2_FLIKA.process();
                 
-                CSArray_Ch2_FLIKA.opt_config();
+                
                 %             CSArray_Ch1_FLIKA.plot();
                 %             CSArray_Ch2_FLIKA.plot();
                 
