@@ -15,8 +15,7 @@ library("Hmisc")
 library("stringr")
 
 #################
-#Pharmacology
-# Trazodone, Prazosin, Atropine, Meterogoline
+#look at actaRCaMP vs endfeet
 
 ########################
 
@@ -41,14 +40,11 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
 
 ##### 
 #home files
-
-pharm.lck.peaks <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-pharm.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
 
 control.lck.peaks <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
 control.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
@@ -58,26 +54,24 @@ control.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/On
 lsm.options(pbkrtest.limit = 100000)
 
 
-control.lck.peaks$Drug="Control"
-control.lck.peaks<-subset(control.lck.peaks, Animal=="IPRG2" | Animal=="ARG2" | Animal=="IPRG3")
+Acta.lck.peaks<-subset(control.lck.peaks, Animal=="ARG2")
 
-control.lck.OT<- subset(control.lck.OT, Animal=="IPRG2" | Animal=="ARG2" | Animal=="IPRG3")
-control.lck.OT$ROIs_trial=NULL
-control.lck.OT$Spot_trial=NULL
-control.lck.OT$ROIType= NULL
-control.lck.OT$Drug="Control"
-control.lck.OT$overlap=control.lck.OT$Overlap
-control.lck.OT$Overlap=NULL
+Acta.lck.OT<- subset(control.lck.OT, Animal=="ARG2")
+Acta.lck.OT$ROIs_trial=NULL
+Acta.lck.OT$Spot_trial=NULL
+Acta.lck.OT$ROIType= NULL
+Acta.lck.OT$overlap=Acta.lck.OT$Overlap
+Acta.lck.OT$Overlap=NULL
 
 
-all.lck.OT<-rbind(control.lck.OT, pharm.lck.OT)
+all.lck.OT<-Acta.lck.OT
 
 #unique ROI names
 all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial,all.lck.OT$ROI, sep= "_")
 all.lck.OT$Spot_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, sep= "_")
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
-all.lck.OT$ROIs_Cond_Drug<-paste(all.lck.OT$ROIs_Cond, all.lck.OT$Drug, sep="_")
+
 
 
 # REMOVE duplicate entries from onset time and peak time data frames 
@@ -93,7 +87,7 @@ all.lck.OT<-subset(all.lck.OT, OnsetTime!="NaN")
 rm(all.lck.OT2)
 
 
-all.lck.peaks<-rbind(control.lck.peaks, pharm.lck.peaks)
+all.lck.peaks<-Acta.lck.peaks
 
 all.lck.peaks$ROIType= "none"
 all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
@@ -105,6 +99,7 @@ all.lck.peaksA$ROIType[grepl("E",all.lck.peaksA$roiName)]="Endfoot"
 all.lck.peaksB$ROIType[grepl("r",all.lck.peaksB$roiName)]="Dendrite"
 all.lck.peaksB$ROIType[grepl("D",all.lck.peaksB$roiName)]="Dendrite"
 all.lck.peaksB$ROIType[grepl("N",all.lck.peaksB$roiName)]="Neuron"
+all.lck.peaksB$ROIType[grepl("S",all.lck.peaksB$roiName)]="SmoothMuscle"
 
 all.lck.peaksB<-subset(all.lck.peaksB, ROIType!="none")
 #all.lck.peaksB$ROIType[grepl("S",all.lck.peaksB$roiName)]="SmoothMuscle"

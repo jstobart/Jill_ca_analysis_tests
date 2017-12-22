@@ -92,6 +92,16 @@ all.lck.OT$drug<- factor(all.lck.OT$drug, levels=c("Control","Atropine","Prazosi
 all.lck.OT$Channel_Group<-interaction(all.lck.OT$Channel, all.lck.OT$Group)
 all.lck.OT$Channel_Group<-as.factor(all.lck.OT$Channel_Group)
 
+#percentile distribution on neuronsl
+
+NeuronalStim<-subset(all.lck.OT, Channel=="RCaMP" & Condition=="Stim")
+Neuron95Onset<-quantile(NeuronalStim$OnsetTime[NeuronalStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Neuron95Onset)
+
+AstrocyteStim<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim")
+Astrocyte95Onset<-quantile(AstrocyteStim$OnsetTime[AstrocyteStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Astrocyte95Onset)
+
 ######
 # for median and mean calculations
 

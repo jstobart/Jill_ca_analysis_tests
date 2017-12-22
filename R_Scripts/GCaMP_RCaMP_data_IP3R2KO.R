@@ -361,7 +361,7 @@ propdelayed.proc.KO=delayedROIs.proc.KO/allROIs.proc.KO
 # number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
 stim.lck.alldata$Channel <- factor(stim.lck.alldata$Channel, levels = c("RCaMP","GCaMP"))
 
-Spot.lck.stim<-ddply(stim.lck.alldata, c("Animal","Spot","Genotype","Condition","Channel","nFluoPix","nActivePix","pixelsize"), summarise,
+Spot.lck.stim<-ddply(stim.lck.alldata, c("Animal","Spot","Genotype","Trial","Condition","Channel","nFluoPix","nActivePix","pixelsize"), summarise,
                      nROIs=length(unique(ROIs_Cond)))
 
 # add in number of trials
