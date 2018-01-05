@@ -34,8 +34,8 @@ Settings.IP3R2WT = {'IPRG2','IPRG3'};
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 
 % final data file name
-SaveFiles{1,1}= fullfile(Settings.MainDir, 'Results','FilesforMatlab','LinescanTraces_allMice_Lck_nostim_vs_longstim_12_2017.mat');
-SaveFiles{1,2}= fullfile(Settings.MainDir, 'Results','FilesforR','LinescanOnsets_allMice_Lck_nostim_vs_longstim_12_2017.csv');
+SaveFiles{1,1}= fullfile(Settings.MainDir, 'Results','FilesforMatlab','LinescanTraces2_allMice_Lck_nostim_vs_longstim_12_2017.mat');
+SaveFiles{1,2}= fullfile(Settings.MainDir, 'Results','FilesforR','LinescanOnsets2_allMice_Lck_nostim_vs_longstim_12_2017.csv');
 
 %% Load calibration file
 calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
@@ -109,7 +109,7 @@ for iAnimal = 1:numAnimals
                 % Spectral Unmixing of GCaMP and RCaMP
                 ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
                 
-                ImgArray(1,1).plot();
+                %ImgArray(1,1).plot();
                 
                 
                 %% Create CellScan objects
@@ -124,7 +124,7 @@ for iAnimal = 1:numAnimals
                 CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
                 CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
                 
-                CSArray_Ch1_FLIKA.opt_config();
+                %CSArray_Ch1_FLIKA.opt_config();
                 
                 % NEURONS
                 %load E:\matlab\ca-analysis\Jill_ca_analysis_tests\RunCalciumAnalysis\ConfigCellScanLS1D_RC.mat
@@ -136,7 +136,7 @@ for iAnimal = 1:numAnimals
                 CSArray_Ch2_FLIKA = CellScan(fnList, ImgArray, confObj, 2);
                 CSArray_Ch2_FLIKA =CSArray_Ch2_FLIKA.process();
                 
-                CSArray_Ch2_FLIKA.opt_config();
+                %CSArray_Ch2_FLIKA.opt_config();
                 %             CSArray_Ch1_FLIKA.plot();
                 %             CSArray_Ch2_FLIKA.plot();
                 
