@@ -38,8 +38,20 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.peaks1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.OT1<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.peaks2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+lck.OT2<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+
+
+all.cyto.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/FilesforR/Peaks_allMice_cyto_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+all.cyto.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/FilesforR/OnsetTimes_allMice_cyto_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+
+# 2s before and after stim
+longstim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/First_Neuron_Submission/Lck_longstim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
+nostim.lck.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/First_Neuron_Submission/Lck_nostim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
+longstim.cyto.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/First_Neuron_Submission/cyto_longstim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
+nostim.cyto.OT.2s <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/First_Neuron_Submission/cyto_nostim_onset_2sbeforeStim.csv", header=TRUE, sep = ",")
 
 
 ######
@@ -92,26 +104,57 @@ nostim.cyto.OT <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/R
 
 
 ##########
+# reshape data
 
 lsm.options(pbkrtest.limit = 100000)
 
-#all.lck.peaks<-rbind(nostim.lck,long.lck,short.lck)
-#all.lck.OT<-rbind(nostim.lck.OT,longstim.lck.OT,shortstim.lck.OT)
-#all.lck.OT.2s<-rbind(nostim.lck.OT.2s,longstim.lck.OT.2s)
 
+# remove genotype information 
+lck.peaks2$Genotype<-NULL
+lck.OT2$Genotype<-NULL
+lck.OT1$Spot_trial<-NULL
+lck.OT1$ROIs_trial<-NULL
+lck.OT1$ROIType<-NULL
+names(lck.OT1)[names(lck.OT1)=="Overlap"] <- "overlap"
+
+# join data sets
+all.lck.peaks<-rbind(lck.peaks1,lck.peaks2)
+all.lck.OT<-rbind(lck.OT1, lck.OT2)
+all.lck.OT.2s<-rbind(nostim.lck.OT.2s,longstim.lck.OT.2s)
 
 # remove the data frames that are combined
-#rm(nostim.lck, long.lck, short.lck, nostim.lck.OT, longstim.lck.OT, shortstim.lck.OT, nostim.lck.OT.2s, longstim.lck.OT.2s)
-
+rm(lck.peaks1,lck.peaks2,lck.OT1, lck.OT2, nostim.lck.OT.2s, longstim.lck.OT.2s)
 
 # only consider wildtype mice, remove IP3R2KO
 all.lck.peaks<-all.lck.peaks[!(grepl("IP",all.lck.peaks$Animal)),]
 all.lck.OT<-all.lck.OT[!(grepl("IP",all.lck.OT$Animal)),]
 
+#############
+# ONSET Times
+# unique ROI names
+all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, all.lck.OT$ROI, sep= "_")
+all.lck.OT$Spot_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, sep= "_")
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
+
 all.lck.OT.2s$Spot_trial_Cond<-paste(all.lck.OT.2s$Spot_trial, all.lck.OT.2s$Condition, sep="_")
 all.lck.OT.2s$ROIs_Cond<-paste(all.lck.OT.2s$ROIs_trial, all.lck.OT.2s$Condition, sep="_")
+
+# ROI Types
+all.lck.OT$ROIType= "none"
+all.lck.OTA<- subset(all.lck.OT, Channel=="GCaMP")
+all.lck.OTB<- subset(all.lck.OT, Channel=="RCaMP")
+
+# ROITypes
+all.lck.OTA$ROIType[grepl("r",all.lck.OTA$ROI)]="Process"
+all.lck.OTA$ROIType[grepl("E",all.lck.OTA$ROI)]="Endfoot"
+all.lck.OTB$ROIType[grepl("r",all.lck.OTB$ROI)]="Dendrite"
+all.lck.OTB$ROIType[grepl("D",all.lck.OTB$ROI)]="Dendrite"
+all.lck.OTB$ROIType[grepl("N",all.lck.OTB$ROI)]="Neuron"
+#all.lck.OTB$ROIType[grepl("S",all.lck.OTB$ROI)]="SmoothMuscle"
+
+all.lck.OT<-rbind(all.lck.OTA, all.lck.OTB)
+all.lck.OT$ROIType<- as.factor(all.lck.OT$ROIType)
 
 # REMOVE duplicate entries from onset time and peak time data frames 
 # only the first entry will be used
@@ -126,9 +169,11 @@ all.lck.OT.2s<-distinct(all.lck.OT2.2s, ROIs_Cond, .keep_all = TRUE)
 
 all.lck.OT.2s$OnsetTimeAdjust<-all.lck.OT.2s$OnsetTime-2
 
-rm(all.lck.OT2,all.lck.OT2.2s)
+rm(all.lck.OT2,all.lck.OT2.2s, all.lck.OTA, all.lck.OTB)
 
 
+##############
+# PEAK DATA
 all.lck.peaks$ROIType= "none"
 all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
 all.lck.peaksB<- subset(all.lck.peaks, Channel=="RCaMP")
@@ -139,6 +184,7 @@ all.lck.peaksA$ROIType[grepl("E",all.lck.peaksA$roiName)]="Endfoot"
 all.lck.peaksB$ROIType[grepl("r",all.lck.peaksB$roiName)]="Dendrite"
 all.lck.peaksB$ROIType[grepl("D",all.lck.peaksB$roiName)]="Dendrite"
 all.lck.peaksB$ROIType[grepl("N",all.lck.peaksB$roiName)]="Neuron"
+#all.lck.peaksB$ROIType[grepl("S",all.lck.peaksB$roiName)]="SmoothMuscle"
 
 all.lck.peaks<-rbind(all.lck.peaksA, all.lck.peaksB)
 all.lck.peaks$ROIType<- as.factor(all.lck.peaks$ROIType)
@@ -159,7 +205,7 @@ Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Spot","Condition"), summarise
 all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$peakType=="NoPeak"),]
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$roiName=="np"),]
+all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$ROIType=="none"),]
 
 # remove matching astrocyte process and soma ROIs
 Overlap= all.lck.peaks$overlap!=0
@@ -192,62 +238,69 @@ all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
 rm(all.lck.peaks2,all.lck.peaks3, all.lck.peaksA, all.lck.peaksB)
 
 
-# neuronal responses to stimulation
-NeuronalStim<-subset(all.lck.OT, Channel=="RCaMP" & Condition=="Stim")
-
-ggplot(NeuronalStim,aes(x=OnsetTime)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("all RCaMP onset times from stim trials")+
-  max.theme
-
-# should have an onset time in 8 s stimulus
-
-ggplot(NeuronalStim[NeuronalStim$OnsetTime<10,],aes(x=OnsetTime)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("RCaMP onset times between 0 and 10 s from stim trials")+
-  max.theme
-
-Neuron95Onset<-quantile(NeuronalStim$OnsetTime[NeuronalStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
-print(Neuron95Onset)
 
 
-##### 
+
+
+
+################### 
 # cytoGCaMP6s data
-
-all.cyto.peaks<-rbind(nostim.cyto,long.cyto,short.cyto)
-all.cyto.OT<-rbind(nostim.cyto.OT,longstim.cyto.OT,shortstim.cyto.OT)
+all.cyto.peaks$Genotype<-NULL
+all.cyto.OT$Genotype<- NULL
 all.cyto.OT.2s<-rbind(nostim.cyto.OT.2s,longstim.cyto.OT.2s)
 
 # remove the data frames that are combined
-rm(nostim.cyto, long.cyto, short.cyto, nostim.cyto.OT, longstim.cyto.OT, shortstim.cyto.OT, nostim.cyto.OT.2s, longstim.cyto.OT.2s)
+rm(nostim.cyto.OT.2s, longstim.cyto.OT.2s)
 
+## ONSET TIMES
 
+# unique ROI names
+all.cyto.OT$ROIs_trial<-paste(all.cyto.OT$Animal, all.cyto.OT$Spot, all.cyto.OT$Trial, all.cyto.OT$ROI, sep= "_")
+all.cyto.OT$Spot_trial<-paste(all.cyto.OT$Animal, all.cyto.OT$Spot, all.cyto.OT$Trial, sep= "_")
 all.cyto.OT$Spot_trial_Cond<-paste(all.cyto.OT$Spot_trial, all.cyto.OT$Condition, sep="_")
 all.cyto.OT$ROIs_Cond<-paste(all.cyto.OT$ROIs_trial, all.cyto.OT$Condition, sep="_")
+
 all.cyto.OT.2s$Spot_trial_Cond<-paste(all.cyto.OT.2s$Spot_trial, all.cyto.OT.2s$Condition, sep="_")
 all.cyto.OT.2s$ROIs_Cond<-paste(all.cyto.OT.2s$ROIs_trial, all.cyto.OT.2s$Condition, sep="_")
 
-# REMOVE duplicate entries from onset time and peak time data frames 
-# only the first entry will be used
-all.cyto.OT2=all.cyto.OT[order(all.cyto.OT$OnsetTime),] # sort by ascending onset time
+# ROI Types
+all.cyto.OT$ROIType= "none"
+all.cyto.OTA<- subset(all.cyto.OT, Channel=="GCaMP")
+all.cyto.OTB<- subset(all.cyto.OT, Channel=="RCaMP")
 
-# remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
-all.cyto.OT<-distinct(all.cyto.OT2, ROIs_Cond,.keep_all = TRUE)
+# ROITypes
+all.cyto.OTA$ROIType[grepl("r",all.cyto.OTA$ROI)]="Process"
+all.cyto.OTA$ROIType[grepl("E",all.cyto.OTA$ROI)]="Endfoot"
+all.cyto.OTB$ROIType[grepl("r",all.cyto.OTB$ROI)]="Dendrite"
+all.cyto.OTB$ROIType[grepl("D",all.cyto.OTB$ROI)]="Dendrite"
+all.cyto.OTB$ROIType[grepl("N",all.cyto.OTB$ROI)]="Neuron"
+#all.cyto.OTB$ROIType[grepl("S",all.cyto.OTB$ROI)]="SmoothMuscle"
+
+all.cyto.OT<-rbind(all.cyto.OTA, all.cyto.OTB)
+all.cyto.OT$ROIType<- as.factor(all.cyto.OT$ROIType)
 
 # REMOVE duplicate entries from onset time and peak time data frames 
 # only the first entry will be used
 all.cyto.OT2=all.cyto.OT[order(all.cyto.OT$OnsetTime),] # sort by ascending onset time
 all.cyto.OT2.2s=all.cyto.OT.2s[order(all.cyto.OT.2s$OnsetTime),] # sort by ascending onset time
 
+# remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
+all.cyto.OT<-distinct(all.cyto.OT2, ROIs_Cond, .keep_all = TRUE)
+all.cyto.OT.2s<-distinct(all.cyto.OT2.2s, ROIs_Cond, .keep_all = TRUE)
+
 #adjust onset time for the data with 2 s before stimulation included:
 
 all.cyto.OT.2s$OnsetTimeAdjust<-all.cyto.OT.2s$OnsetTime-2
 
+rm(all.cyto.OT2,all.cyto.OT2.2s, all.cyto.OTA, all.cyto.OTB)
 
 
+
+
+## PEAK DATA
 
 # exclude the neuropil ROIs, because they were hand selected and not necessary
-all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$ROIName=="np"),]
+all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$roiName=="np"),]
 all.cyto.peaks<-all.cyto.peaks[!(all.cyto.peaks$peakType=="NoPeak"),]
 
 # no stim peak data
@@ -256,12 +309,12 @@ all.cyto.peaksA<- subset(all.cyto.peaks, Channel=="GCaMP")
 all.cyto.peaksB<- subset(all.cyto.peaks, Channel=="RCaMP")
 
 # ROITypes
-all.cyto.peaksA$ROIType[grepl("r",all.cyto.peaksA$ROIName)]="Process"
-all.cyto.peaksA$ROIType[grepl("E",all.cyto.peaksA$ROIName)]="Endfoot"
-all.cyto.peaksA$ROIType[grepl("S",all.cyto.peaksA$ROIName)]="Soma"
-all.cyto.peaksB$ROIType[grepl("r",all.cyto.peaksB$ROIName)]="Dendrite"
-all.cyto.peaksB$ROIType[grepl("D",all.cyto.peaksB$ROIName)]="Dendrite"
-all.cyto.peaksB$ROIType[grepl("N",all.cyto.peaksB$ROIName)]="Neuron"
+all.cyto.peaksA$ROIType[grepl("r",all.cyto.peaksA$roiName)]="Process"
+all.cyto.peaksA$ROIType[grepl("E",all.cyto.peaksA$roiName)]="Endfoot"
+all.cyto.peaksA$ROIType[grepl("S",all.cyto.peaksA$roiName)]="Soma"
+all.cyto.peaksB$ROIType[grepl("r",all.cyto.peaksB$roiName)]="Dendrite"
+all.cyto.peaksB$ROIType[grepl("D",all.cyto.peaksB$roiName)]="Dendrite"
+all.cyto.peaksB$ROIType[grepl("N",all.cyto.peaksB$roiName)]="Neuron"
 
 all.cyto.peaks<-rbind(all.cyto.peaksA, all.cyto.peaksB)
 all.cyto.peaks$ROIType<- as.factor(all.cyto.peaks$ROIType)
@@ -285,7 +338,8 @@ all.cyto.peaks<-all.cyto.peaks[!Overlap,]
 
 
 # adjust peak time and duration
-# FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+all.cyto.OT$BL_time<-all.cyto.OT$baseline/all.cyto.OT$FrameRate
+all.cyto.peaks<-merge(all.cyto.peaks, all.cyto.OT[, c("ROIs_Cond", "BL_time")], by="ROIs_Cond", all.x=TRUE)
 
 all.cyto.peaks$peakTime<- all.cyto.peaks$peakTime-all.cyto.peaks$BL_time
 all.cyto.peaks$peakStart<- all.cyto.peaks$peakStart-all.cyto.peaks$BL_time
@@ -306,25 +360,103 @@ rm(all.cyto.peaks2,all.cyto.peaks3, all.cyto.peaksA, all.cyto.peaksB)
 
 
 
+################
+# NEURONAL PERCENTILE OF ONSET
+
+# combine neuronal responses from cyto-GCaMP and Lck-GCaMP trials
+# neuronal responses to stimulation
+NeuronalStim1<-subset(all.lck.OT, Channel=="RCaMP" & Condition=="Stim")
+NeuronalStim2<-subset(all.cyto.OT, Channel=="RCaMP" & Condition=="Stim")
+all.NeuronalStim<-rbind(NeuronalStim1, NeuronalStim2)
+
+ggplot(all.NeuronalStim,aes(x=OnsetTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("all RCaMP onset times from stim trials")+
+  max.theme
+
+Neuron95Onset<-quantile(all.NeuronalStim$OnsetTime[all.NeuronalStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Neuron95Onset)
+
+Neuron25<-Neuron95Onset[[6]]
+Neuron50<-Neuron95Onset[[11]]
+Neuron75<-Neuron95Onset[[16]]
+
+# should have an onset time in 8 s stimulus
+
+ggplot(all.NeuronalStim[all.NeuronalStim$OnsetTime<8,],aes(x=OnsetTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
+  geom_vline(xintercept=Neuron25) +
+  geom_vline(xintercept=Neuron50) + 
+  geom_vline(xintercept=Neuron75) + 
+  max.theme
+
+#######
+# ASTROCYTE PERCENTILE ONSET
+# Lck Astrocytes
+AstroStim.Lck<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim")
+
+ggplot(AstroStim.Lck[AstroStim.Lck$OnsetTime<15,],aes(x=OnsetTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("0-15 s Lck.GCaMP onset times from stim trials")+
+  max.theme
+
+Lck.Astro95Onset<-quantile(AstroStim.Lck$OnsetTime[AstroStim.Lck$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Lck.Astro95Onset)
+
+# cyto Astrocytes
+AstroStim.cyto<-subset(all.cyto.OT, Channel=="GCaMP" & Condition=="Stim")
+
+ggplot(AstroStim.cyto[AstroStim.cyto$OnsetTime<8,],aes(x=OnsetTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("0-15 s cyto.GCaMP onset times from stim trials")+
+  max.theme
+
+cyto.Astro95Onset<-quantile(AstroStim.cyto$OnsetTime[AstroStim.cyto$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(cyto.Astro95Onset)
+
+
+#######
+# ASTROCYTE PERCENTILE PEAK TIME
+# Lck Astrocytes
+AstroStim.Lck.PT<-subset(all.lck.peaks, Channel=="GCaMP" & Condition=="Stim")
+
+ggplot(AstroStim.Lck.PT[AstroStim.Lck.PT$peakTime<15,],aes(x=peakTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("0-20 s Lck.GCaMP peak times from stim trials")+
+  max.theme
+
+Lck.Astro95Onset<-quantile(AstroStim.Lck$OnsetTime[AstroStim.Lck$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Lck.Astro95Onset)
+
+# cyto Astrocytes
+AstroStim.cyto<-subset(all.cyto.OT, Channel=="GCaMP" & Condition=="Stim")
+
+ggplot(AstroStim.cyto[AstroStim.cyto$OnsetTime<8,],aes(x=OnsetTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("0-15 s cyto.GCaMP onset times from stim trials")+
+  max.theme
+
+cyto.Astro95Onset<-quantile(AstroStim.cyto$OnsetTime[AstroStim.cyto$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(cyto.Astro95Onset)
+
+
 ######
 
 ## NOTE: define a stimulation window
 # for distributions: histograms
 
-stimwindow=15
-
+stimwindow=15    # chosen because most of the astrocyte responses were done by this point
 
 
 stim.lck.OT.dist<-subset(all.lck.OT,Condition!="shortstim" & OnsetTime<stimwindow)
-short.lck.OT.dist<-subset(all.lck.OT,Condition!="Stim" & OnsetTime<stimwindow)
 stim.lck.OT.dist.2s<-subset(all.lck.OT.2s,Condition!="shortstim" & OnsetTime<stimwindow)
 
 stim.cyto.OT.dist<-subset(all.cyto.OT,Condition!="shortstim" & OnsetTime<stimwindow)
-short.cyto.OT.dist<-subset(all.cyto.OT,Condition!="Stim" & OnsetTime<stimwindow)
 stim.cyto.OT.dist.2s<-subset(all.cyto.OT.2s,Condition!="shortstim" & OnsetTime<stimwindow)
 
 
-#####
+
 # for median and mean calculations
 
 # no stim vs 8 s stim- neuronal window=9s, AC window= 15 s for peak time, neuronal window=2s, AC window=12 s for onset
@@ -333,19 +465,18 @@ stim.cyto.OT.dist.2s<-subset(all.cyto.OT.2s,Condition!="shortstim" & OnsetTime<s
 LongN_PTwind2=9
 LongAC_PTwind2=15
 
-LongN_OTwind2=2
+LongN_OTwind2=Neuron75
 LongAC_OTwind2=12
 
 Long_PTwind=12
-
 Long_OTwind=10
 
 
-ShortN_PTwind=2
-ShortAC_PTwind=10
+#ShortN_PTwind=2
+#ShortAC_PTwind=10
 
-ShortN_OTwind=2
-ShortAC_OTwind=8
+#ShortN_OTwind=2
+#ShortAC_OTwind=8
 
 # remove data that is outside the above windows
 # lck
@@ -357,11 +488,11 @@ stim.lck.OT.G<-subset(stim.lck.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind2)
 
 stim.lck.OT.window2<-rbind(stim.lck.OT.R, stim.lck.OT.G)
 
-short.lck.OT<-subset(all.lck.OT,Condition!="Stim")
-short.lck.OT.R<-subset(short.lck.OT, Channel=="RCaMP" & OnsetTime<=ShortN_OTwind)
-short.lck.OT.G<-subset(short.lck.OT, Channel=="GCaMP" & OnsetTime<=ShortAC_OTwind)
+#short.lck.OT<-subset(all.lck.OT,Condition!="Stim")
+#short.lck.OT.R<-subset(short.lck.OT, Channel=="RCaMP" & OnsetTime<=ShortN_OTwind)
+#short.lck.OT.G<-subset(short.lck.OT, Channel=="GCaMP" & OnsetTime<=ShortAC_OTwind)
 
-short.lck.OT.window<-rbind(short.lck.OT.R, short.lck.OT.G)
+#short.lck.OT.window<-rbind(short.lck.OT.R, short.lck.OT.G)
 
 
 #cyto
@@ -371,11 +502,11 @@ stim.cyto.OT.G<-subset(stim.cyto.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind
 
 stim.cyto.OT.window<-rbind(stim.cyto.OT.R, stim.cyto.OT.G)
 
-short.cyto.OT<-subset(all.cyto.OT,Condition!="Stim")
-short.cyto.OT.R<-subset(short.cyto.OT, Channel=="RCaMP" & OnsetTime<=ShortN_OTwind)
-short.cyto.OT.G<-subset(short.cyto.OT, Channel=="GCaMP" & OnsetTime<=ShortAC_OTwind)
+#short.cyto.OT<-subset(all.cyto.OT,Condition!="Stim")
+#short.cyto.OT.R<-subset(short.cyto.OT, Channel=="RCaMP" & OnsetTime<=ShortN_OTwind)
+#short.cyto.OT.G<-subset(short.cyto.OT, Channel=="GCaMP" & OnsetTime<=ShortAC_OTwind)
 
-short.cyto.OT.window<-rbind(short.cyto.OT.R, short.cyto.OT.G)
+#short.cyto.OT.window<-rbind(short.cyto.OT.R, short.cyto.OT.G)
 
 
 # peak times
@@ -389,29 +520,32 @@ stim.lck.PT.G<-subset(stim.lck.PT, Channel=="GCaMP" & peakTime<=LongAC_PTwind2 &
 
 stim.lck.peaks.window2<-rbind(stim.lck.PT.R, stim.lck.PT.G)
 
-short.lck.PT<-subset(all.lck.peaks,Condition!="Stim")
-short.lck.PT.R<-subset(short.lck.PT, Channel=="RCaMP" & peakTime<=ShortN_PTwind & peakTime>=0 & Duration<45)
-short.lck.PT.G<-subset(short.lck.PT, Channel=="GCaMP" & peakTime<=ShortAC_PTwind & peakTime>=0 & Duration<45)
+#short.lck.PT<-subset(all.lck.peaks,Condition!="Stim")
+#short.lck.PT.R<-subset(short.lck.PT, Channel=="RCaMP" & peakTime<=ShortN_PTwind & peakTime>=0 & Duration<45)
+#short.lck.PT.G<-subset(short.lck.PT, Channel=="GCaMP" & peakTime<=ShortAC_PTwind & peakTime>=0 & Duration<45)
 
-short.lck.peaks.window<-rbind(short.lck.PT.R, short.lck.PT.G)
+#short.lck.peaks.window<-rbind(short.lck.PT.R, short.lck.PT.G)
 
 
 #cyto
 stim.cyto.PT<-subset(all.cyto.peaks,Condition!="shortstim")
-stim.cyto.PT.R<-subset(stim.cyto.PT, Channel=="RCaMP" & peakTime<=LongN_PTwind & peakTime>=0 & Duration<50)
-stim.cyto.PT.G<-subset(stim.cyto.PT, Channel=="GCaMP" & peakTime<=LongAC_PTwind & peakTime>=0 & Duration<50)
+stim.cyto.PT.R<-subset(stim.cyto.PT, Channel=="RCaMP" & peakTime<=LongN_PTwind2 & peakTime>=0 & Duration<50)
+stim.cyto.PT.G<-subset(stim.cyto.PT, Channel=="GCaMP" & peakTime<=LongAC_PTwind2 & peakTime>=0 & Duration<50)
 
 stim.cyto.peaks.window<-rbind(stim.cyto.PT.R, stim.cyto.PT.G)
 
-short.cyto.PT<-subset(all.cyto.peaks,Condition!="Stim")
-short.cyto.PT.R<-subset(short.cyto.PT, Channel=="RCaMP" & peakTime<=ShortN_PTwind & peakTime>=0 & Duration<50)
-short.cyto.PT.G<-subset(short.cyto.PT, Channel=="GCaMP" & peakTime<=ShortAC_PTwind & peakTime>=0 & Duration<50)
+#short.cyto.PT<-subset(all.cyto.peaks,Condition!="Stim")
+#short.cyto.PT.R<-subset(short.cyto.PT, Channel=="RCaMP" & peakTime<=ShortN_PTwind & peakTime>=0 & Duration<50)
+#short.cyto.PT.G<-subset(short.cyto.PT, Channel=="GCaMP" & peakTime<=ShortAC_PTwind & peakTime>=0 & Duration<50)
 
-short.cyto.peaks.window<-rbind(short.cyto.PT.R, short.cyto.PT.G)
+#short.cyto.peaks.window<-rbind(short.cyto.PT.R, short.cyto.PT.G)
 
 
+ rm(stim.cyto.OT.G, stim.cyto.OT.R, stim.lck.OT.G, stim.lck.OT.R, stim.cyto.PT.G, stim.cyto.PT.R, stim.lck.PT.G, stim.lck.PT.R)
 
-######
+ 
+ 
+ ######
 # Lck data fast ROIS- 1
 
 # considering 1 s before and 1 s after stimulation 
@@ -581,7 +715,6 @@ print(OT.lck.RC.NSvsS.adtest)
 
 ######
 # number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
-
 stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
 
 ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
@@ -968,12 +1101,12 @@ stim.both.OT.window<-rbind(stim.lck.OT.window,stim.cyto.OT.window)
 
 # combine lck and cyto data sets for peak times
 
-stim.lck.peaks.window$sensor<- "lck"
+stim.lck.peaks.window2$sensor<- "lck"
 stim.cyto.peaks.window$sensor<-"cyto"
-stim.lck.peaks.window$Channel<-paste(stim.lck.peaks.window$sensor, stim.lck.peaks.window$Channel, sep="_")
+stim.lck.peaks.window2$Channel<-paste(stim.lck.peaks.window2$sensor, stim.lck.peaks.window2$Channel, sep="_")
 stim.cyto.peaks.window$Channel<-paste(stim.cyto.peaks.window$sensor, stim.cyto.peaks.window$Channel, sep="_")
 
-stim.both.peaks.window<-rbind(stim.lck.peaks.window,stim.cyto.peaks.window)
+stim.both.peaks.window<-rbind(stim.lck.peaks.window2,stim.cyto.peaks.window)
 
 
 stim.both.OT.window$Channel <- factor(stim.both.OT.window$Channel, levels = c("cyto_RCaMP","cyto_GCaMP","lck_RCaMP","lck_GCaMP"))
@@ -1247,10 +1380,9 @@ summary(nROI.both.stim.Cond_Channel)
 #######
 # peak times only for ROIs with onset times?
 
-#stim.both.alldata<-merge(stim.both.peaks.window, stim.both.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
+
+stim.both.alldata<-merge(stim.both.peaks.window, stim.both.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
 stim.lck.alldata<-merge(stim.lck.peaks.window2, stim.lck.OT.window[, c("ROIs_Cond", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond")
-
-
 
 # onset times
 ggplot(stim.both.alldata, aes(x=Channel,y=OnsetTime, fill= Condition)) +
@@ -1274,8 +1406,8 @@ ggplot(stim.both.alldata, aes(x=Channel,y=peakTime, fill= Condition)) +
 
 # identify "FAST" astrocytes
 stim.both.alldata$Group<-0
-stim.both.alldata$Group[stim.both.alldata$OnsetTime<1]<-"fast"
-stim.both.alldata$Group[stim.both.alldata$OnsetTime>=1]<-"delayed"
+stim.both.alldata$Group[stim.both.alldata$OnsetTime<=Neuron75]<-"fast"
+stim.both.alldata$Group[stim.both.alldata$OnsetTime>Neuron75]<-"delayed"
 
 stim.both.alldata$Group <- factor(stim.both.alldata$Group, levels = c("fast","delayed"))
 stim.both.alldata$Channel <- factor(stim.both.alldata$Channel, levels = c("cyto_RCaMP","cyto_GCaMP","lck_RCaMP","lck_GCaMP"))
@@ -1284,30 +1416,34 @@ stim.both.alldata$Channel <- factor(stim.both.alldata$Channel, levels = c("cyto_
 # remove cyto-gcamp data
 stim.lck.alldata<-subset(stim.both.alldata, sensor=="lck")
 
-######
-# explore the data
-library("GGally")
-
-pairsData<-stim.lck.alldata[,c(1,5,11,14,16,18,21,26,28,29,30,31)]
-
-pairsData$Cond_Channel<-interaction(pairsData$Condition, pairsData$Channel)
-pairsData$Cond_Channel<-as.factor(pairsData$Cond_Channel)
-
-pairsData$Channel_Group<-interaction(pairsData$Channel, pairsData$Group)
-pairsData$Channel_Group<-as.factor(pairsData$Channel_Group)
-
-ggpairs(data=pairsData[,c(10:12)], mapping=aes(color = Group))
-ggpairs(data=pairsData[,c(7:12,13)], mapping=aes(color = Cond_Channel))
-
-# only considering fast and delayed
-ggpairs(data=pairsData[pairsData$Condition=="Stim",c(1:3,5,6,14)],mapping=aes(color = Channel_Group))
-ggpairs(data=pairsData[pairsData$Condition=="Stim",c(7:12,14)],mapping=aes(color = Channel_Group))
-
-
-
-
 
 #####
+# number of fast ROIs in each trial for each field of view 
+# based on neuronal percentile onset time
+
+stim.lck.alldata$Channel <- factor(stim.lck.alldata$Channel, levels = c("RCaMP","GCaMP"))
+
+lck.fast.ROInumalldata<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+
+# add in number of trials
+ROInum.lck.stim$Ani_Spot_Cond<-paste(ROInum.lck.stim$Animal, ROInum.lck.stim$Spot, ROInum.lck.stim$Condition, sep="_")
+
+ROInum.lck.stim<-merge(ROInum.lck.stim, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+
+ROInum.lck.stim$ROIsPerTrial<-ROInum.lck.stim$nROIs/ROInum.lck.stim$nTrials
+
+
+# mean
+df.lck.ROInum.mean<-summarySE(ROInum.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
+
+
+ggplot(df.lck.ROInum.mean, aes(x=Channel,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view") +
+  max.theme
+
+######
 # fast vs delayed
 
 stim.lck.alldata$Channel_Group<-interaction(stim.lck.alldata$Channel, stim.lck.alldata$Group)
@@ -3230,22 +3366,119 @@ summary(group.dur.Group_type.pv)
 
 ######
 # fraction of active pixels from all the astrocyte pixels
-# active pixels from any ROI with a signal (not just those during stimulation)
 
-spot.lck.stim<-ddply(all.lck.peaks[all.lck.peaks$Channel=="GCaMP",], c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(unique(ROIs_Cond)), nFluoPix=nFluoPix,
-                     nActivePix=nActivePix, PixelSize=pixelsize)
+# only consider active based ROIs (i.e. processes)
 
-spot.lck.stim$FracActive=spot.lck.stim$nActivePix/spot.lck.stim$nFluoPix
-spot.lck.stim$FracActivePerROI=spot.lck.stim$FracActive/spot.lck.stim$nROIs
+Lck.processes<-subset(all.lck.peaks, Channel=="GCaMP" & ROIType=="Process")
 
-df.FracActive<- summarySE(spot.lck.stim, measurevar = "FracActive", groupvars = c("Condition"))
+# any ROIs with a signal in the trial
+AllROI.lck.proc.Pixels<-ddply(Lck.processes, c("ROIs_Cond","trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
+                     nActivePix=sum(nActivePix))
 
-ggplot(data=df.FracActive, aes(x=Condition, y= FracActive, fill=Condition)) + 
+# only ROIS with a signal near the stimulus
+StimROI.lck.proc.Pixels<-ddply(Lck.processes[Lck.processes$peakTime<15,], c("ROIs_Cond","trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
+                              nActivePix=sum(nActivePix))
+
+# summarize per trial and spot
+Spot.lck.proc.AllPixels<-ddply(AllROI.lck.proc.Pixels, c("trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+                           nActivePix=sum(nActivePix))
+Spot.lck.proc.AllPixels$FracActive=Spot.lck.proc.AllPixels$nActivePix/Spot.lck.proc.AllPixels$nFluoPix
+Spot.lck.proc.AllPixels$FracActivePerROI=Spot.lck.proc.AllPixels$FracActive/Spot.lck.proc.AllPixels$nROIs
+
+Spot.lck.proc.StimPixels<-ddply(StimROI.lck.proc.Pixels, c("trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+                               nActivePix=sum(nActivePix))
+Spot.lck.proc.StimPixels$FracActive=Spot.lck.proc.StimPixels$nActivePix/Spot.lck.proc.StimPixels$nFluoPix
+Spot.lck.proc.StimPixels$FracActivePerROI=Spot.lck.proc.StimPixels$FracActive/Spot.lck.proc.StimPixels$nROIs
+
+
+
+df.FracActive.lck.all<- summarySE(Spot.lck.proc.AllPixels, measurevar = "FracActive", groupvars = c("Condition"))
+df.FracActive.lck.stim<- summarySE(Spot.lck.proc.StimPixels, measurevar = "FracActive", groupvars = c("Condition"))
+
+ggplot(data=df.FracActive.lck.all, aes(x=Condition, y= FracActive, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("FracActive") +
-  scale_fill_manual(values=cbbPalette) + 
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("All Lck") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
   max.theme
+
+ggplot(data=df.FracActive.lck.stim, aes(x=Condition, y= FracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("Lck ROIs with peaks during stim period") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+
+# cyto GCaMP
+cyto.processes<-subset(all.cyto.peaks, Channel=="GCaMP" & ROIType=="Process")
+
+# any ROIs with a signal in the trial
+AllROI.cyto.proc.Pixels<-ddply(cyto.processes, c("ROIs_Cond","trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
+                              nActivePix=sum(nActivePix))
+
+# only ROIS with a signal near the stimulus
+StimROI.cyto.proc.Pixels<-ddply(cyto.processes[cyto.processes$peakTime<15,], c("ROIs_Cond","Animal","Spot","trials","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
+                               nActivePix=sum(nActivePix))
+
+# summarize per trial and spot
+Spot.cyto.proc.AllPixels<-ddply(AllROI.cyto.proc.Pixels, c("trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+                               nActivePix=sum(nActivePix))
+Spot.cyto.proc.AllPixels$FracActive=Spot.cyto.proc.AllPixels$nActivePix/Spot.cyto.proc.AllPixels$nFluoPix
+Spot.cyto.proc.AllPixels$FracActivePerROI=Spot.cyto.proc.AllPixels$FracActive/Spot.cyto.proc.AllPixels$nROIs
+
+Spot.cyto.proc.StimPixels<-ddply(StimROI.cyto.proc.Pixels, c("trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+                                nActivePix=sum(nActivePix))
+Spot.cyto.proc.StimPixels$FracActive=Spot.cyto.proc.StimPixels$nActivePix/Spot.cyto.proc.StimPixels$nFluoPix
+Spot.cyto.proc.StimPixels$FracActivePerROI=Spot.cyto.proc.StimPixels$FracActive/Spot.cyto.proc.StimPixels$nROIs
+
+
+
+df.FracActive.cyto.all<- summarySE(Spot.cyto.proc.AllPixels, measurevar = "FracActive", groupvars = c("Condition"))
+df.FracActive.cyto.stim<- summarySE(Spot.cyto.proc.StimPixels, measurevar = "FracActive", groupvars = c("Condition"))
+
+ggplot(data=df.FracActive.cyto.all, aes(x=Condition, y= FracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("All cyto") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+ggplot(data=df.FracActive.cyto.stim, aes(x=Condition, y= FracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("cyto ROIs with peaks during stim period") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+
+
+## Stats
+
+#lck
+#only consider STIM case
+fracActive.lck.stim.null = lmer(FracActive ~ (1|Animal) + (1|Spot) + (1|trials), Spot.lck.proc.StimPixels,REML=FALSE)
+fracActive.lck.stim.model1 = lmer(FracActive ~ Condition + (1|Animal) + (1|Spot) + (1|trials), Spot.lck.proc.StimPixels,REML=FALSE)
+fracActive.lck.stim.anova  <- anova(fracActive.lck.stim.null, fracActive.lck.stim.model1)
+print(fracActive.lck.stim.anova)
+
+fracActive.lck.stim.pvalue<- glht(fracActive.lck.stim.model1, mcp(Condition= "Tukey"))
+summary(fracActive.lck.stim.pvalue)
+
+
+#cyto
+#only consider STIM case
+fracActive.cyto.stim.null = lmer(FracActive ~ (1|Animal) + (1|Spot) + (1|trials), Spot.cyto.proc.StimPixels,REML=FALSE)
+fracActive.cyto.stim.model1 = lmer(FracActive ~ Condition + (1|Animal) + (1|Spot) + (1|trials), Spot.cyto.proc.StimPixels,REML=FALSE)
+fracActive.cyto.stim.anova  <- anova(fracActive.cyto.stim.null, fracActive.cyto.stim.model1)
+print(fracActive.cyto.stim.anova)
+
+fracActive.cyto.stim.pvalue<- glht(fracActive.cyto.stim.model1, mcp(Condition= "Tukey"))
+summary(fracActive.cyto.stim.pvalue)
 
 #################
 # conditional probabilty of astrocyte response given a nearby neuronal response
