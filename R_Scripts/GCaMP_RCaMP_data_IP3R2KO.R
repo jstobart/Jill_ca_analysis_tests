@@ -40,8 +40,11 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.peaks1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.OT1<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.peaks2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+lck.OT2<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+
 
 ##### 
 #home files
@@ -54,12 +57,51 @@ all.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetT
 
 lsm.options(pbkrtest.limit = 100000)
 
+# remove genotype information 
+lck.peaks2$Genotype<-NULL
+lck.OT2$Genotype<-NULL
+lck.OT1$Spot_trial<-NULL
+lck.OT1$ROIs_trial<-NULL
+lck.OT1$ROIType<-NULL
+names(lck.OT1)[names(lck.OT1)=="Overlap"] <- "overlap"
+
+# join data sets
+all.lck.peaks<-rbind(lck.peaks1,lck.peaks2)
+all.lck.OT<-rbind(lck.OT1, lck.OT2)
+
+# remove the data frames that are combined
+rm(lck.peaks1,lck.peaks2,lck.OT1, lck.OT2)
+
 # only consider IP3R2KO
 all.lck.peaks<-all.lck.peaks[grepl("IP",all.lck.peaks$Animal),]
 all.lck.OT<-all.lck.OT[grepl("IP",all.lck.OT$Animal),]
 
+#############
+# ONSET Times
+# unique ROI names
+all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, all.lck.OT$ROI, sep= "_")
+all.lck.OT$Spot_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, sep= "_")
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
+
+all.lck.OT.2s$Spot_trial_Cond<-paste(all.lck.OT.2s$Spot_trial, all.lck.OT.2s$Condition, sep="_")
+all.lck.OT.2s$ROIs_Cond<-paste(all.lck.OT.2s$ROIs_trial, all.lck.OT.2s$Condition, sep="_")
+
+# ROI Types
+all.lck.OT$ROIType= "none"
+all.lck.OTA<- subset(all.lck.OT, Channel=="GCaMP")
+all.lck.OTB<- subset(all.lck.OT, Channel=="RCaMP")
+
+# ROITypes
+all.lck.OTA$ROIType[grepl("r",all.lck.OTA$ROI)]="Process"
+all.lck.OTA$ROIType[grepl("E",all.lck.OTA$ROI)]="Endfoot"
+all.lck.OTB$ROIType[grepl("r",all.lck.OTB$ROI)]="Dendrite"
+all.lck.OTB$ROIType[grepl("D",all.lck.OTB$ROI)]="Dendrite"
+all.lck.OTB$ROIType[grepl("N",all.lck.OTB$ROI)]="Neuron"
+#all.lck.OTB$ROIType[grepl("S",all.lck.OTB$ROI)]="SmoothMuscle"
+
+all.lck.OT<-rbind(all.lck.OTA, all.lck.OTB)
+all.lck.OT$ROIType<- as.factor(all.lck.OT$ROIType)
 
 
 # REMOVE duplicate entries from onset time and peak time data frames 
@@ -71,17 +113,20 @@ all.lck.OT<-distinct(all.lck.OT2, ROIs_Cond, .keep_all = TRUE)
 
 #adjust onset time for the data with 2 s before stimulation included:
 
-rm(all.lck.OT2)
+rm(all.lck.OT2,all.lck.OTA, all.lck.OTB)
 
 # Genotype
 all.lck.peaks$Genotype="IP3R2_WT"
 all.lck.peaks$Genotype[grepl("IPRG1",all.lck.peaks$Animal)]="IP3R2_KO"
 all.lck.peaks$Genotype[grepl("IPRG4",all.lck.peaks$Animal)]="IP3R2_KO"
+all.lck.peaks$Genotype[grepl("IPRG5",all.lck.peaks$Animal)]="IP3R2_KO"
+all.lck.peaks$Genotype[grepl("IPRG7",all.lck.peaks$Animal)]="IP3R2_KO"
 
 all.lck.OT$Genotype="IP3R2_WT"
 all.lck.OT$Genotype[grepl("IPRG1",all.lck.OT$Animal)]="IP3R2_KO"
 all.lck.OT$Genotype[grepl("IPRG4",all.lck.OT$Animal)]="IP3R2_KO"
-
+all.lck.OT$Genotype[grepl("IPRG5",all.lck.OT$Animal)]="IP3R2_KO"
+all.lck.OT$Genotype[grepl("IPRG7",all.lck.OT$Animal)]="IP3R2_KO"
 
 all.lck.peaks$Genotype<-as.factor(all.lck.peaks$Genotype)
 all.lck.OT$Genotype<-as.factor(all.lck.OT$Genotype)
