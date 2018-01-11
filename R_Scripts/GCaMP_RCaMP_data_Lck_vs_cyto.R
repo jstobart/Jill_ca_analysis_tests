@@ -199,6 +199,7 @@ all.lck.peaks$ROIs_Cond<-paste(all.lck.peaks$ROIs_trial, all.lck.peaks$Condition
 
 # count number of trials per spot
 Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Spot","Condition"), summarise, nTrials=length(unique(Trial)))
+Spot.lck.ntrials$Ani_Spot_Cond<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot, Spot.lck.ntrials$Condition, sep="_")
 
 
 # remove ROIs with no peaks
@@ -377,76 +378,179 @@ ggplot(all.NeuronalStim,aes(x=OnsetTime)) +
 Neuron95Onset<-quantile(all.NeuronalStim$OnsetTime[all.NeuronalStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 print(Neuron95Onset)
 
-Neuron25<-Neuron95Onset[[6]]
-Neuron50<-Neuron95Onset[[11]]
-Neuron75<-Neuron95Onset[[16]]
+NeuronOT25<-Neuron95Onset[[6]]
+NeuronOT50<-Neuron95Onset[[11]]
+NeuronOT75<-Neuron95Onset[[16]]
 
 # should have an onset time in 8 s stimulus
 
 ggplot(all.NeuronalStim[all.NeuronalStim$OnsetTime<8,],aes(x=OnsetTime)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
-  geom_vline(xintercept=Neuron25) +
-  geom_vline(xintercept=Neuron50) + 
-  geom_vline(xintercept=Neuron75) + 
+  geom_vline(xintercept=NeuronOT25) +
+  geom_vline(xintercept=NeuronOT50) + 
+  geom_vline(xintercept=NeuronOT75) + 
   max.theme
+
+###
+# NEURONAL PERCENTILE OF Peak TIMES
+
+# combine neuronal responses from cyto-GCaMP and Lck-GCaMP trials
+# neuronal responses to stimulation
+NeuronalStim1<-subset(all.lck.peaks, Channel=="RCaMP" & Condition=="Stim")
+NeuronalStim2<-subset(all.cyto.peaks, Channel=="RCaMP" & Condition=="Stim")
+all.NeuronalStim.peaks<-rbind(NeuronalStim1, NeuronalStim2)
+
+ggplot(all.NeuronalStim.peaks[all.NeuronalStim.peaks$peakTime<40,],aes(x=peakTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("all RCaMP peak times from stim trials")+
+  max.theme
+
+Neuron95PeakTime<-quantile(all.NeuronalStim.peaks$peakTime[all.NeuronalStim.peaks$peakTime<40], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Neuron95PeakTime)
+
+NeuronPT25<-Neuron95Onset[[6]]
+NeuronPT50<-Neuron95Onset[[11]]
+NeuronPT75<-Neuron95Onset[[16]]
+
+# should have a peak time in 8 s stimulus
+
+ggplot(all.NeuronalStim.peaks[all.NeuronalStim.peaks$peakTime<8,],aes(x=peakTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
+  max.theme
+
 
 #######
 # ASTROCYTE PERCENTILE ONSET
 # Lck Astrocytes
 AstroStim.Lck<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim")
 
+ggplot(AstroStim.Lck[AstroStim.Lck$OnsetTime<30,],aes(x=OnsetTime, group=Condition, fill=Condition)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("0-15 s Lck.GCaMP onset times from stim trials")+
+  max.theme
+
 ggplot(AstroStim.Lck[AstroStim.Lck$OnsetTime<15,],aes(x=OnsetTime)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("0-15 s Lck.GCaMP onset times from stim trials")+
   max.theme
 
-Lck.Astro95Onset<-quantile(AstroStim.Lck$OnsetTime[AstroStim.Lck$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+Lck.Astro95Onset<-quantile(AstroStim.Lck$OnsetTime[AstroStim.Lck$OnsetTime<40], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 print(Lck.Astro95Onset)
 
-# cyto Astrocytes
-AstroStim.cyto<-subset(all.cyto.OT, Channel=="GCaMP" & Condition=="Stim")
-
-ggplot(AstroStim.cyto[AstroStim.cyto$OnsetTime<8,],aes(x=OnsetTime)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("0-15 s cyto.GCaMP onset times from stim trials")+
-  max.theme
-
-cyto.Astro95Onset<-quantile(AstroStim.cyto$OnsetTime[AstroStim.cyto$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
-print(cyto.Astro95Onset)
+Lck.Astro.OT75<-Lck.Astro95Onset[[16]]
+Lck.Astro.OT80<-Lck.Astro95Onset[[17]]
 
 
-#######
 # ASTROCYTE PERCENTILE PEAK TIME
 # Lck Astrocytes
 AstroStim.Lck.PT<-subset(all.lck.peaks, Channel=="GCaMP" & Condition=="Stim")
 
-ggplot(AstroStim.Lck.PT[AstroStim.Lck.PT$peakTime<15,],aes(x=peakTime)) +
+ggplot(AstroStim.Lck.PT[AstroStim.Lck.PT$peakTime<40,],aes(x=peakTime)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("0-20 s Lck.GCaMP peak times from stim trials")+
   max.theme
 
-Lck.Astro95Onset<-quantile(AstroStim.Lck$OnsetTime[AstroStim.Lck$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
-print(Lck.Astro95Onset)
+Lck.Astro95PeakT<-quantile(AstroStim.Lck.PT$peakTime[AstroStim.Lck.PT$peakTime<40], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(Lck.Astro95PeakT)
 
+Lck.Astro.PT75<-Lck.Astro95PeakT[[16]]
+Lck.Astro.PT80<-Lck.Astro95PeakT[[17]]
+
+
+# combine Onset times and peak times to allow plotting on the same histogram
+AstroStim.Lck$TimeType="Onset"
+AstroStim.Lck.PT$TimeType="PeakMax"
+
+Lck.Onsettime<-AstroStim.Lck[,c(12,21)]
+Lck.Peaktime<-AstroStim.Lck.PT[,c(6,30)]
+
+names(Lck.Onsettime)[names(Lck.Onsettime)=="OnsetTime"] <- "time"
+names(Lck.Peaktime)[names(Lck.Peaktime)=="peakTime"] <- "time"
+
+Lck.combinedTimes<-rbind(Lck.Onsettime,Lck.Peaktime)
+
+ggplot(Lck.combinedTimes[Lck.combinedTimes$time<40,],aes(x=time, fill=TimeType)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("Lck Onset and peak time distributions from stim trials, 80th per")+
+  geom_vline(xintercept=Lck.Astro.OT80) +
+  geom_vline(xintercept=Lck.Astro.PT80) + 
+  max.theme
+
+ggplot(Lck.combinedTimes[Lck.combinedTimes$time<40,],aes(x=time, fill=TimeType)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("Lck Onset and peak time distributions from stim trials, 75th per")+
+  geom_vline(xintercept=Lck.Astro.OT75) +
+  geom_vline(xintercept=Lck.Astro.PT75) + 
+  max.theme
+
+##################
 # cyto Astrocytes
 AstroStim.cyto<-subset(all.cyto.OT, Channel=="GCaMP" & Condition=="Stim")
 
-ggplot(AstroStim.cyto[AstroStim.cyto$OnsetTime<8,],aes(x=OnsetTime)) +
+ggplot(AstroStim.cyto[AstroStim.cyto$OnsetTime<25,],aes(x=OnsetTime)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("0-15 s cyto.GCaMP onset times from stim trials")+
   max.theme
 
-cyto.Astro95Onset<-quantile(AstroStim.cyto$OnsetTime[AstroStim.cyto$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+cyto.Astro95Onset<-quantile(AstroStim.cyto$OnsetTime[AstroStim.cyto$OnsetTime<40], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 print(cyto.Astro95Onset)
 
+cyto.Astro.OT75<-cyto.Astro95Onset[[16]]
+cyto.Astro.OT80<-cyto.Astro95Onset[[17]]
+
+
+
+# peak time
+# cyto Astrocytes
+AstroStim.cyto.PT<-subset(all.cyto.peaks, Channel=="GCaMP" & Condition=="Stim")
+
+ggplot(AstroStim.cyto.PT[AstroStim.cyto.PT$peakTime<20,],aes(x=peakTime)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("0-15 s cyto.GCaMP peak times from stim trials")+
+  max.theme
+
+cyto.Astro95PeakT<-quantile(AstroStim.cyto.PT$peakTime[AstroStim.cyto.PT$peakTime<40], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+print(cyto.Astro95PeakT)
+
+cyto.Astro.PT75<-cyto.Astro95PeakT[[16]]
+cyto.Astro.PT80<-cyto.Astro95PeakT[[17]]
+
+
+
+# combine Onset times and peak times to allow plotting on the same histogram
+AstroStim.cyto$TimeType="Onset"
+AstroStim.cyto.PT$TimeType="PeakMax"
+
+cyto.Onsettime<-AstroStim.cyto[,c(12,21)]
+cyto.Peaktime<-AstroStim.cyto.PT[,c(6,30)]
+
+names(cyto.Onsettime)[names(cyto.Onsettime)=="OnsetTime"] <- "time"
+names(cyto.Peaktime)[names(cyto.Peaktime)=="peakTime"] <- "time"
+
+cyto.combinedTimes<-rbind(cyto.Onsettime,cyto.Peaktime)
+
+ggplot(cyto.combinedTimes[cyto.combinedTimes$time<40,],aes(x=time, fill=TimeType)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("cyto Onset and peak time distributions from stim trials, 80th per")+
+  geom_vline(xintercept=cyto.Astro.OT80) +
+  geom_vline(xintercept=cyto.Astro.PT80) + 
+  max.theme
+
+ggplot(cyto.combinedTimes[cyto.combinedTimes$time<40,],aes(x=time, fill=TimeType)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("cyto Onset and peak time distributions from stim trials, 75th per")+
+  geom_vline(xintercept=cyto.Astro.OT75) +
+  geom_vline(xintercept=cyto.Astro.PT75) + 
+  max.theme
 
 ######
 
 ## NOTE: define a stimulation window
 # for distributions: histograms
 
-stimwindow=15    # chosen because most of the astrocyte responses were done by this point
+stimwindow=15    # chosen because most of the astrocyte responses were done by this point, only for distributions
 
 
 stim.lck.OT.dist<-subset(all.lck.OT,Condition!="shortstim" & OnsetTime<stimwindow)
@@ -456,16 +560,389 @@ stim.cyto.OT.dist<-subset(all.cyto.OT,Condition!="shortstim" & OnsetTime<stimwin
 stim.cyto.OT.dist.2s<-subset(all.cyto.OT.2s,Condition!="shortstim" & OnsetTime<stimwindow)
 
 
+# LCK DATA
+# Onset time histograms- normalized to the number of trials
+
+# long stim vs no stim
+ntrials.lck.OT.long.R.dis<- ddply(stim.lck.OT.dist[stim.lck.OT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.lck.OT.long.G.dis<- ddply(stim.lck.OT.dist[stim.lck.OT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+
+
+#histogram bins
+histseq= seq(0,15,0.5)
+Nostim.N=0
+Stim.N=0
+Nostim.A=0
+Stim.A=0
+zeroRow<-data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
+
+# neuronal lck onset histogram
+# counts for each condition in the histogram
+Nostim.N=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="RCaMP" & stim.lck.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.N=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="RCaMP" & stim.lck.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+Nostim.A=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="GCaMP" & stim.lck.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.A=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="GCaMP" & stim.lck.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim.N=Nostim.N/ntrials.lck.OT.long.R.dis$ntrials[(ntrials.lck.OT.long.R.dis$Condition=="Nostim")]
+Stim.N=Stim.N/ntrials.lck.OT.long.R.dis$ntrials[(ntrials.lck.OT.long.R.dis$Condition=="Stim")]
+
+Nostim.A=Nostim.A/ntrials.lck.OT.long.G.dis$ntrials[(ntrials.lck.OT.long.G.dis$Condition=="Nostim")]
+Stim.A=Stim.A/ntrials.lck.OT.long.G.dis$ntrials[(ntrials.lck.OT.long.G.dis$Condition=="Stim")]
+
+#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+lck.long.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
+lck.long.histo2<-rbind(zeroRow,lck.long.histo)
+lck.long.histo2$time<-histseq
+
+ggplot(NULL, aes(x=time))+
+  geom_line(data=lck.long.histo2, aes(y=Nostim.N, color="Nostim.N")) +
+  geom_line(data=lck.long.histo2, aes(y=Stim.N, color="Stim.N")) +
+  geom_line(data=lck.long.histo2, aes(y=Nostim.A*7, color="Nostim.A")) +
+  geom_line(data=lck.long.histo2, aes(y=Stim.A*7, color="Stim.A")) +
+  scale_y_continuous(sec.axis = sec_axis(~./7, name = "Astrocyte peaks/trial")) + # secondary axis
+  ggtitle("stim- neurons vs astrocytes-lck data") + 
+  xlab("Onset Time (s)") + 
+  ylab("Neuron peaks/trial") + 
+  xlim(-0.5,15) +
+  max.theme
+
+
+
+#compare distributions (what is plotted in the figure)
+
+# ks test- astrocytes
+OT.lck.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
+print(OT.lck.GC.NSvsS.kstest)
+
+# neurons
+OT.lck.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
+print(OT.lck.RC.NSvsS.kstest)
+
+
+
+# Anderson Darling
+library("kSamples")
+#library("SuppDist")
+
+OT.lck.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
+print(OT.lck.GC.NSvsS.adtest)
+
+# neurons
+OT.lck.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
+print(OT.lck.RC.NSvsS.adtest)
+
+
+##
+# are there multiple modes?
+
+find_modes<- function(x) {
+  modes <- NULL
+  for ( i in 2:(length(x)-1) ){
+    if ( (x[i] > x[i-1]) & (x[i] > x[i+1]) ) {
+      modes <- c(modes,i)
+    }
+  }
+  if ( length(modes) == 0 ) {
+    modes = 'This is a monotonic distribution'
+  }
+  return(modes)
+}
+
+mymodes_indices <- find_modes(Stim.A) #you need to try it on the y axis
+
+histseq[mymodes_indices] #the actual modes
+
+######
+# Lck peak time distributions
+
+stimwindow=15
+histseq= seq(-5,15,0.5)
+
+stim.lck.PT.dist<-subset(all.lck.peaks,Condition!="shortstim" & peakTime<stimwindow)
+short.lck.PT.dist<-subset(all.lck.peaks,Condition!="Stim" & peakTime<stimwindow)
+
+# long stim vs no stim
+ntrials.lck.PT.long.R.dis<- ddply(stim.lck.PT.dist[stim.lck.PT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.lck.PT.long.G.dis<- ddply(stim.lck.PT.dist[stim.lck.PT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
+
+# neuronal lck onset histogram
+# counts for each condition in the histogram
+Nostim.N=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="RCaMP" & stim.lck.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.N=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="RCaMP" & stim.lck.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+Nostim.A=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="GCaMP" & stim.lck.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.A=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="GCaMP" & stim.lck.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim.N=Nostim.N/ntrials.lck.PT.long.R.dis$ntrials[(ntrials.lck.PT.long.R.dis$Condition=="Nostim")]
+Stim.N=Stim.N/ntrials.lck.PT.long.R.dis$ntrials[(ntrials.lck.PT.long.R.dis$Condition=="Stim")]
+
+Nostim.A=Nostim.A/ntrials.lck.PT.long.G.dis$ntrials[(ntrials.lck.PT.long.G.dis$Condition=="Nostim")]
+Stim.A=Stim.A/ntrials.lck.PT.long.G.dis$ntrials[(ntrials.lck.PT.long.G.dis$Condition=="Stim")]
+
+#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+lck.long.PT.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
+lck.long.PT.histo2<-rbind(zeroRow,lck.long.PT.histo)
+lck.long.PT.histo2$time<-histseq
+
+ggplot(NULL, aes(x=time))+
+  geom_line(data=lck.long.PT.histo2, aes(y=Nostim.N, color="Nostim.N")) +
+  geom_line(data=lck.long.PT.histo2, aes(y=Stim.N, color="Stim.N")) +
+  geom_line(data=lck.long.PT.histo2, aes(y=Nostim.A*2.5, color="Nostim.A")) +
+  geom_line(data=lck.long.PT.histo2, aes(y=Stim.A*2.5, color="Stim.A")) +
+  scale_y_continuous(sec.axis = sec_axis(~./2.5, name = "Astrocyte peaks/trial")) + # secondary axis
+  ggtitle("stim- neurons vs astrocytes-lck data") + 
+  xlab("Peak Max Time (s)") + 
+  ylab("Neuron peaks/trial") + 
+  xlim(-0.5,15) +
+  max.theme
+
+
+#compare distributions (what is plotted in the figure)
+
+# ks test- astrocytes
+pT.lck.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
+print(pT.lck.GC.NSvsS.kstest)
+
+# neurons
+pT.lck.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
+print(pT.lck.RC.NSvsS.kstest)
+
+
+
+# Anderson Darling
+library("kSamples")
+#library("SuppDist")
+
+pT.lck.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
+print(pT.lck.GC.NSvsS.adtest)
+
+# neurons
+pT.lck.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
+print(pT.lck.RC.NSvsS.adtest)
+
+
+##################### 
+histseq= seq(0,15,0.5)
+#cyto data  ONSET time distributions
+ntrials.cyto.OT.long.R.dis<- ddply(stim.cyto.OT.dist[stim.cyto.OT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.cyto.OT.long.G.dis<- ddply(stim.cyto.OT.dist[stim.cyto.OT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
+
+# neuronal cyto onset histogram
+# counts for each condition in the histogram
+Nostim.N=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="RCaMP" & stim.cyto.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.N=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="RCaMP" & stim.cyto.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+Nostim.A=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="GCaMP" & stim.cyto.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.A=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="GCaMP" & stim.cyto.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim.N=Nostim.N/ntrials.cyto.OT.long.R.dis$ntrials[(ntrials.cyto.OT.long.R.dis$Condition=="Nostim")]
+Stim.N=Stim.N/ntrials.cyto.OT.long.R.dis$ntrials[(ntrials.cyto.OT.long.R.dis$Condition=="Stim")]
+
+Nostim.A=Nostim.A/ntrials.cyto.OT.long.G.dis$ntrials[(ntrials.cyto.OT.long.G.dis$Condition=="Nostim")]
+Stim.A=Stim.A/ntrials.cyto.OT.long.G.dis$ntrials[(ntrials.cyto.OT.long.G.dis$Condition=="Stim")]
+
+#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+cyto.long.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
+cyto.long.histo2<-rbind(zeroRow,cyto.long.histo)
+cyto.long.histo2$time<-histseq
+
+ggplot(NULL, aes(x=time))+
+  geom_line(data=cyto.long.histo2, aes(y=Nostim.N, color="Nostim.N")) +
+  geom_line(data=cyto.long.histo2, aes(y=Stim.N, color="Stim.N")) +
+  geom_line(data=cyto.long.histo2, aes(y=Nostim.A*1.5, color="Nostim.A")) +
+  geom_line(data=cyto.long.histo2, aes(y=Stim.A*1.5, color="Stim.A")) +
+  scale_y_continuous(sec.axis = sec_axis(~./1.5, name = "Astrocyte peaks/trial")) + # secondary axis
+  ggtitle("stim- neurons vs astrocytes-cyto data") + 
+  xlab("Onset Time (s)") + 
+  ylab("Neuron peaks/trial") + 
+  xlim(-0.5,15) +
+  max.theme
+
+
+
+#compare distributions (what is plotted in the figure)
+
+# ks test- astrocytes
+OT.cyto.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
+print(OT.cyto.GC.NSvsS.kstest)
+
+# neurons
+OT.cyto.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
+print(OT.cyto.RC.NSvsS.kstest)
+
+
+
+# Anderson Darling
+library("kSamples")
+#library("SuppDist")
+
+OT.cyto.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
+print(OT.cyto.GC.NSvsS.adtest)
+
+# neurons
+OT.cyto.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
+print(OT.cyto.RC.NSvsS.adtest)
+
+#####
+
+# cyto peak time distributions
+
+stimwindow=15
+histseq= seq(-5,15,0.5)
+
+stim.cyto.PT.dist<-subset(all.cyto.peaks,Condition!="shortstim" & peakTime<stimwindow)
+short.cyto.PT.dist<-subset(all.cyto.peaks,Condition!="Stim" & peakTime<stimwindow)
+
+# long stim vs no stim
+ntrials.cyto.PT.long.R.dis<- ddply(stim.cyto.PT.dist[stim.cyto.PT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
+ntrials.cyto.PT.long.G.dis<- ddply(stim.cyto.PT.dist[stim.cyto.PT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
+
+# neuronal cyto onset histogram
+# counts for each condition in the histogram
+Nostim.N=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="RCaMP" & stim.cyto.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.N=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="RCaMP" & stim.cyto.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+Nostim.A=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="GCaMP" & stim.cyto.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
+Stim.A=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="GCaMP" & stim.cyto.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
+
+# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
+Nostim.N=Nostim.N/ntrials.cyto.PT.long.R.dis$ntrials[(ntrials.cyto.PT.long.R.dis$Condition=="Nostim")]
+Stim.N=Stim.N/ntrials.cyto.PT.long.R.dis$ntrials[(ntrials.cyto.PT.long.R.dis$Condition=="Stim")]
+
+Nostim.A=Nostim.A/ntrials.cyto.PT.long.G.dis$ntrials[(ntrials.cyto.PT.long.G.dis$Condition=="Nostim")]
+Stim.A=Stim.A/ntrials.cyto.PT.long.G.dis$ntrials[(ntrials.cyto.PT.long.G.dis$Condition=="Stim")]
+
+#Shortstim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
+
+#Shortstim=Shortstim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="shortstim")]
+
+#make a data frame for plotting
+cyto.long.PT.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
+cyto.long.PT.histo2<-rbind(zeroRow,cyto.long.PT.histo)
+cyto.long.PT.histo2$time<-histseq
+
+ggplot(NULL, aes(x=time))+
+  geom_line(data=cyto.long.PT.histo2, aes(y=Nostim.N, color="Nostim.N")) +
+  geom_line(data=cyto.long.PT.histo2, aes(y=Stim.N, color="Stim.N")) +
+  geom_line(data=cyto.long.PT.histo2, aes(y=Nostim.A*2, color="Nostim.A")) +
+  geom_line(data=cyto.long.PT.histo2, aes(y=Stim.A*2, color="Stim.A")) +
+  scale_y_continuous(sec.axis = sec_axis(~./2, name = "Astrocyte peaks/trial")) + # secondary axis
+  ggtitle("stim- neurons vs astrocytes-cyto data") + 
+  xlab("Peak Max Time (s)") + 
+  ylab("Neuron peaks/trial") + 
+  xlim(-0.5,15) +
+  max.theme
+
+
+#compare distributions (what is plotted in the figure)
+
+# ks test- astrocytes
+pT.cyto.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
+print(pT.cyto.GC.NSvsS.kstest)
+
+# neurons
+pT.cyto.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
+print(pT.cyto.RC.NSvsS.kstest)
+
+
+
+# Anderson Darling
+library("kSamples")
+#library("SuppDist")
+
+pT.cyto.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
+print(pT.cyto.GC.NSvsS.adtest)
+
+# neurons
+pT.cyto.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
+print(pT.cyto.RC.NSvsS.adtest)
+
+##################
+######
+# number of ROIs in each trial for each field of view (across the whole trial)
+lck.OT.40strial<-all.lck.OT[all.lck.OT$OnsetTime<8,]
+
+lck.OT.40strial$Channel <- factor(lck.OT.40strial$Channel, levels = c("RCaMP","GCaMP"))
+
+ROInum.lck.40strial<-ddply(lck.OT.40strial, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+
+# add in number of trials
+ROInum.lck.40strial$Ani_Spot_Cond<-paste(ROInum.lck.40strial$Animal, ROInum.lck.40strial$Spot, ROInum.lck.40strial$Condition, sep="_")
+ROInum.lck.40strial<-merge(ROInum.lck.40strial, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+ROInum.lck.40strial$ROIsPerTrial<-ROInum.lck.40strial$nROIs/ROInum.lck.40strial$nTrials
+
+# mean
+df.lck.ROInum.40strial<-summarySE(ROInum.lck.40strial, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
+
+
+# across the 15s time window
+stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
+
+ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+
+# add in number of trials
+ROInum.lck.stim$Ani_Spot_Cond<-paste(ROInum.lck.stim$Animal, ROInum.lck.stim$Spot, ROInum.lck.stim$Condition, sep="_")
+
+ROInum.lck.stim<-merge(ROInum.lck.stim, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+
+ROInum.lck.stim$ROIsPerTrial<-ROInum.lck.stim$nROIs/ROInum.lck.stim$nTrials
+
+
+# mean
+df.lck.ROInum.mean<-summarySE(ROInum.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
+
+
+ggplot(df.lck.ROInum.mean, aes(x=Channel,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view") +
+  max.theme
+
+Condition_Channel2= interaction(ROInum.lck.stim$Condition,ROInum.lck.stim$Channel)
+nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel + (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Condition_Channel2 + (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.anova <- anova(nROI.lck.stim.null, nROI.lck.stim.model1,nROI.lck.stim.model2,nROI.lck.stim.model3)
+print(nROI.lck.stim.anova)
+
+nROI.lck.stim.Cond_Channel<- glht(nROI.lck.stim.model3, mcp(Condition_Channel2= "Tukey"))
+summary(nROI.lck.stim.Cond_Channel)
+
+
+
 
 # for median and mean calculations
 
 # no stim vs 8 s stim- neuronal window=9s, AC window= 15 s for peak time, neuronal window=2s, AC window=12 s for onset
 # no stim vs 1 s stim- neuronal window=2s, AC window= 10 s for peak time, neuronal window=2s, AC window=8 s for onset
 
-LongN_PTwind2=9
-LongAC_PTwind2=15
+Lck.Astro.PT75<-Lck.Astro95PeakT[[16]]
+Lck.Astro.PT80<-Lck.Astro95PeakT[[17]]
 
-LongN_OTwind2=Neuron75
+
+LongN_PTwind2=8  # 8 seconds
+LongN_OTwind2=8  # 8 seconds
+
+LongAC_PTwind_Lck=Lck.Astro.PT80
+LongAC_PTwind_cyto=Lck.Astro.PT80
+LongAC_PTwind_cyto=Lck.Astro.PT80
+
 LongAC_OTwind2=12
 
 Long_PTwind=12
@@ -555,14 +1032,13 @@ lck.eitherside.stim2$either1s="other"
 lck.eitherside.stim2$either1s[lck.eitherside.stim2$OnsetTimeAdjust<0]="before"
 lck.eitherside.stim2$either1s[lck.eitherside.stim2$OnsetTimeAdjust>0]="after"
 
-####
+###
 # ROI number before and after
 
 # greater number ROIs with fast onset than Nostim?
 ROInum.eitherside.1s<-ddply(lck.eitherside.stim2, c("Animal","Spot","Condition","Channel","either1s"), summarise, nROIs=length(OnsetTime))
 
 # add in number of trials
-Spot.lck.ntrials$Ani_Spot_Cond<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot, Spot.lck.ntrials$Condition, sep="_")
 ROInum.eitherside.1s$Ani_Spot_Cond<-paste(ROInum.eitherside.1s$Animal, ROInum.eitherside.1s$Spot, ROInum.eitherside.1s$Condition, sep="_")
 
 ROInum.eitherside.1s<-merge(ROInum.eitherside.1s, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
@@ -633,263 +1109,7 @@ summary(nROI.either1s.Cond_Gr)
 
 
 
-#########
-# LCK DATA
-# Onset time histograms- normalized to the number of trials
 
-# long stim vs no stim
-ntrials.lck.OT.long.R.dis<- ddply(stim.lck.OT.dist[stim.lck.OT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
-ntrials.lck.OT.long.G.dis<- ddply(stim.lck.OT.dist[stim.lck.OT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
-
-
-#histogram bins
-histseq= seq(0,15,0.5)
-Nostim.N=0
-Stim.N=0
-Nostim.A=0
-Stim.A=0
-zeroRow<-data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
-
-# neuronal lck onset histogram
-# counts for each condition in the histogram
-Nostim.N=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="RCaMP" & stim.lck.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.N=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="RCaMP" & stim.lck.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-Nostim.A=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="GCaMP" & stim.lck.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.A=hist(stim.lck.OT.dist$OnsetTime[(stim.lck.OT.dist$Channel=="GCaMP" & stim.lck.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-Nostim.N=Nostim.N/ntrials.lck.OT.long.R.dis$ntrials[(ntrials.lck.OT.long.R.dis$Condition=="Nostim")]
-Stim.N=Stim.N/ntrials.lck.OT.long.R.dis$ntrials[(ntrials.lck.OT.long.R.dis$Condition=="Stim")]
-
-Nostim.A=Nostim.A/ntrials.lck.OT.long.G.dis$ntrials[(ntrials.lck.OT.long.G.dis$Condition=="Nostim")]
-Stim.A=Stim.A/ntrials.lck.OT.long.G.dis$ntrials[(ntrials.lck.OT.long.G.dis$Condition=="Stim")]
-
-#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
-
-#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
-
-#make a data frame for plotting
-lck.long.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
-lck.long.histo2<-rbind(zeroRow,lck.long.histo)
-lck.long.histo2$time<-histseq
-
-ggplot(NULL, aes(x=time))+
-  geom_line(data=lck.long.histo2, aes(y=Nostim.N, color="Nostim.N")) +
-  geom_line(data=lck.long.histo2, aes(y=Stim.N, color="Stim.N")) +
-  geom_line(data=lck.long.histo2, aes(y=Nostim.A*7, color="Nostim.A")) +
-  geom_line(data=lck.long.histo2, aes(y=Stim.A*7, color="Stim.A")) +
-  scale_y_continuous(sec.axis = sec_axis(~./7, name = "Astrocyte peaks/trial")) + # secondary axis
-  ggtitle("stim- neurons vs astrocytes-lck data") + 
-  xlab("Onset Time (s)") + 
-  ylab("Neuron peaks/trial") + 
-  xlim(-0.5,15) +
-  max.theme
-
-
-######
-
-#compare distributions (what is plotted in the figure)
-
-# ks test- astrocytes
-OT.lck.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
-print(OT.lck.GC.NSvsS.kstest)
-
-# neurons
-OT.lck.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
-print(OT.lck.RC.NSvsS.kstest)
-
-
-
-# Anderson Darling
-library("kSamples")
-#library("SuppDist")
-
-OT.lck.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
-print(OT.lck.GC.NSvsS.adtest)
-
-# neurons
-OT.lck.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
-print(OT.lck.RC.NSvsS.adtest)
-
-
-######
-# number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
-stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
-
-ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
-
-# add in number of trials
-ROInum.lck.stim$Ani_Spot_Cond<-paste(ROInum.lck.stim$Animal, ROInum.lck.stim$Spot, ROInum.lck.stim$Condition, sep="_")
-
-ROInum.lck.stim<-merge(ROInum.lck.stim, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
-
-ROInum.lck.stim$ROIsPerTrial<-ROInum.lck.stim$nROIs/ROInum.lck.stim$nTrials
-
-
-# mean
-df.lck.ROInum.mean<-summarySE(ROInum.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
-
-
-ggplot(df.lck.ROInum.mean, aes(x=Channel,y=ROIsPerTrial, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view") +
-  max.theme
-
-Condition_Channel2= interaction(ROInum.lck.stim$Condition,ROInum.lck.stim$Channel)
-nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Condition_Channel2 + (1|Animal), ROInum.lck.stim,REML=FALSE)
-nROI.lck.stim.anova <- anova(nROI.lck.stim.null, nROI.lck.stim.model1,nROI.lck.stim.model2,nROI.lck.stim.model3)
-print(nROI.lck.stim.anova)
-
-nROI.lck.stim.Cond_Channel<- glht(nROI.lck.stim.model3, mcp(Condition_Channel2= "Tukey"))
-summary(nROI.lck.stim.Cond_Channel)
-
-######
-#peak times
-
-stimwindow=15
-histseq= seq(-5,15,0.5)
-
-stim.lck.PT.dist<-subset(all.lck.peaks,Condition!="shortstim" & peakTime<stimwindow)
-short.lck.PT.dist<-subset(all.lck.peaks,Condition!="Stim" & peakTime<stimwindow)
-
-# long stim vs no stim
-ntrials.lck.PT.long.R.dis<- ddply(stim.lck.PT.dist[stim.lck.PT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
-ntrials.lck.PT.long.G.dis<- ddply(stim.lck.PT.dist[stim.lck.PT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
-
-# neuronal lck onset histogram
-# counts for each condition in the histogram
-Nostim.N=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="RCaMP" & stim.lck.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.N=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="RCaMP" & stim.lck.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-Nostim.A=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="GCaMP" & stim.lck.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.A=hist(stim.lck.PT.dist$peakTime[(stim.lck.PT.dist$Channel=="GCaMP" & stim.lck.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-Nostim.N=Nostim.N/ntrials.lck.PT.long.R.dis$ntrials[(ntrials.lck.PT.long.R.dis$Condition=="Nostim")]
-Stim.N=Stim.N/ntrials.lck.PT.long.R.dis$ntrials[(ntrials.lck.PT.long.R.dis$Condition=="Stim")]
-
-Nostim.A=Nostim.A/ntrials.lck.PT.long.G.dis$ntrials[(ntrials.lck.PT.long.G.dis$Condition=="Nostim")]
-Stim.A=Stim.A/ntrials.lck.PT.long.G.dis$ntrials[(ntrials.lck.PT.long.G.dis$Condition=="Stim")]
-
-#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
-
-#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
-
-#make a data frame for plotting
-lck.long.PT.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
-lck.long.PT.histo2<-rbind(zeroRow,lck.long.PT.histo)
-lck.long.PT.histo2$time<-histseq
-
-ggplot(NULL, aes(x=time))+
-  geom_line(data=lck.long.PT.histo2, aes(y=Nostim.N, color="Nostim.N")) +
-  geom_line(data=lck.long.PT.histo2, aes(y=Stim.N, color="Stim.N")) +
-  geom_line(data=lck.long.PT.histo2, aes(y=Nostim.A*2.5, color="Nostim.A")) +
-  geom_line(data=lck.long.PT.histo2, aes(y=Stim.A*2.5, color="Stim.A")) +
-  scale_y_continuous(sec.axis = sec_axis(~./2.5, name = "Astrocyte peaks/trial")) + # secondary axis
-  ggtitle("stim- neurons vs astrocytes-lck data") + 
-  xlab("Peak Max Time (s)") + 
-  ylab("Neuron peaks/trial") + 
-  xlim(-0.5,15) +
-  max.theme
-
-
-######
-
-#compare distributions (what is plotted in the figure)
-
-# ks test- astrocytes
-pT.lck.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
-print(pT.lck.GC.NSvsS.kstest)
-
-# neurons
-pT.lck.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
-print(pT.lck.RC.NSvsS.kstest)
-
-
-
-# Anderson Darling
-library("kSamples")
-#library("SuppDist")
-
-pT.lck.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
-print(pT.lck.GC.NSvsS.adtest)
-
-# neurons
-pT.lck.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
-print(pT.lck.RC.NSvsS.adtest)
-
-
-##################### 
-histseq= seq(0,15,0.5)
-#cyto data
-ntrials.cyto.OT.long.R.dis<- ddply(stim.cyto.OT.dist[stim.cyto.OT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
-ntrials.cyto.OT.long.G.dis<- ddply(stim.cyto.OT.dist[stim.cyto.OT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(Spot_trial)))
-
-# neuronal cyto onset histogram
-# counts for each condition in the histogram
-Nostim.N=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="RCaMP" & stim.cyto.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.N=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="RCaMP" & stim.cyto.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-Nostim.A=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="GCaMP" & stim.cyto.OT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.A=hist(stim.cyto.OT.dist$OnsetTime[(stim.cyto.OT.dist$Channel=="GCaMP" & stim.cyto.OT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-Nostim.N=Nostim.N/ntrials.cyto.OT.long.R.dis$ntrials[(ntrials.cyto.OT.long.R.dis$Condition=="Nostim")]
-Stim.N=Stim.N/ntrials.cyto.OT.long.R.dis$ntrials[(ntrials.cyto.OT.long.R.dis$Condition=="Stim")]
-
-Nostim.A=Nostim.A/ntrials.cyto.OT.long.G.dis$ntrials[(ntrials.cyto.OT.long.G.dis$Condition=="Nostim")]
-Stim.A=Stim.A/ntrials.cyto.OT.long.G.dis$ntrials[(ntrials.cyto.OT.long.G.dis$Condition=="Stim")]
-
-#Shortstim=hist(all.lck.OT$OnsetTime[(all.lck.OT$Channel=="RCaMP" & all.lck.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
-#Shortstim=Shortstim/ntrials.lck.OT$ntrials[(ntrials.lck.OT$Condition=="shortstim")]
-
-#make a data frame for plotting
-cyto.long.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
-cyto.long.histo2<-rbind(zeroRow,cyto.long.histo)
-cyto.long.histo2$time<-histseq
-
-ggplot(NULL, aes(x=time))+
-  geom_line(data=cyto.long.histo2, aes(y=Nostim.N, color="Nostim.N")) +
-  geom_line(data=cyto.long.histo2, aes(y=Stim.N, color="Stim.N")) +
-  geom_line(data=cyto.long.histo2, aes(y=Nostim.A*1.5, color="Nostim.A")) +
-  geom_line(data=cyto.long.histo2, aes(y=Stim.A*1.5, color="Stim.A")) +
-  scale_y_continuous(sec.axis = sec_axis(~./1.5, name = "Astrocyte peaks/trial")) + # secondary axis
-  ggtitle("stim- neurons vs astrocytes-cyto data") + 
-  xlab("Onset Time (s)") + 
-  ylab("Neuron peaks/trial") + 
-  xlim(-0.5,15) +
-  max.theme
-
-
-######
-
-#compare distributions (what is plotted in the figure)
-
-# ks test- astrocytes
-OT.cyto.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
-print(OT.cyto.GC.NSvsS.kstest)
-
-# neurons
-OT.cyto.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
-print(OT.cyto.RC.NSvsS.kstest)
-
-
-
-# Anderson Darling
-library("kSamples")
-#library("SuppDist")
-
-OT.cyto.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
-print(OT.cyto.GC.NSvsS.adtest)
-
-# neurons
-OT.cyto.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
-print(OT.cyto.RC.NSvsS.adtest)
 
 
  ##############
@@ -1013,81 +1233,7 @@ print(nROI.cyto.stim.anova)
 nROI.cyto.stim.Cond_Channel<- glht(nROI.cyto.stim.model3, mcp(Condition_Channel2= "Tukey"))
 summary(nROI.cyto.stim.Cond_Channel)
 
-#####
 
-#peak times
-
-stimwindow=15
-histseq= seq(-5,15,0.5)
-
-stim.cyto.PT.dist<-subset(all.cyto.peaks,Condition!="shortstim" & peakTime<stimwindow)
-short.cyto.PT.dist<-subset(all.cyto.peaks,Condition!="Stim" & peakTime<stimwindow)
-
-# long stim vs no stim
-ntrials.cyto.PT.long.R.dis<- ddply(stim.cyto.PT.dist[stim.cyto.PT.dist$Channel=="RCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
-ntrials.cyto.PT.long.G.dis<- ddply(stim.cyto.PT.dist[stim.cyto.PT.dist$Channel=="GCaMP",], c("Condition"), summarise, ntrials=length(unique(trials)))
-
-# neuronal cyto onset histogram
-# counts for each condition in the histogram
-Nostim.N=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="RCaMP" & stim.cyto.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.N=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="RCaMP" & stim.cyto.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-Nostim.A=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="GCaMP" & stim.cyto.PT.dist$Condition=="Nostim")], breaks=histseq, plot=FALSE)$counts
-Stim.A=hist(stim.cyto.PT.dist$peakTime[(stim.cyto.PT.dist$Channel=="GCaMP" & stim.cyto.PT.dist$Condition=="Stim")], breaks=histseq, plot=FALSE)$counts
-
-# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-Nostim.N=Nostim.N/ntrials.cyto.PT.long.R.dis$ntrials[(ntrials.cyto.PT.long.R.dis$Condition=="Nostim")]
-Stim.N=Stim.N/ntrials.cyto.PT.long.R.dis$ntrials[(ntrials.cyto.PT.long.R.dis$Condition=="Stim")]
-
-Nostim.A=Nostim.A/ntrials.cyto.PT.long.G.dis$ntrials[(ntrials.cyto.PT.long.G.dis$Condition=="Nostim")]
-Stim.A=Stim.A/ntrials.cyto.PT.long.G.dis$ntrials[(ntrials.cyto.PT.long.G.dis$Condition=="Stim")]
-
-#Shortstim=hist(all.cyto.OT$OnsetTime[(all.cyto.OT$Channel=="RCaMP" & all.cyto.OT$Condition=="shortstim")], breaks=histseq, plot=FALSE)$counts
-
-#Shortstim=Shortstim/ntrials.cyto.OT$ntrials[(ntrials.cyto.OT$Condition=="shortstim")]
-
-#make a data frame for plotting
-cyto.long.PT.histo <- data.frame(cbind(Nostim.N, Stim.N,Nostim.A, Stim.A))
-cyto.long.PT.histo2<-rbind(zeroRow,cyto.long.PT.histo)
-cyto.long.PT.histo2$time<-histseq
-
-ggplot(NULL, aes(x=time))+
-  geom_line(data=cyto.long.PT.histo2, aes(y=Nostim.N, color="Nostim.N")) +
-  geom_line(data=cyto.long.PT.histo2, aes(y=Stim.N, color="Stim.N")) +
-  geom_line(data=cyto.long.PT.histo2, aes(y=Nostim.A*2, color="Nostim.A")) +
-  geom_line(data=cyto.long.PT.histo2, aes(y=Stim.A*2, color="Stim.A")) +
-  scale_y_continuous(sec.axis = sec_axis(~./2, name = "Astrocyte peaks/trial")) + # secondary axis
-  ggtitle("stim- neurons vs astrocytes-cyto data") + 
-  xlab("Peak Max Time (s)") + 
-  ylab("Neuron peaks/trial") + 
-  xlim(-0.5,15) +
-  max.theme
-
-
-######
-
-#compare distributions (what is plotted in the figure)
-
-# ks test- astrocytes
-pT.cyto.GC.NSvsS.kstest<- ks.test(Nostim.A,Stim.A)
-print(pT.cyto.GC.NSvsS.kstest)
-
-# neurons
-pT.cyto.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
-print(pT.cyto.RC.NSvsS.kstest)
-
-
-
-# Anderson Darling
-library("kSamples")
-#library("SuppDist")
-
-pT.cyto.GC.NSvsS.adtest<- ad.test(Nostim.A,Stim.A)
-print(pT.cyto.GC.NSvsS.adtest)
-
-# neurons
-pT.cyto.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
-print(pT.cyto.RC.NSvsS.adtest)
 
 ###########################################
 # combine lck and cyto data sets for onset times
@@ -3376,7 +3522,7 @@ AllROI.lck.proc.Pixels<-ddply(Lck.processes, c("ROIs_Cond","trials","Animal","Sp
                      nActivePix=sum(nActivePix))
 
 # only ROIS with a signal near the stimulus
-StimROI.lck.proc.Pixels<-ddply(Lck.processes[Lck.processes$peakTime<15,], c("ROIs_Cond","trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
+StimROI.lck.proc.Pixels<-ddply(Lck.processes[Lck.processes$peakTime<8,], c("ROIs_Cond","trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
                               nActivePix=sum(nActivePix))
 
 # summarize per trial and spot
@@ -3420,7 +3566,7 @@ AllROI.cyto.proc.Pixels<-ddply(cyto.processes, c("ROIs_Cond","trials","Animal","
                               nActivePix=sum(nActivePix))
 
 # only ROIS with a signal near the stimulus
-StimROI.cyto.proc.Pixels<-ddply(cyto.processes[cyto.processes$peakTime<15,], c("ROIs_Cond","Animal","Spot","trials","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
+StimROI.cyto.proc.Pixels<-ddply(cyto.processes[cyto.processes$peakTime<8,], c("ROIs_Cond","Animal","Spot","trials","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
                                nActivePix=sum(nActivePix))
 
 # summarize per trial and spot

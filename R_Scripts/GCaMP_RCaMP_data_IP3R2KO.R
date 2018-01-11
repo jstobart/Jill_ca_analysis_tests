@@ -84,9 +84,6 @@ all.lck.OT$Spot_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Tria
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
 
-all.lck.OT.2s$Spot_trial_Cond<-paste(all.lck.OT.2s$Spot_trial, all.lck.OT.2s$Condition, sep="_")
-all.lck.OT.2s$ROIs_Cond<-paste(all.lck.OT.2s$ROIs_trial, all.lck.OT.2s$Condition, sep="_")
-
 # ROI Types
 all.lck.OT$ROIType= "none"
 all.lck.OTA<- subset(all.lck.OT, Channel=="GCaMP")
@@ -158,6 +155,7 @@ all.lck.peaks$ROIs_Cond<-paste(all.lck.peaks$ROIs_trial, all.lck.peaks$Condition
 
 # count number of trials per spot
 Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Genotype","Spot","Condition"), summarise, nTrials=length(unique(Trial)))
+Spot.lck.ntrials$Ani_Spot_Cond<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot, Spot.lck.ntrials$Condition, sep="_")
 
 
 # remove ROIs with no peaks
@@ -194,7 +192,7 @@ all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
 
 
 
-
+#################
 # neuronal responses to stimulation
 NeuronalStim<-subset(all.lck.OT, Channel=="RCaMP" & Condition=="Stim")
 
@@ -217,40 +215,50 @@ ggplot(AstroStim[AstroStim$OnsetTime<15,],aes(x=OnsetTime,fill=Genotype)) +
   ggtitle("Lck-GCaMP onset times between 0 and 15 s from stim trials")+
   max.theme
 
-# 
+############# 
 # Onset time histograms- normalized to the number of trials
 
 stimwindow=15
 
 GC.lck.OT.dist<-subset(all.lck.OT,Condition=="Stim" & OnsetTime<stimwindow & Channel=="GCaMP")
+GC.lck.OT.NS.dist<-subset(all.lck.OT,Condition=="Nostim" & OnsetTime<stimwindow & Channel=="GCaMP")
 
 # KO vs WT stim
-ntrials.GC.KOvsWT<- ddply(GC.lck.OT.dist, c("Genotype"), summarise, ntrials=length(unique(Spot_trial)))
+ntrials.GC.KOvsWT.stim<- ddply(GC.lck.OT.dist, c("Genotype"), summarise, ntrials=length(unique(Spot_trial)))
 
+ntrials.GC.KOvsWT.nostim<- ddply(GC.lck.OT.NS.dist, c("Genotype"), summarise, ntrials=length(unique(Spot_trial)))
 
 #histogram bins
-histseq= seq(0,15,0.5)
-KO.A=0
-WT.A=0
-zeroRow<-data.frame(cbind(KO.A, WT.A))
+histseq= seq(0,15,1)
+KO.A.S=0
+WT.A.S=0
+KO.A.NS=0
+WT.A.NS=0
+zeroRow<-data.frame(cbind(KO.A.S, WT.A.S,KO.A.NS, WT.A.NS))
 
 # neuronal lck onset histogram
 # counts for each condition in the histogram
-KO.A=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Genotype=="IP3R2_KO"], breaks=histseq, plot=FALSE)$counts
-WT.A=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Genotype=="IP3R2_WT"], breaks=histseq, plot=FALSE)$counts
+KO.A.S=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Genotype=="IP3R2_KO"], breaks=histseq, plot=FALSE)$counts
+WT.A.S=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Genotype=="IP3R2_WT"], breaks=histseq, plot=FALSE)$counts
+KO.A.NS=hist(GC.lck.OT.NS.dist$OnsetTime[GC.lck.OT.NS.dist$Genotype=="IP3R2_KO"], breaks=histseq, plot=FALSE)$counts
+WT.A.NS=hist(GC.lck.OT.NS.dist$OnsetTime[GC.lck.OT.NS.dist$Genotype=="IP3R2_WT"], breaks=histseq, plot=FALSE)$counts
 
 # normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-KO.A=KO.A/ntrials.GC.KOvsWT$ntrials[(ntrials.GC.KOvsWT$Genotype=="IP3R2_KO")]
-WT.A=WT.A/ntrials.GC.KOvsWT$ntrials[(ntrials.GC.KOvsWT$Genotype=="IP3R2_WT")]
+KO.A.S=KO.A.S/ntrials.GC.KOvsWT.stim$ntrials[(ntrials.GC.KOvsWT.stim$Genotype=="IP3R2_KO")]
+WT.A.S=WT.A.S/ntrials.GC.KOvsWT.stim$ntrials[(ntrials.GC.KOvsWT.stim$Genotype=="IP3R2_WT")]
+KO.A.NS=KO.A.NS/ntrials.GC.KOvsWT.stim$ntrials[(ntrials.GC.KOvsWT.stim$Genotype=="IP3R2_KO")]
+WT.A.NS=WT.A.NS/ntrials.GC.KOvsWT.stim$ntrials[(ntrials.GC.KOvsWT.stim$Genotype=="IP3R2_WT")]
 
 #make a data frame for plotting
-lck.histo <- data.frame(cbind(KO.A, WT.A))
+lck.histo <- data.frame(cbind(KO.A.S, WT.A.S,KO.A.NS, WT.A.NS))
 lck.histo2<-rbind(zeroRow,lck.histo)
 lck.histo2$time<-histseq
 
 ggplot(NULL, aes(x=time))+
-  geom_line(data=lck.histo2, aes(y=KO.A, color="KO.A")) +
-  geom_line(data=lck.histo2, aes(y=WT.A, color="WT.A")) +
+  geom_line(data=lck.histo2, aes(y=KO.A.S, color="KO.A.S")) +
+  geom_line(data=lck.histo2, aes(y=WT.A.S, color="WT.A.S")) +
+  geom_line(data=lck.histo2, aes(y=KO.A.NS, color="KO.A.NS")) +
+  geom_line(data=lck.histo2, aes(y=WT.A.NS, color="WT.A.NS")) +
   ggtitle("IP3R2 KO vs WT astrocytes-lck data") + 
   xlab("Onset Time (s)") + 
   ylab("Astrocytes peaks/trial") + 
@@ -258,15 +266,56 @@ ggplot(NULL, aes(x=time))+
   max.theme
 
 
+ggplot(NULL, aes(x=time))+
+  geom_line(data=lck.histo2, aes(y=KO.A.S, color="KO.A.S")) +
+  geom_line(data=lck.histo2, aes(y=WT.A.S, color="WT.A.S")) +
+  ggtitle("IP3R2 KO vs WT astrocytes-lck data") + 
+  xlab("Onset Time (s)") + 
+  ylab("Astrocytes peaks/trial") + 
+  xlim(-0.5,15) +
+  max.theme
 
 
 #compare distributions (what is plotted in the figure)
 
 # ks test- astrocytes
-OT.lck.GC.KOvsWT.kstest<- ks.test(KO.A,WT.A)
+OT.lck.GC.KOvsWT.kstest<- ks.test(KO.A.S,WT.A.S)
 print(OT.lck.GC.KOvsWT.kstest)
 
 
+#####################
+# number of ROIs in each trial for each field of view (during the 8s stimulus)
+lck.OT.8strial<-all.lck.OT[all.lck.OT$OnsetTime<8,]
+
+lck.OT.8strial$Channel <- factor(lck.OT.8strial$Channel, levels = c("RCaMP","GCaMP"))
+
+ROInum.lck.8strial<-ddply(lck.OT.8strial, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
+
+# add in number of trials
+ROInum.lck.8strial$Ani_Spot_Cond<-paste(ROInum.lck.8strial$Animal, ROInum.lck.8strial$Spot, ROInum.lck.8strial$Condition, sep="_")
+ROInum.lck.8strial<-merge(ROInum.lck.8strial, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+ROInum.lck.8strial$ROIsPerTrial<-ROInum.lck.8strial$nROIs/ROInum.lck.8strial$nTrials
+
+# mean
+df.lck.ROInum.8strial<-summarySE(ROInum.lck.8strial, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition"))
+
+
+ggplot(df.lck.ROInum.mean, aes(x=Channel,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view") +
+  max.theme
+
+Condition_Channel2= interaction(ROInum.lck.stim$Condition,ROInum.lck.stim$Channel)
+nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel + (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Condition_Channel2 + (1|Animal), ROInum.lck.stim,REML=FALSE)
+nROI.lck.stim.anova <- anova(nROI.lck.stim.null, nROI.lck.stim.model1,nROI.lck.stim.model2,nROI.lck.stim.model3)
+print(nROI.lck.stim.anova)
+
+nROI.lck.stim.Cond_Channel<- glht(nROI.lck.stim.model3, mcp(Condition_Channel2= "Tukey"))
+summary(nROI.lck.stim.Cond_Channel)
 
 
 ######
