@@ -58,6 +58,9 @@ control.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/On
 lsm.options(pbkrtest.limit = 100000)
 
 
+#  ONLY CONSIDER DATA FROM THE SAME SPOTS IN CONTROL
+# EXCLUDE ALL OTHERS?
+
 control.lck.peaks$Drug="Control"
 control.lck.peaks<-subset(control.lck.peaks, Animal=="IPRG2" | Animal=="ARG2" | Animal=="IPRG3")
 
