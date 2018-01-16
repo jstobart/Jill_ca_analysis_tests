@@ -424,17 +424,30 @@ ggplot(all.NeuronalStim.peaks[all.NeuronalStim.peaks$peakTime<8,],aes(x=peakTime
 #######
 # ASTROCYTE PERCENTILE ONSET
 # Lck Astrocytes
-AstroStim.Lck<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim")
 
-ggplot(AstroStim.Lck[AstroStim.Lck$OnsetTime<30,],aes(x=OnsetTime, group=Condition, fill=Condition)) +
+# subset data to include only astrocytes, stim trials, with an onset greater than 0 and less than 40
+AstroStim.Lck<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim" & OnsetTime<40 & OnsetTime>0)
+
+ggplot(AstroStim.Lck,aes(x=OnsetTime, group=Condition, fill=Condition)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("0-15 s Lck.GCaMP onset times from stim trials")+
   max.theme
 
-ggplot(AstroStim.Lck[AstroStim.Lck$OnsetTime<15,],aes(x=OnsetTime)) +
+# data with onset time= 0s has been excluded because it screws up the log transformation
+AstroStim.Lck$Log_OT<-log(AstroStim.Lck$OnsetTime)
+
+ggplot(AstroStim.Lck,aes(x=Log_OT, group=Condition, fill=Condition)) +
   geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("0-15 s Lck.GCaMP onset times from stim trials")+
+  ggtitle("0-15 s Lck.GCaMP onset times from stim trials- log scale")+
   max.theme
+
+
+stD.logOT<-sd(AstroStim.Lck$Log_OT,na.rm = TRUE)
+mean.logOT<-mean(AstroStim.Lck$Log_OT,na.rm = TRUE)
+
+threshold<-exp(mean.logOT)+exp(stD.logOT)
+
+
 
 Lck.Astro95Onset<-quantile(AstroStim.Lck$OnsetTime[AstroStim.Lck$OnsetTime<40], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 print(Lck.Astro95Onset)

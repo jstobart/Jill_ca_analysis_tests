@@ -40,8 +40,11 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+control.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+control.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+
+pharmacology.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+pharmacology.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
 
 ##### 
 #home files
@@ -54,24 +57,27 @@ control.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/On
 lsm.options(pbkrtest.limit = 100000)
 
 
-Acta.lck.peaks<-subset(control.lck.peaks, Animal=="ARG2")
+control.lck.peaks<-subset(control.lck.peaks, Animal=="ARG2")
+control.lck.OT<- subset(control.lck.OT, Animal=="ARG2")
 
-Acta.lck.OT<- subset(control.lck.OT, Animal=="ARG2")
-Acta.lck.OT$ROIs_trial=NULL
-Acta.lck.OT$Spot_trial=NULL
-Acta.lck.OT$ROIType= NULL
-Acta.lck.OT$overlap=Acta.lck.OT$Overlap
-Acta.lck.OT$Overlap=NULL
+pharmacology.lck.peaks<-subset(pharmacology.lck.peaks, Animal=="ARG2")
+pharmacology.lck.OT<- subset(pharmacology.lck.OT, Animal=="ARG2")
 
+control.lck.OT$ROIs_trial=NULL
+control.lck.OT$Spot_trial=NULL
+control.lck.OT$ROIType= NULL
+control.lck.OT$overlap=control.lck.OT$Overlap
+control.lck.OT$Overlap=NULL
+control.lck.OT$Drug="Control"
 
-all.lck.OT<-Acta.lck.OT
+all.lck.OT<-rbind(control.lck.OT, pharmacology.lck.OT)
 
 #unique ROI names
 all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial,all.lck.OT$ROI, sep= "_")
 all.lck.OT$Spot_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial, sep= "_")
 all.lck.OT$Spot_trial_Cond<-paste(all.lck.OT$Spot_trial, all.lck.OT$Condition, sep="_")
 all.lck.OT$ROIs_Cond<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition, sep="_")
-
+all.lck.OT$ROIs_Cond_Drug<-paste(all.lck.OT$ROIs_trial, all.lck.OT$Condition,all.lck.OT$Drug, sep="_")
 
 
 # REMOVE duplicate entries from onset time and peak time data frames 
@@ -86,8 +92,9 @@ all.lck.OT<-subset(all.lck.OT, OnsetTime!="NaN")
 
 rm(all.lck.OT2)
 
+control.lck.peaks$Drug="Control"
 
-all.lck.peaks<-Acta.lck.peaks
+all.lck.peaks<-rbind(control.lck.peaks, pharmacology.lck.peaks)
 
 all.lck.peaks$ROIType= "none"
 all.lck.peaksA<- subset(all.lck.peaks, Channel=="GCaMP")
@@ -153,140 +160,25 @@ all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascend
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond_Drug,.keep_all = TRUE)
 
-all.lck.OT$Drug<- factor(all.lck.OT$Drug, levels=c("Control","Atropine","Prazosin","Trazodone"))
-all.lck.peaks$Drug<- factor(all.lck.peaks$Drug, levels=c("Control","Atropine","Prazosin","Trazodone"))
+rm(control.lck.OT, control.lck.peaks, pharmacology.lck.OT, pharmacology.lck.peaks, all.lck.peaks2, all.lck.peaks3)
 
 
-rm(control.lck.OT, control.lck.peaks, pharm.lck.OT, pharm.lck.peaks, all.lck.peaks2, all.lck.peaks3)
-######
+# remove all data except astrocyte endfeet and smooth muscle
+all.lck.peaks<-subset(all.lck.peaks, ROIType=="Endfoot" | ROIType=="SmoothMuscle")
 
-# neuronal responses to stimulation
-NeuronalStim<-subset(all.lck.OT, Channel=="RCaMP" & Condition=="Stim")
+# remove trazodone data
+all.lck.peaks<-subset(all.lck.peaks, Drug!="Trazodone")
+all.lck.OT<-subset(all.lck.OT, Drug!="Trazodone")
 
-# should have an onset time in 8 s stimulus
-ggplot(NeuronalStim[NeuronalStim$OnsetTime<10,],aes(x=OnsetTime,y=..density..,fill=Drug)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("RCaMP onset times between 0 and 10 s from stim trials")+
-  max.theme
-
-
-Neuron95Onset<-quantile(NeuronalStim$OnsetTime[NeuronalStim$OnsetTime<8], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
-print(Neuron95Onset)
-
-
-AstroStim<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim")
-
-# should have an onset time in 8 s stimulus
-ggplot(AstroStim[AstroStim$OnsetTime<15,],aes(x=OnsetTime,y=..density..,fill=Drug)) +
-  geom_histogram(binwidth=(0.084*5), position="dodge") +
-  ggtitle("Lck-GCaMP onset times between 0 and 15 s from stim trials")+
-  max.theme
-
-AstroNoStim<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Nostim")
-
-# should have an onset time in 8 s stimulus
-ggplot(AstroNoStim[AstroNoStim$OnsetTime<15,],aes(x=OnsetTime,y=..density..,fill=Drug)) +
-  geom_histogram(binwidth=(0.084*5), position="dodge") +
-  ggtitle("Lck-GCaMP onset times between 0 and 15 s from NO stim trials")+
-  max.theme
-
-#rm(AstroNoStim, AstroStim)
-
-####### 
-# Onset time histograms- normalized to the number of trials
-
-stimwindow=15
-
-GC.lck.OT.dist<-subset(AstroStim, OnsetTime<stimwindow)
-
-# KO vs WT stim
-ntrials.GC.Pharmacology<- ddply(GC.lck.OT.dist, c("Drug"), summarise, ntrials=length(unique(Spot_trial)))
-
-
-#histogram bins
-histseq= seq(0,15,0.5)
-drugC=0
-drugA=0
-drugP=0
-drugT=0
-zeroRow<-data.frame(cbind(drugC, drugA, drugP, drugT))
-
-# neuronal lck onset histogram
-# counts for each condition in the histogram
-drugC=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Drug=="Control"], breaks=histseq, plot=FALSE)$counts
-drugA=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Drug=="Atropine"], breaks=histseq, plot=FALSE)$counts
-drugP=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Drug=="Prazosin"], breaks=histseq, plot=FALSE)$counts
-drugT=hist(GC.lck.OT.dist$OnsetTime[GC.lck.OT.dist$Drug=="Trazodone"], breaks=histseq, plot=FALSE)$counts
-
-
-# normalized: divide each bin (number of ROIs) by the total number of trials for this condition
-drugC=drugC/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Control")]
-drugA=drugA/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Atropine")]
-drugP=drugP/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Prazosin")]
-drugT=drugT/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Trazodone")]
-
-#make a data frame for plotting
-lck.histo <- data.frame(cbind(drugC, drugA, drugP, drugT))
-lck.histo2<-rbind(zeroRow,lck.histo)
-lck.histo2$time<-histseq
-
-ggplot(NULL, aes(x=time))+
-  geom_line(data=lck.histo2, aes(y=drugC, color="Control")) +
-  geom_line(data=lck.histo2, aes(y=drugA, color="Atropine")) +
-  geom_line(data=lck.histo2, aes(y=drugP, color="Prazosin")) +
-  geom_line(data=lck.histo2, aes(y=drugT, color="Trazodone")) +
-  ggtitle("Pharmacology astrocytes-lck data") + 
-  xlab("Onset Time (s)") + 
-  ylab("Astrocytes peaks/trial") + 
-  xlim(-0.5,15) +
-  max.theme
-
-
-
-
-#compare distributions (what is plotted in the figure)
-
-# ks test- astrocytes
-OT.lck.GC.pharm.kstest<- ks.test(drugC,drugA, drugP, drugT)
-print(OT.lck.GC.pharma.kstest)
-
-
+all.lck.OT$Drug<- factor(all.lck.OT$Drug, levels=c("Control","Atropine","Prazosin"))
+all.lck.peaks$Drug<- factor(all.lck.peaks$Drug, levels=c("Control","Atropine","Prazosin"))
 
 
 ######
-# for median and mean calculations
 
-# no stim vs 8 s stim- 
-#neuronal window=9s, AC window= 15 s for peak time, 
-#neuronal window=2s, AC window=12 s for onset
-
-
-LongN_PTwind2=9
-LongAC_PTwind2=15
-
-LongN_OTwind2=2
-LongAC_OTwind2=12
-
-# remove data that is outside the above windows
-# lck
-stim.lck.OT.R<-subset(all.lck.OT, Channel=="RCaMP" & OnsetTime<=LongN_OTwind2)
-stim.lck.OT.G<-subset(all.lck.OT, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind2)
-
-stim.lck.OT.window<-rbind(stim.lck.OT.R, stim.lck.OT.G)
-
-
-# peak times
-# lck
-stim.lck.PT.R<-subset(all.lck.peaks, Channel=="RCaMP" & peakTime<=LongN_PTwind2 & peakTime>=0 & Duration<45)
-stim.lck.PT.G<-subset(all.lck.peaks, Channel=="GCaMP" & peakTime<=LongAC_PTwind2 & peakTime>=0 & Duration<45)
-
-stim.lck.peaks.window<-rbind(stim.lck.PT.R, stim.lck.PT.G)
-
-rm(stim.lck.OT.G,stim.lck.OT.R,stim.lck.PT.G, stim.lck.PT.R)
-#######
 # peak times only for ROIs with onset times?
 
-stim.lck.alldata<-merge(stim.lck.peaks.window, stim.lck.OT.window[, c("ROIs_Cond_Drug", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond_Drug")
+stim.lck.alldata<-merge(all.lck.peaks, all.lck.OT[, c("ROIs_Cond_Drug", "OnsetTime","TraceAUC1","TraceAUC10")], by="ROIs_Cond_Drug")
 
 
 # onset times

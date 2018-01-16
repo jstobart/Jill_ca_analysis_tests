@@ -134,7 +134,8 @@ for iAnimal = 1:numAnimals
                 % hand select ROI
                 %confObj.configFindROIs = ConfigFindROIsDummy();
                 %confObj.configFindROIs.roiMask = utils.select_LS_ROI(ImgArray(1,1).rawdata(:,:,1,1));
-
+                %confObj.configFindROIs = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'Astrocytes.zip'), x_pix, y_pix,1);
+            
                 CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
                 CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
                 
