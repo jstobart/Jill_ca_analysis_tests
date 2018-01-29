@@ -41,20 +41,20 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-linescans1<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/LinescanOnsets2_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-linescans2<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/LinescanOnsets_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+all.lck.OT<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/LinescanOnsets_allMice_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+#linescans2<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/LinescanOnsets_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
 
 ##### 
 #home files
 
-all.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/LinescanOnsets_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+all.lck.OT<-read.table("D:/Data/GCaMP_RCaMP/Revision/Lck_GCaMP/FilesforR/Linescans/LinescanOnsets_allMice_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
 
 
 ##########
 
 lsm.options(pbkrtest.limit = 100000)
 
-all.lck.OT<-rbind(linescans1, linescans2)
+#all.lck.OT<-rbind(linescans1, linescans2)
 
 #unique ROI names
 all.lck.OT$ROIs_trial<-paste(all.lck.OT$Animal, all.lck.OT$Spot, all.lck.OT$Trial,all.lck.OT$ROI, sep= "_")

@@ -133,9 +133,6 @@ stim = allscores(2:2:size(allscores,1));
 % cytosolic data
 %scores([5,72,75],:) = [];
 
-% Lck data  1st cohort
-%scores([1,32,33,44,53,78],:) = [];
-
 sampIdx = randi(size(scores,1));
 if mod(sampIdx,2)
     sampIdx = [sampIdx, sampIdx+1];
@@ -162,19 +159,12 @@ caxis([0 1])
 colormap('jet')
 colorbar
 
-% cyto example:  RG14-18_02_2016.... not great example
-% lck example: RG14 08_03_2016.... ok
+% cyto example:  RG14-18_02_2016
+% lck example: RG14 08_03_2016
 
 %RG14- 16_03_10_spot1
-% RG17 -{'16_02_24_spot1'}
-% RG14 -{'16_02_24_spot1'}
+% R
 
-
-% alternative Lck examples
-% RG14 {'16_02_26_spot2'}
-% IPRG2 {'17_11_22_spot5'}
-% RG14 {'16_03_04_spot1'}
-% RG16 {'16_03_11_spot1'}
 
 
 
