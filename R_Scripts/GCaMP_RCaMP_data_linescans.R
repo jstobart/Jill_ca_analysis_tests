@@ -87,8 +87,8 @@ all.lck.OT$Channel<-factor(all.lck.OT$Channel, levels= c("RCaMP","GCaMP"))
 
 # identify "FAST" astrocytes
 all.lck.OT$Group<-0
-all.lck.OT$Group[all.lck.OT$OnsetTime<1]<-"fast_MDs"
-all.lck.OT$Group[all.lck.OT$OnsetTime>=1]<-"delayed_MDs"
+all.lck.OT$Group[all.lck.OT$OnsetTime<1.09]<-"fast_MDs"
+all.lck.OT$Group[all.lck.OT$OnsetTime>=1.09]<-"delayed_MDs"
 
 all.lck.OT$Group <- factor(all.lck.OT$Group, levels = c("fast_MDs","delayed_MDs"))
 all.lck.OT$drug<- factor(all.lck.OT$drug, levels=c("Control","Atropine","Prazosin","Trazodone"))
@@ -137,8 +137,8 @@ stim.lck.OT.window.compdata<-stim.lck.OT.window[!(stim.lck.OT.window$Channel=="R
 # astrocytes vs. neurons onset times only from stim trials
 
 # data from wildtype and IP3R2_WT
-all.lck.OT$Genotype[all.lck.OT$Animal=="IPRG7"]="IP3R2_KO"
-all.lck.OT$Genotype[all.lck.OT$Animal=="IPRG6"]="IP3R2_WT"
+#all.lck.OT$Genotype[all.lck.OT$Animal=="IPRG7"]="IP3R2_KO"
+#all.lck.OT$Genotype[all.lck.OT$Animal=="IPRG6"]="IP3R2_WT"
 
 control.all<-subset(all.lck.OT, drug=="Control" & Genotype!="IP3R2_KO")
 control.all.stim<-subset(all.lck.OT, drug=="Control" & Genotype!="IP3R2_KO" & Condition=="Stim")
