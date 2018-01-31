@@ -113,8 +113,8 @@ print(Astrocyte95Onset)
 # no stim vs 8 s stim- 
 #neuronal window=2s, AC window=12 s for onset
 
-LongN_OTwind2=2
-LongAC_OTwind2=12
+LongN_OTwind2=1.09
+LongAC_OTwind2=12.76
 
 # remove data that is outside the above windows
 # lck
@@ -142,7 +142,7 @@ stim.lck.OT.window.compdata<-stim.lck.OT.window[!(stim.lck.OT.window$Channel=="R
 
 control.all<-subset(all.lck.OT, drug=="Control" & Genotype!="IP3R2_KO")
 control.all.stim<-subset(all.lck.OT, drug=="Control" & Genotype!="IP3R2_KO" & Condition=="Stim")
-#control.window.stim.compdata<-subset(stim.lck.OT.window.compdata, drug=="Control" & Genotype!="IP3R2_KO" & Condition=="Stim")
+control.window.stim.compdata<-subset(stim.lck.OT.window.compdata, drug=="Control" & Genotype!="IP3R2_KO" & Condition=="Stim")
 
 #control.window.stim<-subset(stim.lck.OT.window, drug=="Control" & Genotype!="IP3R2_KO" & Condition=="Stim")
 
@@ -159,46 +159,46 @@ ggplot(control.window.stim.compdata[control.window.stim.compdata$Group!="delayed
   max.theme
 
 ######
-# number of peaks detected in nostim and stim
-control.OT.20strial<-control.all[control.all$OnsetTime<20,]
-control.OT.20strial.stim<-control.all.stim[control.all.stim$OnsetTime<20,]
+# number of peaks detected in nostim and stim during the stimulus period
+control.OT.8strial<-control.all[control.all$OnsetTime<8,]
+#control.OT.8strial.stim<-control.all.stim[control.all.stim$OnsetTime<8,]
 
-control.OT.20strial$Channel <- factor(control.OT.20strial$Channel, levels = c("RCaMP","GCaMP"))
+control.OT.8strial$Channel <- factor(control.OT.8strial$Channel, levels = c("RCaMP","GCaMP"))
 
-peakNum.OT.20strial<-ddply(control.OT.20strial, c("Animal","Spot","Condition","Channel","Group"), summarise, nPeaks=length(OnsetTime))
+peakNum.OT.8strial<-ddply(control.OT.8strial, c("Animal","Spot","Condition","Channel","Group"), summarise, nPeaks=length(OnsetTime))
 
 # add in number of trials
-peakNum.OT.20strial$Ani_Spot_Cond<-paste(peakNum.OT.20strial$Animal, peakNum.OT.20strial$Spot, peakNum.OT.20strial$Condition, sep="_")
-peakNum.OT.20strial<-merge(peakNum.OT.20strial, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
-peakNum.OT.20strial$PeaksPerTrial<-peakNum.OT.20strial$nPeaks/peakNum.OT.20strial$nTrials
+peakNum.OT.8strial$Ani_Spot_Cond<-paste(peakNum.OT.8strial$Animal, peakNum.OT.8strial$Spot, peakNum.OT.8strial$Condition, sep="_")
+peakNum.OT.8strial<-merge(peakNum.OT.8strial, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+peakNum.OT.8strial$PeaksPerTrial<-peakNum.OT.8strial$nPeaks/peakNum.OT.8strial$nTrials
 
-peakNum.OT.20strial.compdata<-peakNum.OT.20strial[!(peakNum.OT.20strial$Channel=="RCaMP"& peakNum.OT.20strial$Group=="delayed_MDs"),]
+peakNum.OT.8strial.compdata<-peakNum.OT.8strial[!(peakNum.OT.8strial$Channel=="RCaMP"& peakNum.OT.8strial$Group=="delayed_MDs"),]
 
 # mean
-df.lck.peakNum.20strial<-summarySE(peakNum.OT.20strial, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition"))
-df.lck.peakNum.20strial.Group<-summarySE(peakNum.OT.20strial.compdata, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition","Group"))
+df.lck.peakNum.8strial<-summarySE(peakNum.OT.8strial, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition"))
+df.lck.peakNum.8strial.Group<-summarySE(peakNum.OT.8strial.compdata, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition","Group"))
 
-ggplot(df.lck.peakNum.20strial, aes(x=Channel,y=PeaksPerTrial, fill= Condition)) +
+ggplot(df.lck.peakNum.8strial, aes(x=Channel,y=PeaksPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=PeaksPerTrial-se, ymax=PeaksPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num Peaks/trial per field of view") +
   max.theme
 
-ggplot(df.lck.peakNum.20strial.Group, aes(x=interaction(Channel,Group),y=PeaksPerTrial, fill= Condition)) +
+ggplot(df.lck.peakNum.8strial.Group, aes(x=interaction(Channel,Group),y=PeaksPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=PeaksPerTrial-se, ymax=PeaksPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num Peaks/trial per field of view, Group") +
   max.theme
 
 
-Condition_Channel2= interaction(peakNum.OT.20strial.compdata$Condition,peakNum.OT.20strial.compdata$Channel)
-Condition_Channel_Group= interaction(peakNum.OT.20strial.compdata$Condition,peakNum.OT.20strial.compdata$Channel,peakNum.OT.20strial.compdata$Group)
+Condition_Channel2= interaction(peakNum.OT.8strial.compdata$Condition,peakNum.OT.8strial.compdata$Channel)
+Condition_Channel_Group= interaction(peakNum.OT.8strial.compdata$Condition,peakNum.OT.8strial.compdata$Channel,peakNum.OT.8strial.compdata$Group)
 
-nPeaks.lck.stim.null = lmer(PeaksPerTrial ~ (1|Animal), peakNum.OT.20strial.compdata,REML=FALSE)
-nPeaks.lck.stim.model1 = lmer(PeaksPerTrial~ Channel + (1|Animal), peakNum.OT.20strial.compdata,REML=FALSE)
-nPeaks.lck.stim.model2 = lmer(PeaksPerTrial ~ Condition + (1|Animal), peakNum.OT.20strial.compdata,REML=FALSE)
-nPeaks.lck.stim.model3 = lmer(PeaksPerTrial ~ Condition_Channel2 + (1|Animal), peakNum.OT.20strial.compdata,REML=FALSE)
-nPeaks.lck.stim.model4 = lmer(PeaksPerTrial ~ Condition_Channel_Group + (1|Animal), peakNum.OT.20strial.compdata,REML=FALSE)
+nPeaks.lck.stim.null = lmer(PeaksPerTrial ~ (1|Animal), peakNum.OT.8strial.compdata,REML=FALSE)
+nPeaks.lck.stim.model1 = lmer(PeaksPerTrial~ Channel + (1|Animal), peakNum.OT.8strial.compdata,REML=FALSE)
+nPeaks.lck.stim.model2 = lmer(PeaksPerTrial ~ Condition + (1|Animal), peakNum.OT.8strial.compdata,REML=FALSE)
+nPeaks.lck.stim.model3 = lmer(PeaksPerTrial ~ Condition_Channel2 + (1|Animal), peakNum.OT.8strial.compdata,REML=FALSE)
+nPeaks.lck.stim.model4 = lmer(PeaksPerTrial ~ Condition_Channel_Group + (1|Animal), peakNum.OT.8strial.compdata,REML=FALSE)
 nPeaks.lck.stim.anova <- anova(nPeaks.lck.stim.null, nPeaks.lck.stim.model1,nPeaks.lck.stim.model2,
                                nPeaks.lck.stim.model3,nPeaks.lck.stim.model4)
 print(nPeaks.lck.stim.anova)
@@ -212,21 +212,9 @@ summary(nPeaks.lck.stim.Cond_Channel_Group)
 #########
 # mean onset times- control
 
-control.OT.20strial.compdata<-control.OT.20strial.stim[!(control.OT.20strial.stim$Channel=="RCaMP"
-                                                    & control.OT.20strial.stim$Group=="delayed_MDs"),]
-
-
-df.OT1<- summarySE(control.OT.20strial.stim, measurevar = "OnsetTime", groupvars = c("Channel","Condition"))
-df.OT2<- summarySE(control.OT.20strial.compdata, measurevar = "OnsetTime", groupvars = c("Channel_Group", "Channel"))
-df.OT2.fast<-summarySE(control.OT.20strial.compdata[control.OT.20strial.compdata$Group!="delayed_MDs",], 
+df.OT2<- summarySE(control.window.stim.compdata, measurevar = "OnsetTime", groupvars = c("Channel_Group", "Channel"))
+df.OT2.fast<-summarySE(control.window.stim.compdata[control.window.stim.compdata$Group!="delayed_MDs",], 
                        measurevar = "OnsetTime", groupvars = c("Channel_Group", "Channel"))
-
-ggplot(df.OT1, aes(x=Channel,y=OnsetTime, fill=Channel)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Mean Onset Time (s)- neurons vs astros in stim window") +
-  ggtitle("Mean Onset Time (s)- neurons vs astros in stim window") +
-  max.theme
 
 ggplot(df.OT2, aes(x=Channel_Group,y=OnsetTime, fill=Channel)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -240,13 +228,21 @@ ggplot(df.OT2.fast, aes(x=Channel_Group,y=OnsetTime, fill=Channel)) +
   ylab("Mean Onset Time (s)") +
   max.theme
 
+ggplot(control.window.stim.compdata, aes(x=Channel_Group,y=OnsetTime, fill=Channel)) +
+  geom_boxplot()+
+  ylab("Onset Time (s)")+
+  max.theme
 
+ggplot(control.window.stim.compdata[control.window.stim.compdata$Group!="delayed_MDs",], aes(x=Channel_Group,y=OnsetTime, fill=Channel)) +
+  geom_boxplot()+
+  ylab("Onset Time (s)")+
+  max.theme
 
 # stats for onset times- neurons vs astrocytes
-OT.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), control.OT.20strial.compdata,REML=FALSE)
-OT.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), control.OT.20strial.compdata,REML=FALSE)
-OT.model2 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Spot_trial), control.OT.20strial.compdata,REML=FALSE)
-OT.model3 = lmer(OnsetTime ~ Channel_Group + (1|Animal) + (1|Spot) + (1|Spot_trial), control.OT.20strial.compdata,REML=FALSE)
+OT.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), control.window.stim.compdata,REML=FALSE)
+OT.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), control.window.stim.compdata,REML=FALSE)
+OT.model2 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Spot_trial), control.window.stim.compdata,REML=FALSE)
+OT.model3 = lmer(OnsetTime ~ Channel_Group + (1|Animal) + (1|Spot) + (1|Spot_trial), control.window.stim.compdata,REML=FALSE)
 OT.anova <- anova(OT.null, OT.model1,OT.model2,OT.model3)
 print(OT.anova)
 
@@ -263,7 +259,14 @@ abline(h=0, lty=2)
 lines(smooth.spline(fitted(OT.model3), residuals(OT.model3)), col=46, lwd=2.5)
 
 
+# stats only for fast ROIs from each channel
+OT.fast.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), control.window.stim.compdata[control.window.stim.compdata$Group!="delayed_MDs",],REML=FALSE)
+OT.fast.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), control.window.stim.compdata[control.window.stim.compdata$Group!="delayed_MDs",],REML=FALSE)
+OT.fast.anova <- anova(OT.fast.null, OT.fast.model1)
+print(OT.fast.anova)
 
+OT.fast.Channel.pv<- glht(OT.fast.model1, mcp(Channel= "Tukey"))
+summary(OT.fast.Channel.pv)
 
 
 
@@ -291,55 +294,55 @@ ggplot(IP3.all.stim[(IP3.all.stim$OnsetTime<15 & IP3.all.stim$Genotype=="IP3R2_K
 
 #########
 # number of peaks detected in nostim and stim
-IP3.OT.20strial<-IP3.all[IP3.all$OnsetTime<20,]
+IP3.OT.8strial<-IP3.all[IP3.all$OnsetTime<8,]
 
-IP3.OT.20strial$Channel <- factor(IP3.OT.20strial$Channel, levels = c("RCaMP","GCaMP"))
+IP3.OT.8strial$Channel <- factor(IP3.OT.8strial$Channel, levels = c("RCaMP","GCaMP"))
 
-peakNum.IP3.20strial<-ddply(IP3.OT.20strial, c("Animal","Spot","Condition","Channel","Group","Genotype"), summarise, nPeaks=length(OnsetTime))
+peakNum.IP3.8strial<-ddply(IP3.OT.8strial, c("Animal","Spot","Condition","Channel","Group","Genotype"), summarise, nPeaks=length(OnsetTime))
 
 # add in number of trials
-peakNum.IP3.20strial$Ani_Spot_Cond<-paste(peakNum.IP3.20strial$Animal, peakNum.IP3.20strial$Spot, peakNum.IP3.20strial$Condition, sep="_")
-peakNum.IP3.20strial<-merge(peakNum.IP3.20strial, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
-peakNum.IP3.20strial$PeaksPerTrial<-peakNum.IP3.20strial$nPeaks/peakNum.IP3.20strial$nTrials
+peakNum.IP3.8strial$Ani_Spot_Cond<-paste(peakNum.IP3.8strial$Animal, peakNum.IP3.8strial$Spot, peakNum.IP3.8strial$Condition, sep="_")
+peakNum.IP3.8strial<-merge(peakNum.IP3.8strial, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
+peakNum.IP3.8strial$PeaksPerTrial<-peakNum.IP3.8strial$nPeaks/peakNum.IP3.8strial$nTrials
 
-peakNum.IP3.20strial.compdata<-peakNum.IP3.20strial[!(peakNum.IP3.20strial$Channel=="RCaMP"& peakNum.IP3.20strial$Group=="delayed_MDs"),]
+peakNum.IP3.8strial.compdata<-peakNum.IP3.8strial[!(peakNum.IP3.8strial$Channel=="RCaMP"& peakNum.IP3.8strial$Group=="delayed_MDs"),]
 
 # mean
-df.IP3.peakNum.20strial<-summarySE(peakNum.IP3.20strial, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition","Genotype"))
-df.IP3.peakNum.20strial.Group<-summarySE(peakNum.IP3.20strial.compdata, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition","Group","Genotype"))
+df.IP3.peakNum.8strial<-summarySE(peakNum.IP3.8strial, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition","Genotype"))
+df.IP3.peakNum.8strial.Group<-summarySE(peakNum.IP3.8strial.compdata, measurevar = "PeaksPerTrial", groupvars = c("Channel", "Condition","Group","Genotype"))
 
-ggplot(df.IP3.peakNum.20strial, aes(x=interaction(Channel, Genotype),y=PeaksPerTrial, fill= Condition)) +
+ggplot(df.IP3.peakNum.8strial, aes(x=interaction(Channel, Genotype),y=PeaksPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=PeaksPerTrial-se, ymax=PeaksPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num Peaks/trial per field of view") +
   max.theme
 
-ggplot(df.IP3.peakNum.20strial.Group, aes(x=interaction(Channel,Group, Genotype),y=PeaksPerTrial, fill= Condition)) +
+ggplot(df.IP3.peakNum.8strial.Group, aes(x=interaction(Channel,Group, Genotype),y=PeaksPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=PeaksPerTrial-se, ymax=PeaksPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num Peaks/trial per field of view, Group") +
   max.theme
 
-ggplot(df.IP3.peakNum.20strial.Group[df.IP3.peakNum.20strial.Group$Condition=="Stim",], aes(x=interaction(Channel,Group),y=PeaksPerTrial, fill=Genotype)) +
+ggplot(df.IP3.peakNum.8strial.Group[df.IP3.peakNum.8strial.Group$Condition=="Stim",], aes(x=interaction(Channel,Group),y=PeaksPerTrial, fill=Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=PeaksPerTrial-se, ymax=PeaksPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num Peaks/trial per field of view, Group") +
   max.theme
 
-Condition_Channel_Gen= interaction(peakNum.IP3.20strial.compdata$Condition,
-                                peakNum.IP3.20strial.compdata$Channel,
-                                peakNum.IP3.20strial.compdata$Genotype)
-Condition_Channel_Group_Gen= interaction(peakNum.IP3.20strial.compdata$Condition,
-                                     peakNum.IP3.20strial.compdata$Channel,
-                                     peakNum.IP3.20strial.compdata$Group,
-                                     peakNum.IP3.20strial.compdata$Genotype)
+Condition_Channel_Gen= interaction(peakNum.IP3.8strial.compdata$Condition,
+                                peakNum.IP3.8strial.compdata$Channel,
+                                peakNum.IP3.8strial.compdata$Genotype)
+Condition_Channel_Group_Gen= interaction(peakNum.IP3.8strial.compdata$Condition,
+                                     peakNum.IP3.8strial.compdata$Channel,
+                                     peakNum.IP3.8strial.compdata$Group,
+                                     peakNum.IP3.8strial.compdata$Genotype)
 
-nPeaks.IP3.stim.null = lmer(PeaksPerTrial ~ (1|Animal), peakNum.IP3.20strial.compdata,REML=FALSE)
-nPeaks.IP3.stim.model1 = lmer(PeaksPerTrial~ Channel + (1|Animal), peakNum.IP3.20strial.compdata,REML=FALSE)
-nPeaks.IP3.stim.model2A= lmer(PeaksPerTrial ~ Condition + (1|Animal), peakNum.IP3.20strial.compdata,REML=FALSE)
-nPeaks.IP3.stim.model2B = lmer(PeaksPerTrial ~ Genotype + (1|Animal), peakNum.IP3.20strial.compdata,REML=FALSE)
-nPeaks.IP3.stim.model3 = lmer(PeaksPerTrial ~ Condition_Channel_Gen + (1|Animal), peakNum.IP3.20strial.compdata,REML=FALSE)
-nPeaks.IP3.stim.model4 = lmer(PeaksPerTrial ~ Condition_Channel_Group_Gen + (1|Animal), peakNum.IP3.20strial.compdata,REML=FALSE)
+nPeaks.IP3.stim.null = lmer(PeaksPerTrial ~ (1|Animal), peakNum.IP3.8strial.compdata,REML=FALSE)
+nPeaks.IP3.stim.model1 = lmer(PeaksPerTrial~ Channel + (1|Animal), peakNum.IP3.8strial.compdata,REML=FALSE)
+nPeaks.IP3.stim.model2A= lmer(PeaksPerTrial ~ Condition + (1|Animal), peakNum.IP3.8strial.compdata,REML=FALSE)
+nPeaks.IP3.stim.model2B = lmer(PeaksPerTrial ~ Genotype + (1|Animal), peakNum.IP3.8strial.compdata,REML=FALSE)
+nPeaks.IP3.stim.model3 = lmer(PeaksPerTrial ~ Condition_Channel_Gen + (1|Animal), peakNum.IP3.8strial.compdata,REML=FALSE)
+nPeaks.IP3.stim.model4 = lmer(PeaksPerTrial ~ Condition_Channel_Group_Gen + (1|Animal), peakNum.IP3.8strial.compdata,REML=FALSE)
 nPeaks.IP3.stim.anova <- anova(nPeaks.IP3.stim.null, nPeaks.IP3.stim.model1,nPeaks.IP3.stim.model2A,
                                nPeaks.IP3.stim.model2B, nPeaks.IP3.stim.model3,nPeaks.IP3.stim.model4)
 print(nPeaks.IP3.stim.anova)
@@ -353,13 +356,13 @@ summary(nPeaks.IP3.stim.Cond_Channel_Group)
 
 ##########
 # mean onset times- IP3
-IP3.OT.20strial.stim<-IP3.OT.20strial[IP3.OT.20strial$Condition=="Stim",]
-IP3.OT.20strial.compdata<-IP3.OT.20strial.stim[!(IP3.OT.20strial.stim$Channel=="RCaMP"
-                                                    & IP3.OT.20strial.stim$Group=="delayed_MDs"),]
+IP3.OT.8strial.stim<-IP3.OT.8strial[IP3.OT.8strial$Condition=="Stim",]
+IP3.OT.8strial.compdata<-IP3.OT.8strial.stim[!(IP3.OT.8strial.stim$Channel=="RCaMP"
+                                                    & IP3.OT.8strial.stim$Group=="delayed_MDs"),]
 
-df.IP3.OT1<- summarySE(IP3.OT.20strial.compdata, measurevar = "OnsetTime", groupvars = c("Channel", "Genotype"))
-df.IP3.OT2<- summarySE(IP3.OT.20strial.compdata, measurevar = "OnsetTime", groupvars = c("Channel_Group", "Channel", "Genotype"))
-df.IP3.OT2.fast<-summarySE(IP3.OT.20strial.compdata[IP3.OT.20strial.compdata$Group!="delayed_MDs",], 
+df.IP3.OT1<- summarySE(IP3.OT.8strial.compdata, measurevar = "OnsetTime", groupvars = c("Channel", "Genotype"))
+df.IP3.OT2<- summarySE(IP3.OT.8strial.compdata, measurevar = "OnsetTime", groupvars = c("Channel_Group", "Channel", "Genotype"))
+df.IP3.OT2.fast<-summarySE(IP3.OT.8strial.compdata[IP3.OT.8strial.compdata$Group!="delayed_MDs",], 
                        measurevar = "OnsetTime", groupvars = c("Channel_Group", "Channel", "Genotype"))
 
 ggplot(df.IP3.OT1, aes(x=Channel,y=OnsetTime, fill=Genotype)) +
@@ -383,12 +386,12 @@ ggplot(df.IP3.OT2.fast, aes(x=Channel_Group,y=OnsetTime, fill=Genotype)) +
 
 
 # stats for onset times- neurons vs astrocytes
-Channel_Group_Genotype= interaction(IP3.OT.20strial.compdata$Channel, IP3.OT.20strial.compdata$Group, IP3.OT.20strial.compdata$Genotype)
-OT.IP3.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.20strial.compdata,REML=FALSE)
-OT.IP3.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.20strial.compdata,REML=FALSE)
-OT.IP3.model2 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.20strial.compdata,REML=FALSE)
-OT.IP3.model3 = lmer(OnsetTime ~ Genotype + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.20strial.compdata,REML=FALSE)
-OT.IP3.model4 = lmer(OnsetTime ~ Channel_Group_Genotype + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.20strial.compdata,REML=FALSE)
+Channel_Group_Genotype= interaction(IP3.OT.8strial.compdata$Channel, IP3.OT.8strial.compdata$Group, IP3.OT.8strial.compdata$Genotype)
+OT.IP3.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.8strial.compdata,REML=FALSE)
+OT.IP3.model1 = lmer(OnsetTime ~ Channel + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.8strial.compdata,REML=FALSE)
+OT.IP3.model2 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.8strial.compdata,REML=FALSE)
+OT.IP3.model3 = lmer(OnsetTime ~ Genotype + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.8strial.compdata,REML=FALSE)
+OT.IP3.model4 = lmer(OnsetTime ~ Channel_Group_Genotype + (1|Animal) + (1|Spot) + (1|Spot_trial), IP3.OT.8strial.compdata,REML=FALSE)
 OT.IP3.anova <- anova(OT.IP3.null, OT.IP3.model1, OT.IP3.model2, OT.IP3.model3, OT.IP3.model4)
 print(OT.IP3.anova)
 
