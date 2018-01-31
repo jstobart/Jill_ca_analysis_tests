@@ -136,6 +136,7 @@ stim = allscores(2:2:size(allscores,1));
 % Lck data  1st cohort
 %scores([1,32,33,44,53,78],:) = [];
 
+
 sampIdx = randi(size(scores,1));
 if mod(sampIdx,2)
     sampIdx = [sampIdx, sampIdx+1];

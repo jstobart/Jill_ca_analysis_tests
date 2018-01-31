@@ -7,24 +7,19 @@ close all
 % time windows based on stimulation
 NOnsetWindow= 2; %1 for short stim % neuronal onset times
 AOnsetWindow= 12; % 5 for short stim % astrocyte onset times
-Fast_AOnsetWindow=1;
-Fast_NOnsetWindow=1;
+Fast_AOnsetWindow=1.09;
+Fast_NOnsetWindow=1.09;
 NPTWindow= 9; % one second longer than stimulation for peak times
 APTWindow= 15; % astrocyte longer than stimulation for peak times
 
 stimwindow=20; % 5 s baseline, 15 s imaging
 
-% save files names
-%saveFiles1='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.mat';
-%saveFiles2='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_firstonset_comparisons.csv';
-saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\FilesforR\OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv';
-%saveFiles3= 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Lck_longstim_onset_2sbeforeStim.csv';
-
 %AstrocyteExcelFile='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-AstrocyteTraces_Stim.xlsx';
 %NeuronalExcelFile ='E:\Data\Two_Photon_Data\GCaMP_RCaMP\Manuscript\Figures\DataForTraceOverlay_Heatmaps\cytovslck_Nostimvsstim_comparison\cyto-NeuronalTraces_Stim.xlsx';
 %peak data
-load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\\FilesforMatlab\Peaks_allMice_Lck_nostim_vs_longstim_12_2017.mat');
+peaks1=load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\FilesforMatlab\Peaks_1stCohort_Lck_nostim_vs_longstim_12_2017.mat');
 %load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\LckGC&RC_2D_longstim_28_04_2017.mat');
+peaks1=load('D:\Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\Results\FilesforMatlab\Peaks_1stCohort_Lck_nostim_vs_longstim_12_2017.mat');
 
 % Load trace data
 load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\\FilesforMatlab\Traces_allMice_Lck_nostim_vs_longstim_12_2017.mat');

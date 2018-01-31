@@ -923,7 +923,6 @@ ggplot(ROInum.lck.8strial[ROInum.lck.8strial$Channel=="RCaMP",], aes(x=Condition
 ggplot(ROInum.lck.8strial[ROInum.lck.8strial$Channel=="GCaMP",], aes(x=Condition, y = ROIsPerTrial)) +
   geom_point(shape = 21,size = 3, colour="#b5b5b5") +
   geom_line(aes(group=Ani_Spot), colour="#b5b5b5")+
-  ylim(0, 50)+
   geom_point(aes(x=Condition, y=ROIsPerTrialMean), size = 5, colour="#008837")+
   geom_line(aes(x=Condition, y=ROIsPerTrialMean,group=Ani_Spot), size=1.5, colour="#008837")+
   geom_errorbar(aes(x=Condition,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
@@ -991,7 +990,6 @@ ggplot(ROInum.cyto.8strial[ROInum.cyto.8strial$Channel=="RCaMP",], aes(x=Conditi
 ggplot(ROInum.cyto.8strial[ROInum.cyto.8strial$Channel=="GCaMP",], aes(x=Condition, y = ROIsPerTrial)) +
   geom_point(shape = 21,size = 3, colour="#b5b5b5") +
   geom_line(aes(group=Ani_Spot), colour="#b5b5b5")+
-  ylim(0, 25)+
   geom_point(aes(x=Condition, y=ROIsPerTrialMean), size = 5, colour="#008837")+
   geom_line(aes(x=Condition, y=ROIsPerTrialMean,group=Ani_Spot), size=1.5, colour="#008837")+
   geom_errorbar(aes(x=Condition,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
@@ -1473,351 +1471,6 @@ plot(fitted(OT.stim.model4), residuals(OT.stim.model4),
 abline(h=0, lty=2)
 lines(smooth.spline(fitted(OT.stim.model4), residuals(OT.stim.model4)), col=46, lwd=2.5)
 
-
-########
-#amplitude
-df.amp1A<-summarySE(stim.cyto.alldata[stim.cyto.alldata$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Channel", "Condition"))
-df.amp1B<-summarySE(stim.lck.alldata[stim.lck.alldata$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Channel", "Condition"))
-
-df.amp3<- summarySE(stim.lck.compdata, measurevar = "amplitude", groupvars = c("Channel_Group","Condition"))
-df.amp4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "amplitude", groupvars = c("Channel_Group"))
-df.amp5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("ROIType","Channel_Group"))
-df.amp6<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",], measurevar = "amplitude", groupvars = c("Channel_Group"))
-
-ggplot(df.amp1A, aes(x=Condition,y=amplitude, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("cyto amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.amp1B, aes(x=Condition,y=amplitude, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("lck amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.amp3, aes(x=Channel_Group,y=amplitude, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.amp4, aes(x=Channel_Group,y=amplitude, fill= Channel_Group)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.amp5, aes(x=Channel_Group,y=amplitude, fill= ROIType)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.amp6, aes(x=Channel_Group,y=amplitude, fill= Channel_Group)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("amplitude") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(stim.lck.compdata, aes(x=Channel_Group,y=amplitude, fill=Channel_Group)) +
-  geom_boxplot(notch=TRUE)+
-  ylab("amplitude") +
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
-
-ggplot(stim.lck.compdata, aes(x=amplitude, y=..density..,fill=Channel_Group)) +
-  geom_histogram(binwidth=0.5, position="dodge")+
-  ylab("density") +
-  xlim(-2,15)+
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
-
-ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="GCaMP.fast",], aes(x=amplitude, y=..density..,fill=Condition)) +
-  geom_histogram(binwidth=0.5, position="dodge")+
-  ylab("density") +
-  xlim(-2,15)+
-  ggtitle("lck data- fast no stim vs stim")+
-  max.theme
-
-
-# supplementary figures
-
-#cyto GC
-Cond_Channel=interaction(stim.cyto.alldata$Condition,stim.cyto.alldata$Channel)
-amp.cyto.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
-amp.cyto.model1 = lmer(amplitude ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
-amp.cyto.model2 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.cyto.alldata,REML=FALSE)
-amp.cyto.model3 = lmer(amplitude ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
-
-amp.cyto.anova <- anova(amp.cyto.null, amp.cyto.model1,amp.cyto.model2,amp.cyto.model3)
-print(amp.cyto.anova)
-
-amp.cyto.Cond_channel<- glht(amp.cyto.model3, mcp(Cond_Channel= "Tukey"))
-summary(amp.cyto.Cond_channel)
-
-#lck GC
-Cond_Channel=interaction(stim.lck.alldata$Condition,stim.lck.alldata$Channel)
-amp.lck.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-amp.lck.model1 = lmer(amplitude ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-amp.lck.model2 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.alldata,REML=FALSE)
-amp.lck.model3 = lmer(amplitude ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-
-amp.lck.anova <- anova(amp.lck.null, amp.lck.model1,amp.lck.model2,amp.lck.model3)
-print(amp.lck.anova)
-
-amp.lck.Cond_channel<- glht(amp.lck.model3, mcp(Cond_Channel= "Tukey"))
-summary(amp.lck.Cond_channel)
-
-
-
-## lck data and group (fast, delayed)
-comp_Channel_Group=interaction(stim.lck.compdata$Group,stim.lck.compdata$Channel)
-comp_Channel_Group_Cond=interaction(stim.lck.compdata$Group,stim.lck.compdata$Channel,stim.lck.compdata$Condition)
-comp_Channel_Group_Cond_Type=interaction(stim.lck.compdata$Group,stim.lck.compdata$Channel,
-                                         stim.lck.compdata$Condition,stim.lck.compdata$ROIType)
-
-
-# stats for onset times- neurons vs astrocytes
-amp.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
-amp.model1 = lmer(amplitude ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
-amp.model2 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata,REML=FALSE)
-amp.model3 = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
-amp.model4 = lmer(amplitude ~ comp_Channel_Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
-amp.model5 = lmer(amplitude ~ comp_Channel_Group_Cond + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
-amp.model6 = lmer(amplitude ~ comp_Channel_Group_Cond_Type + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
-amp.anova <- anova(amp.null, amp.model1,amp.model2,amp.model3,amp.model4,amp.model5,amp.model6)
-print(amp.anova)
-
-amp.Group_channel<- glht(amp.model5, mcp(comp_Channel_Group_Cond= "Tukey"))
-summary(amp.Group_channel)
-
-amp.Group_channel_ty<- glht(amp.model6, mcp(comp_Channel_Group_Cond_Type= "Tukey"))
-summary(amp.Group_channel_ty)
-
-# because we used different sensors, separate RCaMP and GCaMP
-
-#lck-GCaMP
-Group_Cond_GC=interaction(stim.lck.compdata$Group[stim.lck.compdata$Channel=="GCaMP"],stim.lck.compdata$Condition[stim.lck.compdata$Channel=="GCaMP"])
-Group_Cond_Type_GC=interaction(stim.lck.compdata$Group[stim.lck.compdata$Channel=="GCaMP"],
-                               stim.lck.compdata$Condition[stim.lck.compdata$Channel=="GCaMP"],
-                               stim.lck.compdata$ROIType[stim.lck.compdata$Channel=="GCaMP"])
-
-amp.null.GC = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-amp.model2.GC  = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-amp.model3.GC  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-amp.model5.GC  = lmer(amplitude ~ Group_Cond_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-amp.model6.GC  = lmer(amplitude ~ Group_Cond_Type_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-amp.anova.GC  <- anova(amp.null.GC, amp.model2.GC,amp.model3.GC,amp.model5.GC,amp.model6.GC)
-print(amp.anova.GC)
-
-amp.Group_Cond.GC<- glht(amp.model5.GC, mcp(Group_Cond_GC= "Tukey"))
-summary(amp.Group_Cond.GC)
-
-amp.Group_channel_ty.GC<- glht(amp.model6.GC, mcp(Group_Cond_Type_GC= "Tukey"))
-summary(amp.Group_channel_ty.GC)
-
-#RCaMP
-amp.null.RC = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="lck_RCaMP",],REML=FALSE)
-amp.model2.RC  = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="lck_RCaMP",],REML=FALSE)
-amp.anova.RC  <- anova(amp.null.RC, amp.model2.RC)
-print(amp.anova.RC)
-
-amp.Cond.RC<- glht(amp.model2.RC, mcp(Condition= "Tukey"))
-summary(amp.Cond.RC)
-
-
-#only consider STIM case
-amp.null.stim = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
-amp.model1.stim  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
-
-amp.anova.stim  <- anova(amp.null.stim, amp.model1.stim)
-print(amp.anova.stim)
-
-amp.stim.group<- glht(amp.model1.stim, mcp(Group= "Tukey"))
-summary(amp.stim.group)
-
-########
-#duration
-df.Dur1<-summarySE(stim.lck.alldata[stim.lck.alldata$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Channel", "Condition"))
-df.Dur2<-summarySE(stim.cyto.alldata[stim.cyto.alldata$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Channel", "Condition"))
-df.Dur3<- summarySE(stim.lck.compdata, measurevar = "Duration", groupvars = c("Channel_Group","Condition"))
-df.Dur4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "Duration", groupvars = c("Channel_Group"))
-df.Dur5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("ROIType","Channel_Group"))
-df.Dur6<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",], measurevar = "Duration", groupvars = c("Channel_Group"))
-
-
-#supplementary figure 1
-ggplot(df.Dur1, aes(x=Channel,y=Duration, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("lck Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.Dur2, aes(x=Channel,y=Duration, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("cyto Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.Dur3, aes(x=Channel_Group,y=Duration, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.Dur4, aes(x=Channel_Group,y=Duration, fill= Channel_Group)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.Dur5, aes(x=Channel_Group,y=Duration, fill=ROIType)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(df.Dur6, aes(x=Channel_Group,y=Duration, fill=Channel_Group)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  scale_fill_manual(values=cbbPalette)+
-  max.theme
-
-ggplot(stim.lck.compdata, aes(x=Channel_Group,y=Duration, fill=Channel_Group)) +
-  geom_boxplot(notch=TRUE)+
-  ylab("Duration") +
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
-
-ggplot(stim.lck.compdata, aes(x=Duration, y=..density..,fill=Channel_Group)) +
-  geom_histogram(binwidth=0.5, position="dodge")+
-  ylab("density") +
-  xlim(-2,15)+
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
-
-ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="GCaMP.fast",], aes(x=Duration, y=..density..,fill=Condition)) +
-  geom_histogram(binwidth=0.5, position="dodge")+
-  ylab("density") +
-  xlim(-2,15)+
-  ggtitle("lck data- fast no stim vs stim")+
-  max.theme
-
-# for supplementary figure
-ggplot(stim.both.alldata[stim.both.alldata$Channel=="cyto_GCaMP",], aes(x=Duration, y=..density..,fill=Condition)) +
-  geom_histogram(binwidth=1, position="dodge")+
-  ylab("density") +
-  xlim(0,50)+
-  ggtitle("cyto data- no stim vs stim")+
-  max.theme
-
-ggplot(stim.both.alldata[stim.both.alldata$Channel=="lck_GCaMP",], aes(x=Duration, y=..density..,fill=Condition)) +
-  geom_histogram(binwidth=1, position="dodge")+
-  ylab("density") +
-  xlim(0,50)+
-  ggtitle("lck data- no stim vs stim")+
-  max.theme
-
-
-# supplementary figures
-
-#cyto GC
-Cond_Channel=interaction(stim.cyto.alldata$Condition,stim.cyto.alldata$Channel)
-dur.cyto.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
-dur.cyto.model1 = lmer(Duration ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
-dur.cyto.model2 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.cyto.alldata,REML=FALSE)
-dur.cyto.model3 = lmer(Duration ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
-
-dur.cyto.anova <- anova(dur.cyto.null, dur.cyto.model1,dur.cyto.model2,dur.cyto.model3)
-print(dur.cyto.anova)
-
-dur.cyto.Cond_channel<- glht(dur.cyto.model3, mcp(Cond_Channel= "Tukey"))
-summary(dur.cyto.Cond_channel)
-
-#lck GC
-Cond_Channel=interaction(stim.lck.alldata$Condition,stim.lck.alldata$Channel)
-dur.lck.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.lck.model1 = lmer(Duration ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.lck.model2 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.alldata,REML=FALSE)
-dur.lck.model3 = lmer(Duration ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-
-dur.lck.anova <- anova(dur.lck.null, dur.lck.model1,dur.lck.model2,dur.lck.model3)
-print(dur.lck.anova)
-
-dur.lck.Cond_channel<- glht(dur.lck.model3, mcp(Cond_Channel= "Tukey"))
-summary(dur.lck.Cond_channel)
-
-
-
-# stats for duration- neurons vs astrocytes
-dur.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.model1 = lmer(Duration ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.model2 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.alldata,REML=FALSE)
-dur.model3 = lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.model4 = lmer(Duration ~ Channel_Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.model5 = lmer(Duration ~ Group_Channel_Cond + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.model6 = lmer(Duration ~ Group_Channel_Cond_Type + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
-dur.anova <- anova(dur.null, dur.model1,dur.model2,dur.model3,dur.model4,dur.model5,dur.model6)
-print(dur.anova)
-
-dur.Group_channel<- glht(dur.model5, mcp(Group_Channel_Cond= "Tukey"))
-summary(dur.Group_channel)
-
-dur.Group_channel_ty<- glht(dur.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
-summary(dur.Group_channel_ty)
-
-
-
-# because we used different sensors, separate RCaMP and GCaMP
-
-#lck-GCaMP
-dur.null.GC = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-dur.model2.GC  = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-dur.model3.GC  = lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-dur.model5.GC  = lmer(Duration ~ Group_Cond_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-dur.model6.GC  = lmer(Duration ~ Group_Cond_Type_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
-dur.anova.GC  <- anova(dur.null.GC, dur.model2.GC,dur.model3.GC,dur.model5.GC,dur.model6.GC)
-print(dur.anova.GC)
-
-dur.Group_Cond.GC<- glht(dur.model5.GC, mcp(Group_Cond_GC= "Tukey"))
-summary(dur.Group_Cond.GC)
-
-dur.Group_channel_ty.GC<- glht(dur.model6.GC, mcp(Group_Cond_Type_GC= "Tukey"))
-summary(dur.Group_channel_ty.GC)
-
-#RCaMP
-dur.null.RC = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="RCaMP",],REML=FALSE)
-dur.model2.RC  = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="RCaMP",],REML=FALSE)
-dur.anova.RC  <- anova(dur.null.RC, dur.model2.RC)
-print(dur.anova.RC)
-
-dur.Cond.RC<- glht(dur.model2.RC, mcp(Condition= "Tukey"))
-summary(dur.Cond.RC)
-
-
-#only consider STIM case
-dur.null.stim = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
-dur.model1.stim  = lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
-
-dur.anova.stim  <- anova(dur.null.stim, dur.model1.stim)
-print(dur.anova.stim)
-
-dur.stim.group<- glht(dur.model1.stim, mcp(Group= "Tukey"))
-summary(dur.stim.group)
-
 ######
 # peak time
 df.pT1<-summarySE(stim.cyto.alldata, measurevar = "peakTime", groupvars = c("Channel", "Condition"))
@@ -1918,6 +1571,510 @@ summary(pT.stim.Group_channel)
 pT.stim.Group_channel_type<- glht(pT.stim.model6, mcp(Group_Channel_Type= "Tukey"))
 summary(pT.stim.Group_channel_type)
 
+########
+#amplitude
+
+#aggregate Lck & cyto data, so we have the mean per FOV
+
+lck.GC.spot<-ddply(stim.lck.alldata[stim.lck.alldata$Channel=="GCaMP",], c("Animal","Spot","Animal_Spot","Condition"), summarise, 
+                meanAmp=mean(amplitude), meanDur=mean(Duration))
+lck.GC.spot$Ani_Cond<-paste(lck.GC.spot$Animal_Spot, lck.GC.spot$Condition, sep="_")
+lck.GC.spot.proc<-ddply(stim.lck.alldata[stim.lck.alldata$Channel=="GCaMP" & stim.lck.alldata$ROIType=="Process",], c("Animal","Spot","Animal_Spot","Condition"), summarise, 
+                   meanProcArea=mean(area))
+lck.GC.spot.proc$Ani_Cond<-paste(lck.GC.spot.proc$Animal_Spot, lck.GC.spot.proc$Condition, sep="_")
+
+lck.GC.spot<-merge(lck.GC.spot, lck.GC.spot.proc[, c("Ani_Cond", "meanProcArea")], by="Ani_Cond", all.x=TRUE)
+
+#cyto
+stim.cyto.alldata$Animal_Spot<- paste(stim.cyto.alldata$Animal, stim.cyto.alldata$Spot, sep="_")
+
+cyto.GC.spot<-ddply(stim.cyto.alldata[stim.cyto.alldata$Channel=="GCaMP",], c("Animal","Spot","Animal_Spot","Condition"), summarise, 
+                   meanAmp=mean(amplitude), meanDur=mean(Duration))
+cyto.GC.spot$Ani_Cond<-paste(cyto.GC.spot$Animal_Spot, cyto.GC.spot$Condition, sep="_")
+cyto.GC.spot.proc<-ddply(stim.cyto.alldata[stim.cyto.alldata$Channel=="GCaMP" & stim.cyto.alldata$ROIType=="Process",], c("Animal","Spot","Animal_Spot","Condition"), summarise, 
+                        meanProcArea=mean(area))
+cyto.GC.spot.proc$Ani_Cond<-paste(cyto.GC.spot.proc$Animal_Spot, cyto.GC.spot.proc$Condition, sep="_")
+
+cyto.GC.spot<-merge(cyto.GC.spot, cyto.GC.spot.proc[, c("Ani_Cond", "meanProcArea")], by="Ani_Cond", all.x=TRUE)
+
+
+# means for plots
+df.amp1A1<-summarySE(stim.cyto.alldata[stim.cyto.alldata$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Channel", "Condition"))
+df.amp1A2<-summarySE(cyto.GC.spot, measurevar = "meanAmp", groupvars = c("Condition"))
+# paired line plots
+df.amp1A2$Mean_meanAmp<-df.amp1A2$meanAmp
+cyto.GC.spot<-merge(cyto.GC.spot, df.amp1A2[, c("Condition", "Mean_meanAmp","se")], by="Condition", all.x=TRUE)
+
+df.amp1B1<-summarySE(stim.lck.alldata[stim.lck.alldata$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Channel", "Condition"))
+df.amp1B2<-summarySE(lck.GC.spot, measurevar = "meanAmp", groupvars = c("Condition"))
+# paired line plots
+df.amp1B2$Mean_meanAmp<-df.amp1B2$meanAmp
+lck.GC.spot<-merge(lck.GC.spot, df.amp1B2[, c("Condition", "Mean_meanAmp","se")], by="Condition", all.x=TRUE)
+
+df.amp3<- summarySE(stim.lck.compdata, measurevar = "amplitude", groupvars = c("Channel_Group","Condition"))
+df.amp4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "amplitude", groupvars = c("Channel_Group"))
+df.amp5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("ROIType","Channel_Group"))
+df.amp6<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",], measurevar = "amplitude", groupvars = c("Channel_Group"))
+
+
+# plots
+ggplot(df.amp1A1, aes(x=Condition,y=amplitude, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("cyto amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp1A2, aes(x=Condition,y=meanAmp, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanAmp-se, ymax=meanAmp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("cyto amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+# paired plot
+ggplot(cyto.GC.spot, aes(x=Condition, y = meanAmp)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=Mean_meanAmp), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=Mean_meanAmp,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=Mean_meanAmp-se, ymax=Mean_meanAmp+se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("cyto amp per FOV")+
+  max.theme
+
+
+
+ggplot(df.amp1B1, aes(x=Condition,y=amplitude, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("lck amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp1B2, aes(x=Condition,y=meanAmp, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanAmp-se, ymax=meanAmp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("lck amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(lck.GC.spot, aes(x=Condition, y = meanAmp)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=Mean_meanAmp), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=Mean_meanAmp,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=Mean_meanAmp-se, ymax=Mean_meanAmp+se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("lck amp per FOV")+
+max.theme
+
+
+ggplot(df.amp3, aes(x=Channel_Group,y=amplitude, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp4, aes(x=Channel_Group,y=amplitude, fill= Channel_Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp5, aes(x=Channel_Group,y=amplitude, fill= ROIType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.amp6, aes(x=Channel_Group,y=amplitude, fill= Channel_Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(stim.lck.compdata, aes(x=Channel_Group,y=amplitude, fill=Channel_Group)) +
+  geom_boxplot(notch=TRUE)+
+  ylab("amplitude") +
+  ggtitle("lck data- fast vs delayed")+
+  max.theme
+
+ggplot(stim.lck.compdata, aes(x=amplitude, y=..density..,fill=Channel_Group)) +
+  geom_histogram(binwidth=0.5, position="dodge")+
+  ylab("density") +
+  xlim(-2,15)+
+  ggtitle("lck data- fast vs delayed")+
+  max.theme
+
+ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="GCaMP.fast",], aes(x=amplitude, y=..density..,fill=Condition)) +
+  geom_histogram(binwidth=0.5, position="dodge")+
+  ylab("density") +
+  xlim(-2,15)+
+  ggtitle("lck data- fast no stim vs stim")+
+  max.theme
+
+
+# supplementary figures
+
+#cyto GC
+Cond_Channel=interaction(stim.cyto.alldata$Condition,stim.cyto.alldata$Channel)
+amp.cyto.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
+amp.cyto.model1 = lmer(amplitude ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
+amp.cyto.model2 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.cyto.alldata,REML=FALSE)
+amp.cyto.model3 = lmer(amplitude ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
+
+amp.cyto.anova <- anova(amp.cyto.null, amp.cyto.model1,amp.cyto.model2,amp.cyto.model3)
+print(amp.cyto.anova)
+
+amp.cyto.Cond_channel<- glht(amp.cyto.model3, mcp(Cond_Channel= "Tukey"))
+summary(amp.cyto.Cond_channel)
+
+#cyto GC spots
+amp.cyto.spot.null = lmer(meanAmp ~ (1|Animal), cyto.GC.spot,REML=FALSE)
+amp.cyto.spot.model1 = lmer(meanAmp ~ Condition + (1|Animal), cyto.GC.spot,REML=FALSE)
+amp.cyto.spot.anova <- anova(amp.cyto.spot.null, amp.cyto.spot.model1)
+print(amp.cyto.spot.anova)
+
+amp.cyto.spot.pv<- glht(amp.cyto.spot.model1, mcp(Condition= "Tukey"))
+summary(amp.cyto.spot.pv)
+
+#lck GC
+Cond_Channel=interaction(stim.lck.alldata$Condition,stim.lck.alldata$Channel)
+amp.lck.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+amp.lck.model1 = lmer(amplitude ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+amp.lck.model2 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.alldata,REML=FALSE)
+amp.lck.model3 = lmer(amplitude ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+
+amp.lck.anova <- anova(amp.lck.null, amp.lck.model1,amp.lck.model2,amp.lck.model3)
+print(amp.lck.anova)
+
+amp.lck.Cond_channel<- glht(amp.lck.model3, mcp(Cond_Channel= "Tukey"))
+summary(amp.lck.Cond_channel)
+
+#lck GC spots
+amp.lck.spot.null = lmer(meanAmp ~ (1|Animal), lck.GC.spot,REML=FALSE)
+amp.lck.spot.model1 = lmer(meanAmp ~ Condition + (1|Animal), lck.GC.spot,REML=FALSE)
+amp.lck.spot.anova <- anova(amp.lck.spot.null, amp.lck.spot.model1)
+print(amp.lck.spot.anova)
+
+amp.lck.spot.pv<- glht(amp.lck.spot.model1, mcp(Condition= "Tukey"))
+summary(amp.lck.spot.pv)
+
+## lck data and group (fast, delayed)
+comp_Channel_Group=interaction(stim.lck.compdata$Group,stim.lck.compdata$Channel)
+comp_Channel_Group_Cond=interaction(stim.lck.compdata$Group,stim.lck.compdata$Channel,stim.lck.compdata$Condition)
+comp_Channel_Group_Cond_Type=interaction(stim.lck.compdata$Group,stim.lck.compdata$Channel,
+                                         stim.lck.compdata$Condition,stim.lck.compdata$ROIType)
+
+
+# stats for onset times- neurons vs astrocytes
+amp.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
+amp.model1 = lmer(amplitude ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
+amp.model2 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata,REML=FALSE)
+amp.model3 = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
+amp.model4 = lmer(amplitude ~ comp_Channel_Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
+amp.model5 = lmer(amplitude ~ comp_Channel_Group_Cond + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
+amp.model6 = lmer(amplitude ~ comp_Channel_Group_Cond_Type + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata,REML=FALSE)
+amp.anova <- anova(amp.null, amp.model1,amp.model2,amp.model3,amp.model4,amp.model5,amp.model6)
+print(amp.anova)
+
+amp.Group_channel<- glht(amp.model5, mcp(comp_Channel_Group_Cond= "Tukey"))
+summary(amp.Group_channel)
+
+amp.Group_channel_ty<- glht(amp.model6, mcp(comp_Channel_Group_Cond_Type= "Tukey"))
+summary(amp.Group_channel_ty)
+
+# because we used different sensors, separate RCaMP and GCaMP
+
+#lck-GCaMP
+Group_Cond_GC=interaction(stim.lck.compdata$Group[stim.lck.compdata$Channel=="GCaMP"],stim.lck.compdata$Condition[stim.lck.compdata$Channel=="GCaMP"])
+Group_Cond_Type_GC=interaction(stim.lck.compdata$Group[stim.lck.compdata$Channel=="GCaMP"],
+                               stim.lck.compdata$Condition[stim.lck.compdata$Channel=="GCaMP"],
+                               stim.lck.compdata$ROIType[stim.lck.compdata$Channel=="GCaMP"])
+
+amp.null.GC = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+amp.model2.GC  = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+amp.model3.GC  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+amp.model5.GC  = lmer(amplitude ~ Group_Cond_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+amp.model6.GC  = lmer(amplitude ~ Group_Cond_Type_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+amp.anova.GC  <- anova(amp.null.GC, amp.model2.GC,amp.model3.GC,amp.model5.GC,amp.model6.GC)
+print(amp.anova.GC)
+
+amp.Group_Cond.GC<- glht(amp.model5.GC, mcp(Group_Cond_GC= "Tukey"))
+summary(amp.Group_Cond.GC)
+
+amp.Group_channel_ty.GC<- glht(amp.model6.GC, mcp(Group_Cond_Type_GC= "Tukey"))
+summary(amp.Group_channel_ty.GC)
+
+#RCaMP
+amp.null.RC = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="lck_RCaMP",],REML=FALSE)
+amp.model2.RC  = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="lck_RCaMP",],REML=FALSE)
+amp.anova.RC  <- anova(amp.null.RC, amp.model2.RC)
+print(amp.anova.RC)
+
+amp.Cond.RC<- glht(amp.model2.RC, mcp(Condition= "Tukey"))
+summary(amp.Cond.RC)
+
+
+#only consider STIM case
+amp.null.stim = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
+amp.model1.stim  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
+
+amp.anova.stim  <- anova(amp.null.stim, amp.model1.stim)
+print(amp.anova.stim)
+
+amp.stim.group<- glht(amp.model1.stim, mcp(Group= "Tukey"))
+summary(amp.stim.group)
+
+########
+#duration
+# means for plots
+df.Dur1A1<-summarySE(stim.cyto.alldata[stim.cyto.alldata$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Channel", "Condition"))
+df.Dur1A2<-summarySE(cyto.GC.spot, measurevar = "meanDur", groupvars = c("Condition"))
+# paired line plots
+df.Dur1A2$Mean_meanDur<-df.Dur1A2$meanDur
+df.Dur1A2$Dur_se<-df.Dur1A2$se
+cyto.GC.spot<-merge(cyto.GC.spot, df.Dur1A2[, c("Condition", "Mean_meanDur","Dur_se")], by="Condition", all.x=TRUE)
+
+df.Dur1B1<-summarySE(stim.lck.alldata[stim.lck.alldata$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Channel", "Condition"))
+df.Dur1B2<-summarySE(lck.GC.spot, measurevar = "meanDur", groupvars = c("Condition"))
+# paired line plots
+df.Dur1B2$Mean_meanDur<-df.Dur1B2$meanDur
+df.Dur1B2$Dur_se<-df.Dur1B2$se
+lck.GC.spot<-merge(lck.GC.spot, df.Dur1B2[, c("Condition", "Mean_meanDur","Dur_se")], by="Condition", all.x=TRUE)
+
+df.Dur3<- summarySE(stim.lck.compdata, measurevar = "Duration", groupvars = c("Channel_Group","Condition"))
+df.Dur4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "Duration", groupvars = c("Channel_Group"))
+df.Dur5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("ROIType","Channel_Group"))
+df.Dur6<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",], measurevar = "Duration", groupvars = c("Channel_Group"))
+
+
+
+# plots
+ggplot(df.Dur1A1, aes(x=Condition,y=Duration, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("cyto Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.Dur1A2, aes(x=Condition,y=meanDur, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanDur-se, ymax=meanDur+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("cyto Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+# paired plot
+ggplot(cyto.GC.spot, aes(x=Condition, y = meanDur)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=Mean_meanDur), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=Mean_meanDur,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=Mean_meanDur-se, ymax=Mean_meanDur+se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("cyto Dur per FOV")+
+  max.theme
+
+
+
+ggplot(df.Dur1B1, aes(x=Condition,y=Duration, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("lck Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.Dur1B2, aes(x=Condition,y=meanDur, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanDur-se, ymax=meanDur+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("lck Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(lck.GC.spot, aes(x=Condition, y = meanDur)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=Mean_meanDur), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=Mean_meanDur,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=Mean_meanDur-se, ymax=Mean_meanDur+se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("lck Dur per FOV")+
+  max.theme
+
+# NOT SIG DIFFERENT!!
+
+
+
+ggplot(df.Dur3, aes(x=Channel_Group,y=Duration, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.Dur4, aes(x=Channel_Group,y=Duration, fill= Channel_Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.Dur5, aes(x=Channel_Group,y=Duration, fill=ROIType)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(df.Dur6, aes(x=Channel_Group,y=Duration, fill=Channel_Group)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette)+
+  max.theme
+
+ggplot(stim.lck.compdata, aes(x=Channel_Group,y=Duration, fill=Channel_Group)) +
+  geom_boxplot(notch=TRUE)+
+  ylab("Duration") +
+  ggtitle("lck data- fast vs delayed")+
+  max.theme
+
+ggplot(stim.lck.compdata, aes(x=Duration, y=..density..,fill=Channel_Group)) +
+  geom_histogram(binwidth=0.5, position="dodge")+
+  ylab("density") +
+  xlim(-2,15)+
+  ggtitle("lck data- fast vs delayed")+
+  max.theme
+
+ggplot(stim.lck.alldata[stim.lck.alldata$Channel_Group=="GCaMP.fast",], aes(x=Duration, y=..density..,fill=Condition)) +
+  geom_histogram(binwidth=0.5, position="dodge")+
+  ylab("density") +
+  xlim(-2,15)+
+  ggtitle("lck data- fast no stim vs stim")+
+  max.theme
+
+# for supplementary figure
+ggplot(stim.both.alldata[stim.both.alldata$Channel=="cyto_GCaMP",], aes(x=Duration, y=..density..,fill=Condition)) +
+  geom_histogram(binwidth=1, position="dodge")+
+  ylab("density") +
+  xlim(0,50)+
+  ggtitle("cyto data- no stim vs stim")+
+  max.theme
+
+ggplot(stim.both.alldata[stim.both.alldata$Channel=="lck_GCaMP",], aes(x=Duration, y=..density..,fill=Condition)) +
+  geom_histogram(binwidth=1, position="dodge")+
+  ylab("density") +
+  xlim(0,50)+
+  ggtitle("lck data- no stim vs stim")+
+  max.theme
+
+
+# supplementary figures
+
+#cyto GC
+Cond_Channel=interaction(stim.cyto.alldata$Condition,stim.cyto.alldata$Channel)
+dur.cyto.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
+dur.cyto.model1 = lmer(Duration ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
+dur.cyto.model2 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.cyto.alldata,REML=FALSE)
+dur.cyto.model3 = lmer(Duration ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.cyto.alldata,REML=FALSE)
+
+dur.cyto.anova <- anova(dur.cyto.null, dur.cyto.model1,dur.cyto.model2,dur.cyto.model3)
+print(dur.cyto.anova)
+
+dur.cyto.Cond_channel<- glht(dur.cyto.model3, mcp(Cond_Channel= "Tukey"))
+summary(dur.cyto.Cond_channel)
+
+#cyto GC spots
+dur.cyto.spot.null = lmer(meanDur ~ (1|Animal), cyto.GC.spot,REML=FALSE)
+dur.cyto.spot.model1 = lmer(meanDur ~ Condition + (1|Animal), cyto.GC.spot,REML=FALSE)
+dur.cyto.spot.anova <- anova(dur.cyto.spot.null, dur.cyto.spot.model1)
+print(dur.cyto.spot.anova)
+
+dur.cyto.spot.pv<- glht(dur.cyto.spot.model1, mcp(Condition= "Tukey"))
+summary(dur.cyto.spot.pv)
+
+#lck GC
+Cond_Channel=interaction(stim.lck.alldata$Condition,stim.lck.alldata$Channel)
+dur.lck.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.lck.model1 = lmer(Duration ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.lck.model2 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.alldata,REML=FALSE)
+dur.lck.model3 = lmer(Duration ~ Cond_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+
+dur.lck.anova <- anova(dur.lck.null, dur.lck.model1,dur.lck.model2,dur.lck.model3)
+print(dur.lck.anova)
+
+dur.lck.Cond_channel<- glht(dur.lck.model3, mcp(Cond_Channel= "Tukey"))
+summary(dur.lck.Cond_channel)
+
+#lck GC spots
+dur.lck.spot.null = lmer(meanDur ~ (1|Animal), lck.GC.spot,REML=FALSE)
+dur.lck.spot.model1 = lmer(meanDur ~ Condition + (1|Animal), lck.GC.spot,REML=FALSE)
+dur.lck.spot.anova <- anova(dur.lck.spot.null, dur.lck.spot.model1)
+print(dur.lck.spot.anova)
+
+dur.lck.spot.pv<- glht(dur.lck.spot.model1, mcp(Condition= "Tukey"))
+summary(dur.lck.spot.pv)
+
+
+# stats for duration- neurons vs astrocytes
+dur.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.model1 = lmer(Duration ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.model2 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.alldata,REML=FALSE)
+dur.model3 = lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.model4 = lmer(Duration ~ Channel_Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.model5 = lmer(Duration ~ Group_Channel_Cond + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.model6 = lmer(Duration ~ Group_Channel_Cond_Type + (1|Animal) + (1|Spot) + (1|trials), stim.lck.alldata,REML=FALSE)
+dur.anova <- anova(dur.null, dur.model1,dur.model2,dur.model3,dur.model4,dur.model5,dur.model6)
+print(dur.anova)
+
+dur.Group_channel<- glht(dur.model5, mcp(Group_Channel_Cond= "Tukey"))
+summary(dur.Group_channel)
+
+dur.Group_channel_ty<- glht(dur.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
+summary(dur.Group_channel_ty)
+
+
+
+# because we used different sensors, separate RCaMP and GCaMP
+
+#lck-GCaMP
+dur.null.GC = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+dur.model2.GC  = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+dur.model3.GC  = lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+dur.model5.GC  = lmer(Duration ~ Group_Cond_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+dur.model6.GC  = lmer(Duration ~ Group_Cond_Type_GC + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="GCaMP",],REML=FALSE)
+dur.anova.GC  <- anova(dur.null.GC, dur.model2.GC,dur.model3.GC,dur.model5.GC,dur.model6.GC)
+print(dur.anova.GC)
+
+dur.Group_Cond.GC<- glht(dur.model5.GC, mcp(Group_Cond_GC= "Tukey"))
+summary(dur.Group_Cond.GC)
+
+dur.Group_channel_ty.GC<- glht(dur.model6.GC, mcp(Group_Cond_Type_GC= "Tukey"))
+summary(dur.Group_channel_ty.GC)
+
+#RCaMP
+dur.null.RC = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata[stim.lck.compdata$Channel=="RCaMP",],REML=FALSE)
+dur.model2.RC  = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata[stim.lck.compdata$Channel=="RCaMP",],REML=FALSE)
+dur.anova.RC  <- anova(dur.null.RC, dur.model2.RC)
+print(dur.anova.RC)
+
+dur.Cond.RC<- glht(dur.model2.RC, mcp(Condition= "Tukey"))
+summary(dur.Cond.RC)
+
+
+#only consider STIM case
+dur.null.stim = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
+dur.model1.stim  = lmer(Duration ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="RCaMP",],REML=FALSE)
+
+dur.anova.stim  <- anova(dur.null.stim, dur.model1.stim)
+print(dur.anova.stim)
+
+dur.stim.group<- glht(dur.model1.stim, mcp(Group= "Tukey"))
+summary(dur.stim.group)
+
+
 
 #######
 
@@ -1988,35 +2145,31 @@ summary(area.stim.group)
 Lck.processes<- subset(stim.lck.alldata, ROIType=="Process" & Channel=="GCaMP")
 
 # only ROIS with a signal near the stimulus
-StimROI.lck.proc.Pixels<-ddply(Lck.processes, c("ROIs_Cond","trials","Animal","Spot","Condition","pixelsize", "nFluoPix"), summarise, 
+StimROI.lck.proc.Pixels<-ddply(Lck.processes, c("ROIs_Cond","trials","Animal","Spot","Animal_Spot","Condition","pixelsize", "nFluoPix"), summarise, 
                               nActivePix=sum(nActivePix))
 
 # separate also the fast or delayed groups
-groups.lck.proc.Pixels<-ddply(Lck.processes, c("ROIs_Cond","trials","Animal","Spot","Condition","Group","pixelsize", "nFluoPix"), summarise, 
+groups.lck.proc.Pixels<-ddply(Lck.processes, c("ROIs_Cond","trials","Animal","Spot","Animal_Spot","Condition","Group","pixelsize", "nFluoPix"), summarise, 
                                nActivePix=sum(nActivePix))
 
 # summarize per trial and spot
-Trial.lck.proc.StimPixels<-ddply(StimROI.lck.proc.Pixels, c("trials","Animal","Spot","Condition","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+Trial.lck.proc.StimPixels<-ddply(StimROI.lck.proc.Pixels, c("trials","Animal","Spot","Animal_Spot","Condition","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
                                 nActivePix=sum(nActivePix))
 Trial.lck.proc.StimPixels$FracActive=Trial.lck.proc.StimPixels$nActivePix/Trial.lck.proc.StimPixels$nFluoPix
 Trial.lck.proc.StimPixels$FracActivePerROI=Trial.lck.proc.StimPixels$FracActive/Trial.lck.proc.StimPixels$nROIs
 
 
-Trial.lck.group.StimPixels<-ddply(groups.lck.proc.Pixels, c("trials","Animal","Spot","Condition","Group","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+Trial.lck.group.StimPixels<-ddply(groups.lck.proc.Pixels, c("trials","Animal","Spot","Animal_Spot","Condition","Group","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
                                 nActivePix=sum(nActivePix))
 Trial.lck.group.StimPixels$FracActive=Trial.lck.group.StimPixels$nActivePix/Trial.lck.group.StimPixels$nFluoPix
 Trial.lck.group.StimPixels$FracActivePerROI=Trial.lck.group.StimPixels$FracActive/Trial.lck.group.StimPixels$nROIs
 
 
-Spot.lck.StimPixels<-ddply(Trial.lck.proc.StimPixels, c("Animal","Spot","Condition","pixelsize"), summarise, nTrials=length(unique(trials)),
-                           MeanFracActive=mean(FracActive), MeanFracActPerROI=mean(FracActivePerROI))
+Spot.lck.StimPixels<-ddply(Trial.lck.proc.StimPixels, c("Animal","Spot","Animal_Spot","Condition","pixelsize"), summarise, nTrials=length(unique(trials)),
+                           meanTotalPix=mean(nFluoPix), MeanFracActive=mean(FracActive), MeanFracActPerROI=mean(FracActivePerROI))
 
-Spot.lck.group.StimPixels<-ddply(Trial.lck.group.StimPixels, c("Animal","Spot","Condition","Group","pixelsize"), summarise, nTrials=length(unique(trials)),
-                           MeanFracActive=mean(FracActive), MeanFracActPerROI=mean(FracActivePerROI))
-
-Spot.lck.StimPixels$FracActPerTrial=Spot.lck.StimPixels$MeanFracActive/Spot.lck.StimPixels$nTrials
-Spot.lck.group.StimPixels$FracActPerTrial=Spot.lck.group.StimPixels$MeanFracActive/Spot.lck.group.StimPixels$nTrials
-
+Spot.lck.group.StimPixels<-ddply(Trial.lck.group.StimPixels, c("Animal","Spot","Animal_Spot","Condition","Group","pixelsize"), summarise, nTrials=length(unique(trials)),
+                                 meanTotalPix=mean(nFluoPix), MeanFracActive=mean(FracActive), MeanFracActPerROI=mean(FracActivePerROI))
 
 #fracActive per trial
 df.FracActive.lck<- summarySE(Trial.lck.proc.StimPixels, measurevar = "FracActive", groupvars = c("Condition"))
@@ -2029,79 +2182,82 @@ df.FracActivePerROI.lck.group<- summarySE(Trial.lck.group.StimPixels, measurevar
 #fracActive per Spot
 df.FracActive.Spot<- summarySE(Spot.lck.StimPixels, measurevar = "MeanFracActive", groupvars = c("Condition"))
 df.FracActivePerROI.Spot<- summarySE(Spot.lck.StimPixels, measurevar = "MeanFracActPerROI", groupvars = c("Condition"))
-df.FracActivePerTrial.Spot<- summarySE(Spot.lck.StimPixels, measurevar = "FracActPerTrial", groupvars = c("Condition"))
+df.FracActive.Spot2<- summarySE(Spot.lck.group.StimPixels, measurevar = "MeanFracActive", groupvars = c("Condition","Group"))
 
-ggplot(data=df.FracActive.lck.all, aes(x=Condition, y= FracActive, fill=Condition)) + 
+#fraction active  (includes ROI size and number)
+ggplot(data=df.FracActive.lck, aes(x=Condition, y= FracActive, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Fraction of Active Astrocyte Process Area") +
-  ggtitle("All Lck") +
+  ggtitle("frac act per trial") +
   scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
   max.theme
 
-ggplot(data=df.FracActive.lck.stim, aes(x=Condition, y= FracActive, fill=Condition)) + 
+ggplot(data=df.FracActive.Spot, aes(x=Condition, y= MeanFracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=MeanFracActive-se, ymax=MeanFracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("MeanFracActive per spot") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+#fraction active per ROI  (only a factor of ROI size)
+ggplot(data=df.FracActivePerROI.lck, aes(x=Condition, y= FracActivePerROI, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActivePerROI-se, ymax=FracActivePerROI+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActivePerROI") +
+  ggtitle("FracActivePerROI per trial") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+ggplot(data=df.FracActivePerROI.Spot, aes(x=Condition, y= MeanFracActPerROI, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=MeanFracActPerROI-se, ymax=MeanFracActPerROI+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("MeanFracActPerROI per spot") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+# fraction active by group
+ggplot(data=df.FracActive.lck.group, aes(x=Group, y= FracActive, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Fraction of Active Astrocyte Process Area") +
-  ggtitle("Lck ROIs with peaks during stim period") +
+  ylab("FracActive") +
+  ggtitle("FracActive per trial") +
   scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
   max.theme
 
-
-# cyto GCaMP
-cyto.processes<-subset(all.cyto.peaks, Channel=="GCaMP" & ROIType=="Process")
-
-# any ROIs with a signal in the trial
-AllROI.cyto.proc.Pixels<-ddply(cyto.processes, c("ROIs_Cond","trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
-                               nActivePix=sum(nActivePix))
-
-# only ROIS with a signal near the stimulus
-StimROI.cyto.proc.Pixels<-ddply(cyto.processes[cyto.processes$peakTime<8,], c("ROIs_Cond","Animal","Spot","trials","Condition","Channel","pixelsize", "nFluoPix"), summarise, 
-                                nActivePix=sum(nActivePix))
-
-# summarize per trial and spot
-Spot.cyto.proc.AllPixels<-ddply(AllROI.cyto.proc.Pixels, c("trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
-                                nActivePix=sum(nActivePix))
-Spot.cyto.proc.AllPixels$FracActive=Spot.cyto.proc.AllPixels$nActivePix/Spot.cyto.proc.AllPixels$nFluoPix
-Spot.cyto.proc.AllPixels$FracActivePerROI=Spot.cyto.proc.AllPixels$FracActive/Spot.cyto.proc.AllPixels$nROIs
-
-Spot.cyto.proc.StimPixels<-ddply(StimROI.cyto.proc.Pixels, c("trials","Animal","Spot","Condition","Channel","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
-                                 nActivePix=sum(nActivePix))
-Spot.cyto.proc.StimPixels$FracActive=Spot.cyto.proc.StimPixels$nActivePix/Spot.cyto.proc.StimPixels$nFluoPix
-Spot.cyto.proc.StimPixels$FracActivePerROI=Spot.cyto.proc.StimPixels$FracActive/Spot.cyto.proc.StimPixels$nROIs
-
-
-
-
-
-
-df.FracActive.cyto.all<- summarySE(Spot.cyto.proc.AllPixels, measurevar = "FracActive", groupvars = c("Condition"))
-df.FracActive.cyto.stim<- summarySE(Spot.cyto.proc.StimPixels, measurevar = "FracActive", groupvars = c("Condition"))
-
-ggplot(data=df.FracActive.cyto.all, aes(x=Condition, y= FracActive, fill=Condition)) + 
+ggplot(data=df.FracActive.Spot2, aes(x=Group, y= MeanFracActive, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Fraction of Active Astrocyte Process Area") +
-  ggtitle("All cyto") +
+  geom_errorbar(aes(ymin=MeanFracActive-se, ymax=MeanFracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActive") +
+  ggtitle("FracActive per trial") +
   scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
   max.theme
 
-ggplot(data=df.FracActive.cyto.stim, aes(x=Condition, y= FracActive, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Fraction of Active Astrocyte Process Area") +
-  ggtitle("cyto ROIs with peaks during stim period") +
-  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
-  max.theme
 
+
+# paired line plots
+df.FracActive.Spot$MeanFracActiveTotal<-df.FracActive.Spot$MeanFracActive
+Spot.lck.StimPixels<-merge(Spot.lck.StimPixels, df.FracActive.Spot[, c("Condition", "MeanFracActiveTotal","se")], by="Condition", all.x=TRUE)
+
+
+# paired plot
+ggplot(Spot.lck.StimPixels, aes(x=Condition, y = MeanFracActive)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=MeanFracActiveTotal), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=MeanFracActiveTotal,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=MeanFracActiveTotal-se, ymax=MeanFracActiveTotal+se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
 
 
 ## Stats
 
 #lck
-#only consider STIM case
-fracActive.lck.stim.null = lmer(FracActive ~ (1|Animal) + (1|Spot) + (1|trials), Spot.lck.proc.StimPixels,REML=FALSE)
-fracActive.lck.stim.model1 = lmer(FracActive ~ Condition + (1|Animal) + (1|Spot) + (1|trials), Spot.lck.proc.StimPixels,REML=FALSE)
+
+fracActive.lck.stim.null = lmer(MeanFracActive ~ (1|Animal) , Spot.lck.StimPixels,REML=FALSE)
+fracActive.lck.stim.model1 = lmer(MeanFracActive ~ Condition + (1|Animal) , Spot.lck.StimPixels,REML=FALSE)
 fracActive.lck.stim.anova  <- anova(fracActive.lck.stim.null, fracActive.lck.stim.model1)
 print(fracActive.lck.stim.anova)
 
@@ -2109,10 +2265,108 @@ fracActive.lck.stim.pvalue<- glht(fracActive.lck.stim.model1, mcp(Condition= "Tu
 summary(fracActive.lck.stim.pvalue)
 
 
+# groups
+group_Cond= interaction(Spot.lck.group.StimPixels$Group, Spot.lck.group.StimPixels$Condition)
+fracActive.lck.group.null = lmer(MeanFracActive ~ (1|Animal) , Spot.lck.group.StimPixels,REML=FALSE)
+fracActive.lck.group.model1 = lmer(MeanFracActive ~ Condition + (1|Animal) , Spot.lck.group.StimPixels,REML=FALSE)
+fracActive.lck.group.model2 = lmer(MeanFracActive ~ Group + (1|Animal) , Spot.lck.group.StimPixels,REML=FALSE)
+fracActive.lck.group.model3 = lmer(MeanFracActive ~ group_Cond + (1|Animal) , Spot.lck.group.StimPixels,REML=FALSE)
+fracActive.lck.group.anova  <- anova(fracActive.lck.group.null, fracActive.lck.group.model1,
+                                     fracActive.lck.group.model2, fracActive.lck.group.model3)
+print(fracActive.lck.group.anova)
+
+fracActive.lck.group.pvalue<- glht(fracActive.lck.group.model3, mcp(group_Cond= "Tukey"))
+summary(fracActive.lck.group.pvalue)
+
+
+
+# cyto GCaMP
+# only consider active based ROIs (i.e. processes) with peaks that have a peak time and onset time within the time windows
+
+cyto.processes<- subset(stim.cyto.alldata, ROIType=="Process" & Channel=="GCaMP")
+
+# only ROIS with a signal near the stimulus
+StimROI.cyto.proc.Pixels<-ddply(cyto.processes, c("ROIs_Cond","trials","Animal","Spot","Animal_Spot","Condition","pixelsize", "nFluoPix"), summarise, 
+                               nActivePix=sum(nActivePix))
+
+# summarize per trial and spot
+Trial.cyto.proc.StimPixels<-ddply(StimROI.cyto.proc.Pixels, c("trials","Animal","Spot","Animal_Spot","Condition","pixelsize", "nFluoPix"), summarise, nROIs=length(unique(ROIs_Cond)), 
+                                 nActivePix=sum(nActivePix))
+Trial.cyto.proc.StimPixels$FracActive=Trial.cyto.proc.StimPixels$nActivePix/Trial.cyto.proc.StimPixels$nFluoPix
+Trial.cyto.proc.StimPixels$FracActivePerROI=Trial.cyto.proc.StimPixels$FracActive/Trial.cyto.proc.StimPixels$nROIs
+
+
+Spot.cyto.StimPixels<-ddply(Trial.cyto.proc.StimPixels, c("Animal","Spot","Animal_Spot","Condition","pixelsize"), summarise, nTrials=length(unique(trials)),
+                            meanTotalPix=mean(nFluoPix),MeanFracActive=mean(FracActive), MeanFracActPerROI=mean(FracActivePerROI))
+
+
+#fracActive per trial
+df.FracActive.cyto<- summarySE(Trial.cyto.proc.StimPixels, measurevar = "FracActive", groupvars = c("Condition"))
+
+
+#fracActive per ROI per trial
+df.FracActivePerROI.cyto<- summarySE(Trial.cyto.proc.StimPixels, measurevar = "FracActivePerROI", groupvars = c("Condition"))
+
+#fracActive per Spot
+df.FracActive.cyto.Spot<- summarySE(Spot.cyto.StimPixels, measurevar = "MeanFracActive", groupvars = c("Condition"))
+df.FracActivePerROI.cyto.Spot<- summarySE(Spot.cyto.StimPixels, measurevar = "MeanFracActPerROI", groupvars = c("Condition"))
+
+
+#fraction active  (includes ROI size and number)
+ggplot(data=df.FracActive.cyto, aes(x=Condition, y= FracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("frac act per trial") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+ggplot(data=df.FracActive.cyto.Spot, aes(x=Condition, y= MeanFracActive, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=MeanFracActive-se, ymax=MeanFracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("MeanFracActive per spot") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+#fraction active per ROI  (only a factor of ROI size)
+ggplot(data=df.FracActivePerROI.cyto, aes(x=Condition, y= FracActivePerROI, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActivePerROI-se, ymax=FracActivePerROI+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActivePerROI") +
+  ggtitle("FracActivePerROI per trial") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+ggplot(data=df.FracActivePerROI.cyto.Spot, aes(x=Condition, y= MeanFracActPerROI, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=MeanFracActPerROI-se, ymax=MeanFracActPerROI+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Fraction of Active Astrocyte Process Area") +
+  ggtitle("MeanFracActPerROI per spot") +
+  scale_fill_manual(values=c("#b4e2a8", "#1b7837")) + 
+  max.theme
+
+
+# paired line plots
+df.FracActive.cyto.Spot$MeanFracActiveTotal<-df.FracActive.cyto.Spot$MeanFracActive
+Spot.cyto.StimPixels<-merge(Spot.cyto.StimPixels, df.FracActive.cyto.Spot[, c("Condition", "MeanFracActiveTotal","se")], by="Condition", all.x=TRUE)
+
+
+# paired plot
+ggplot(Spot.cyto.StimPixels, aes(x=Condition, y = MeanFracActive)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=MeanFracActiveTotal), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=MeanFracActiveTotal,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=MeanFracActiveTotal-se, ymax=MeanFracActiveTotal+se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+## Stats
+
 #cyto
-#only consider STIM case
-fracActive.cyto.stim.null = lmer(FracActive ~ (1|Animal) + (1|Spot) + (1|trials), Spot.cyto.proc.StimPixels,REML=FALSE)
-fracActive.cyto.stim.model1 = lmer(FracActive ~ Condition + (1|Animal) + (1|Spot) + (1|trials), Spot.cyto.proc.StimPixels,REML=FALSE)
+
+fracActive.cyto.stim.null = lmer(MeanFracActive ~ (1|Animal) , Spot.cyto.StimPixels,REML=FALSE)
+fracActive.cyto.stim.model1 = lmer(MeanFracActive ~ Condition + (1|Animal) , Spot.cyto.StimPixels,REML=FALSE)
 fracActive.cyto.stim.anova  <- anova(fracActive.cyto.stim.null, fracActive.cyto.stim.model1)
 print(fracActive.cyto.stim.anova)
 
@@ -2121,8 +2375,146 @@ summary(fracActive.cyto.stim.pvalue)
 
 
 
+################
+#Robustness scores
+
+lck.robustness<-read.table("D:/Data/GCaMP_RCaMP/Revision/Lck_GCaMP/FilesforR/Lck_robustnessScores.csv", header=TRUE, sep = ",")
+
+#remove IP3KOs and IP3WTs
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG1"),]
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG4"),]
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG5"),]
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG7"),]
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG2"),]
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG3"),]
+lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG6"),]
+
+lck.robustness$Animal_Spot<- paste(lck.robustness$All_traces5, lck.robustness$All_traces4, sep="_")
+lck.robustness$Condition<- lck.robustness$All_traces6
+
+# incorporate total number of astrocyte pixels for each FOV
+Spot.lck.StimPixels$Ani_Cond<-paste(Spot.lck.StimPixels$Animal_Spot, Spot.lck.StimPixels$Condition, sep="_")
+lck.robustness$Ani_Cond<-paste(lck.robustness$Animal_Spot, lck.robustness$Condition, sep="_")
+lck.robustness<-merge(lck.robustness, Spot.lck.StimPixels[, c("Ani_Cond", "meanTotalPix")], by="Ani_Cond", all.x=TRUE)
+
+lck.robustness$FracPixAboveThres<-lck.robustness$nPxAboveThresh/lck.robustness$meanTotalPix
+
+df.lck.robust1<-summarySE(lck.robustness, measurevar = "score", groupvars = c("Condition"))
+df.lck.robust2<-summarySE(lck.robustness, measurevar = "FracPixAboveThres", groupvars = c("Condition"))
+
+# paired line plots
+df.lck.robust1$MeanFracofROIarea<-df.lck.robust1$score
+df.lck.robust1$MeanFracofROIarea_se<-df.lck.robust1$se
+lck.robustness<-merge(lck.robustness, df.lck.robust1[, c("Condition", "MeanFracofROIarea","MeanFracofROIarea_se")], by="Condition", all.x=TRUE)
+df.lck.robust2$MeanFracofACarea<-df.lck.robust2$FracPixAboveThres
+df.lck.robust2$MeanFracofACarea_se<-df.lck.robust2$se
+lck.robustness<-merge(lck.robustness, df.lck.robust2[, c("Condition", "MeanFracofACarea","MeanFracofACarea_se")], by="Condition", all.x=TRUE)
 
 
+# paired plot
+ggplot(lck.robustness, aes(x=Condition, y = score)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=MeanFracofROIarea), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=MeanFracofROIarea,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=MeanFracofROIarea-MeanFracofROIarea_se, ymax=MeanFracofROIarea+MeanFracofROIarea_se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("Fraction of Repeated Pixels per Total ROI area")+
+  max.theme
+
+ggplot(lck.robustness, aes(x=Condition, y = FracPixAboveThres)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=MeanFracofACarea), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=MeanFracofACarea,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=MeanFracofACarea-MeanFracofACarea_se, ymax=MeanFracofACarea+MeanFracofACarea_se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("Fraction of Repeated Pixels per Total lck astrocyte area")+
+  max.theme
+
+# stats
+# fraction of pixels vs total ROI area
+lck.robust.null = lmer(score ~ (1|All_traces5) , lck.robustness, REML=FALSE)
+lck.robust.model1 = lmer(score ~ Condition + (1|All_traces5) , lck.robustness,REML=FALSE)
+lck.robust.anova  <- anova(lck.robust.null, lck.robust.model1)
+print(lck.robust.anova)
+
+lck.robust.pvalue<- glht(lck.robust.model1, mcp(Condition= "Tukey"))
+summary(lck.robust.pvalue)
+
+# fraction of pixels vs total astrocyte area
+lck.robust.totalAC.null = lmer(FracPixAboveThres ~ (1|All_traces5) , lck.robustness, REML=FALSE)
+lck.robust.totalAC.model1 = lmer(FracPixAboveThres ~ Condition + (1|All_traces5) , lck.robustness,REML=FALSE)
+lck.robust.totalAC.anova  <- anova(lck.robust.totalAC.null, lck.robust.totalAC.model1)
+print(lck.robust.totalAC.anova)
+
+lck.robust.totalAC.pvalue<- glht(lck.robust.totalAC.model1, mcp(Condition= "Tukey"))
+summary(lck.robust.totalAC.pvalue)
+
+
+
+
+# cyto
+cyto.robustness<-read.table("D:/Data/GCaMP_RCaMP/Revision/cytoGCaMP/FilesforR/cyto_robustnessScores.csv", header=TRUE, sep = ",")
+
+cyto.robustness$Animal_Spot<- paste(cyto.robustness$All_traces5, cyto.robustness$All_traces4, sep="_")
+cyto.robustness$Condition<- cyto.robustness$All_traces6
+
+# incorporate total number of astrocyte pixels for each FOV
+Spot.cyto.StimPixels$Ani_Cond<-paste(Spot.cyto.StimPixels$Animal_Spot, Spot.cyto.StimPixels$Condition, sep="_")
+cyto.robustness$Ani_Cond<-paste(cyto.robustness$Animal_Spot, cyto.robustness$Condition, sep="_")
+cyto.robustness<-merge(cyto.robustness, Spot.cyto.StimPixels[, c("Ani_Cond", "meanTotalPix")], by="Ani_Cond", all.x=TRUE)
+
+cyto.robustness$FracPixAboveThres<-cyto.robustness$nPxAboveThresh/cyto.robustness$meanTotalPix
+
+df.cyto.robust1<-summarySE(cyto.robustness, measurevar = "score", groupvars = c("Condition"))
+df.cyto.robust2<-summarySE(cyto.robustness, measurevar = "FracPixAboveThres", groupvars = c("Condition"))
+
+# paired line plots
+df.cyto.robust1$MeanFracofROIarea<-df.cyto.robust1$score
+df.cyto.robust1$MeanFracofROIarea_se<-df.cyto.robust1$se
+cyto.robustness<-merge(cyto.robustness, df.cyto.robust1[, c("Condition", "MeanFracofROIarea","MeanFracofROIarea_se")], by="Condition", all.x=TRUE)
+df.cyto.robust2$MeanFracofACarea<-df.cyto.robust2$FracPixAboveThres
+df.cyto.robust2$MeanFracofACarea_se<-df.cyto.robust2$se
+cyto.robustness<-merge(cyto.robustness, df.cyto.robust2[, c("Condition", "MeanFracofACarea","MeanFracofACarea_se")], by="Condition", all.x=TRUE)
+
+
+# paired plot
+ggplot(cyto.robustness, aes(x=Condition, y = score)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=MeanFracofROIarea), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=MeanFracofROIarea,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=MeanFracofROIarea-MeanFracofROIarea_se, ymax=MeanFracofROIarea+MeanFracofROIarea_se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("Fraction of Repeated Pixels per Total ROI area")+
+  max.theme
+
+ggplot(cyto.robustness, aes(x=Condition, y = FracPixAboveThres)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=Condition, y=MeanFracofACarea), size = 5, colour="#1b7837")+
+  geom_line(aes(x=Condition, y=MeanFracofACarea,group=Animal_Spot), size=1.5, colour="#1b7837")+
+  geom_errorbar(aes(x=Condition,ymin=MeanFracofACarea-MeanFracofACarea_se, ymax=MeanFracofACarea+MeanFracofACarea_se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  ggtitle("Fraction of Repeated Pixels per Total cyto astrocyte area")+
+  max.theme
+
+# stats
+# fraction of pixels above threshold for total ROI area
+cyto.robust.null = lmer(score ~ (1|All_traces5) , cyto.robustness, REML=FALSE)
+cyto.robust.model1 = lmer(score ~ Condition + (1|All_traces5) , cyto.robustness,REML=FALSE)
+cyto.robust.anova  <- anova(cyto.robust.null, cyto.robust.model1)
+print(cyto.robust.anova)
+
+cyto.robust.pvalue<- glht(cyto.robust.model1, mcp(Condition= "Tukey"))
+summary(cyto.robust.pvalue)
+
+
+# fraction of pixels vs total astrocyte area
+cyto.robust.totalAC.null = lmer(FracPixAboveThres ~ (1|All_traces5) , cyto.robustness, REML=FALSE)
+cyto.robust.totalAC.model1 = lmer(FracPixAboveThres ~ Condition + (1|All_traces5) , cyto.robustness,REML=FALSE)
+cyto.robust.totalAC.anova  <- anova(cyto.robust.totalAC.null, cyto.robust.totalAC.model1)
+print(cyto.robust.totalAC.anova)
+
+cyto.robust.totalAC.pvalue<- glht(cyto.robust.totalAC.model1, mcp(Condition= "Tukey"))
+summary(cyto.robust.totalAC.pvalue)
 
 ##### 
 # correlation data 
