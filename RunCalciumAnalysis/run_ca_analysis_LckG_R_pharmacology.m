@@ -1,4 +1,7 @@
 
+% RUN FROM THE RELEASE
+
+
 %% 1 lck no stim vs long stim PHARMACOLOGY
 clearvars
 
@@ -10,21 +13,20 @@ All_traces= [];
 Settings.MainDir = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f';
 
 Settings.AnimalNames = {
-    'ARG2',...
     'IPRG2',...
     'IPRG3',...
-    'WT_LR1',...
-    'WT_LR4',...
     'IPRG6',...
-    
+    'WT_LR4',...
+    'WT_LR1',...
+    'ARG2',...
     };
 Settings.ScoreSheetNames = {
-    'ARG2_Scoresheet_Pharmacology.xls',...
     'IPRG2_Scoresheet_Pharmacology.xls',...
     'IPRG3_Scoresheet_Pharmacology.xls',...
-    'WT_LR1_Scoresheet_Pharmacology.xls',...
-    'WT_LR4_Scoresheet_Pharmacology.xls',...
     'IPRG6_Scoresheet_Pharmacology.xls',...
+    'WT_LR4_Scoresheet_Pharmacology.xls',...
+    'WT_LR1_Scoresheet_Pharmacology.xls',...
+    'ARG2_Scoresheet_Pharmacology.xls',...
     };
 Settings.NameConditions = {'Nostim','Stim'};
 
@@ -54,13 +56,6 @@ for iAnimal = 1:numAnimals
     CurrentSheet = Settings.ScoreSheetPath{iAnimal};
     Settings = readScoresheet2(CurrentSheet, Settings);
     
-    % load spectral unmixing matrix of RCaMP and GCaMP
-    if Settings.PMTnum(1,1)==4
-        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_4Ch.mat'));
-    else
-        load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_2ChKirk.mat'));
-    end
-    
     % Get Drug name
     drugs = unique(Settings.Drug);
     
@@ -74,6 +69,7 @@ for iAnimal = 1:numAnimals
         SpotPaths2 = Settings.LowresPath(matchingDrugsIdx);
         Depths = Settings.Depth(matchingDrugsIdx);
         Baselines = Settings.BL_frames(matchingDrugsIdx);
+        PMTnum1=Settings.PMTnum(matchingDrugsIdx);
         
         % Get SpotIDs
         SpotIDs=Settings.SpotIDs(matchingDrugsIdx);
@@ -89,6 +85,7 @@ for iAnimal = 1:numAnimals
             SpotPaths = SpotPaths2(matchingSpotsIdx);
             CurrentDepth = Depths(matchingSpotsIdx);
             CurrentBaseline = Baselines(matchingSpotsIdx);
+            CurrentPMTnum=PMTnum1(matchingSpotsIdx);
             
             for iCond = 1:length(Settings.NameConditions)
                 if length(SpotPaths) < length(Settings.NameConditions)
@@ -114,6 +111,14 @@ for iAnimal = 1:numAnimals
                 %cell was dark
                 %ImgArray.exclude_frames('badframes',(1:2),'method', 'inpaint','inpaintIters',5);
                 
+                % load spectral unmixing matrix of RCaMP and GCaMP
+                if  iscell(CurrentPMTnum) && isnumeric(cell2mat(CurrentPMTnum(1,1)))
+                    load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_4Ch.mat'));
+                elseif iscell(CurrentPMTnum) && ischar(cell2mat(CurrentPMTnum(1,1)))
+                    load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_2ChKirk.mat'));
+                else
+                    load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix_4Ch.mat'));
+                end
                 
                 % Spectral Unmixing of GCaMP and RCaMP
                 ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
@@ -449,34 +454,34 @@ for iAnimal = 1:numAnimals
                                 else
                                     Trace_data{iROI,13} = 0;
                                 end
-                             FrameRate= CellScans(1, 1).rawImg.metadata.frameRate;
-                            Trace_data{iROI,14} = FrameRate; % frameRate
-                            
-                            nFrames=length(traces(:,iROI));
-                            TimeX(1:nFrames) = (1:nFrames)/FrameRate;
-                            
-                            % Calculate the first peak onset time and AUC after stim
-                            BL_time=round(BL_frames/FrameRate);  % number of s for baseline
-                            baselineCorrectedTime=TimeX-BL_time;
-                            
-                            % onset time  % 2.5SD from baseline and
-                            % smoothing trace at 11 points (5 each side
-                            % of middle)
-                            Onsets=find_first_onset_time(baselineCorrectedTime(10:end), traces(10:end,iROI),2.5,2);
-                            if isempty(Onsets)
-                                Onsets=nan(1,1);
-                            end
-                            Trace_data{iROI,15}= Onsets;
-                            
-                            % trace AUC
-                            x2=round(FrameRate*(BL_time+1));
-                            x3= round(FrameRate*(BL_time+10));
-                            Trace_data{iROI,16}=trapz(traces(BL_frames:x2,iROI));
-                            Trace_data{iROI,17}=trapz(traces(BL_frames:x3,iROI));                     
-                            
+                                FrameRate= CellScans(1, 1).rawImg.metadata.frameRate;
+                                Trace_data{iROI,14} = FrameRate; % frameRate
+                                
+                                nFrames=length(traces(:,iROI));
+                                TimeX(1:nFrames) = (1:nFrames)/FrameRate;
+                                
+                                % Calculate the first peak onset time and AUC after stim
+                                BL_time=round(BL_frames/FrameRate);  % number of s for baseline
+                                baselineCorrectedTime=TimeX-BL_time;
+                                
+                                % onset time  % 2.5SD from baseline and
+                                % smoothing trace at 11 points (5 each side
+                                % of middle)
+                                Onsets=find_first_onset_time(baselineCorrectedTime(10:end), traces(10:end,iROI),2.5,2);
+                                if isempty(Onsets)
+                                    Onsets=nan(1,1);
+                                end
+                                Trace_data{iROI,15}= Onsets;
+                                
+                                % trace AUC
+                                x2=round(FrameRate*(BL_time+1));
+                                x3= round(FrameRate*(BL_time+10));
+                                Trace_data{iROI,16}=trapz(traces(BL_frames:x2,iROI));
+                                Trace_data{iROI,17}=trapz(traces(BL_frames:x3,iROI));
+                                
                             end
                         end
-                            
+                        
                         All_traces=vertcat(All_traces, Trace_data);
                         clearvars Trace_data
                     end

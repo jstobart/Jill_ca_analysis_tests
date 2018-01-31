@@ -144,7 +144,7 @@ for iAnimal = 1:numAnimals
                     %confObj.configFindROIs.roiMask = utils.select_LS_ROI(ImgArray(1,1).rawdata(:,:,1,1));
                     
                     confObj.configFindROIs = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'Endfoot.zip'), 128, 128,1);
-                    
+                    confObj.configFindROIs.roiMask = max(confObj.configFindROIs.roiMask, [], 1);
                     
                     CSArray_Ch1_FLIKA = CellScan(fnList, ImgArray, confObj, 1);
                     CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
