@@ -435,9 +435,9 @@ ggplot(Pharm.all.stim[(Pharm.all.stim$OnsetTime<15 & Pharm.all.stim$drug=="Trazo
   ggtitle("GCaMP vs RCaMP onset times- Trazadone")+
   max.theme
 
-ggplot(Pharm.all.stim[(Pharm.all.stim$OnsetTime<15 & Pharm.all.stim$drug=="Meterogoline"),],aes(x=OnsetTime,y=..density..,fill=interaction(Channel,drug))) +
+ggplot(Pharm.all.stim[(Pharm.all.stim$OnsetTime<15 & Pharm.all.stim$drug=="Metergoline"),],aes(x=OnsetTime,y=..density..,fill=interaction(Channel,drug))) +
   geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("GCaMP vs RCaMP onset times- Meterogoline")+
+  ggtitle("GCaMP vs RCaMP onset times- Metergoline")+
   max.theme
 
 #########
