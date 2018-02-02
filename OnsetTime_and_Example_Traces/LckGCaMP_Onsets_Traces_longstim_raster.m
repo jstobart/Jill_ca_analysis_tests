@@ -214,7 +214,7 @@ Shortstim = Shortstim(nonOverlapIdx2',:);
 %         AstroData=TrialData(AstroIdx,:);
 %         
 %         
-%         parfor nNeuro=1:size(NeuronalData,1)
+%          nNeuro=1:size(NeuronalData,1)
 %             for nAstro= 1:size(AstroData,1)
 %                 NOnset=NeuronalData{nNeuro,16};
 %                 AOnset=AstroData{nAstro,16};
@@ -1482,7 +1482,7 @@ xlabel('time from neuronal event')
 
 %% Save data
 % Anames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
-%     'A_area', 'N_ROI', 'N_ROIType','N_area','Distance','AOnset','NOnset','TimeDiff',...
+%     'Drug', 'N_ROI', 'N_ROIType','N_area','Distance','AOnset','NOnset','TimeDiff',...
 %     'Atrace','Ntrace','amplitude','peakTime','Duration'};
 % Nnames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
 %     'A_area', 'N_ROI', 'N_ROIType','N_area','Distance','NOnset','AOnset','TimeDiff',...

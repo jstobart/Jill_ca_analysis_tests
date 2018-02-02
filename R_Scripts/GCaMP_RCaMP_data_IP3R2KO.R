@@ -191,7 +191,8 @@ all.lck.peaks3<-all.lck.peaks2[order(all.lck.peaks2$peakTime),] # sort by ascend
 # remove duplicate entries (in theory only the first and therefore fastest onset times will remain)
 all.lck.peaks<-distinct(all.lck.peaks3, ROIs_Cond,.keep_all = TRUE)
 
-
+all.lck.peaks$Genotype<-factor(all.lck.peaks$Genotype, levels=c("IP3R2_WT", "IP3R2_KO"))
+rm(all.lck.peaks2,all.lck.peaks3, all.lck.OT)
 
 
 #################
@@ -551,6 +552,23 @@ ggplot(df.lck.ROInum[df.lck.ROInum$Channel=="RCaMP",], aes(x=Genotype,y=ROIsPerT
   ylab("num ROIs/trial per field of view") +
   max.theme
 
+
+# paired line plots
+df.lck.ROInum$ROIsPerTrialMean<-df.lck.ROInum$ROIsPerTrial
+df.lck.ROInum$Chan_Cond<-interaction(df.lck.ROInum$Genotype, df.lck.ROInum$Condition)
+ROInum.lck$Chan_Cond<-interaction(ROInum.lck$Genotype, ROInum.lck$Condition)
+
+ROInum.lck<-merge(ROInum.lck, df.lck.ROInum[, c("Chan_Cond", "ROIsPerTrialMean","se")], by="Chan_Cond", all.x=TRUE)
+ROInum.lck$Animal_Spot<-paste(ROInum.lck$Animal, ROInum.lck$Spot, sep="_")
+
+ggplot(ROInum.lck, aes(x=interaction(Genotype,Condition), y = ROIsPerTrial, group=Condition)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
+  geom_point(aes(x=interaction(Genotype,Condition), y=ROIsPerTrialMean), size = 5, colour="#7b3294")+
+  geom_line(aes(x=interaction(Genotype,Condition), y=ROIsPerTrialMean,group=Animal_Spot), size=1.5, colour="#7b3294")+
+  geom_errorbar(aes(x=interaction(Genotype,Condition),ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#7b3294", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
 Condition_Channel2= interaction(ROInum.lck$Condition,ROInum.lck$Channel)
 Condition_Channel_Geno= interaction(ROInum.lck$Condition,ROInum.lck$Channel,ROInum.lck$Genotype)
 nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck,REML=FALSE)
@@ -666,8 +684,8 @@ print(OT.anova)
 OT.Group_channel_Gen<- glht(OT.model3, mcp(Group_Channel_Cond_Gen= "Tukey"))
 summary(OT.Group_channel_Gen)
 
-OT.Group_Channel_Type_Gen<- glht(OT.model4, mcp(Group_Channel_Type_Cond_Gen= "Tukey"))
-summary(OT.Group_Channel_Type_Gen)
+#OT.Group_Channel_Type_Gen<- glht(OT.model4, mcp(Group_Channel_Type_Cond_Gen= "Tukey"))
+#summary(OT.Group_Channel_Type_Gen)
 
 
 astro.compdata.stim<-subset(stim.lck.compdata.STIM, Channel=="GCaMP")
@@ -686,8 +704,8 @@ print(OT.stim.anova)
 OT.stim.Group_Gen<- glht(OT.stim.model4, mcp(Group_Gen= "Tukey"))
 summary(OT.stim.Group_Gen)
 
-OT.stim.Group_type_Gen<- glht(OT.stim.model6, mcp(Group_Type_Gen= "Tukey"))
-summary(OT.stim.Group_type_Gen)
+#OT.stim.Group_type_Gen<- glht(OT.stim.model6, mcp(Group_Type_Gen= "Tukey"))
+#summary(OT.stim.Group_type_Gen)
 
 summary(OT.stim.model4)
 
@@ -803,6 +821,7 @@ ggplot(df.amp4, aes(x=Group,y=amplitude, fill= Genotype)) +
   ylab("amplitude during stim trials") +
   max.theme
 
+
 ggplot(df.amp5, aes(x=interaction(Group, ROIType),y=amplitude, fill= Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
@@ -907,178 +926,223 @@ Dur.Group_gen_ty.GC<- glht(Dur.model6.GC, mcp(Group_Type_Genotype= "Tukey"))
 summary(Dur.Group_gen_ty.GC)
 
 ######
-# peak time
-df.pT1<-summarySE(stim.both.alldata, measurevar = "peakTime", groupvars = c("Channel", "Condition"))
-df.pT2<-summarySE(stim.both.alldata, measurevar = "peakTime", groupvars = c("Channel", "Group","Condition"))
-df.pT3<- summarySE(lck.peaks.window, measurevar = "peakTime", groupvars = c("Channel_Group","Condition"))
-df.pT4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "peakTime", groupvars = c("Channel_Group"))
-df.pT5<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="lck_GCaMP",], measurevar = "peakTime", groupvars = c("ROIType","Channel_Group"))
+#trace AUc 10s
+df.tAUC101<-summarySE(lck.peaks.window, measurevar = "TraceAUC10", groupvars = c("Channel","Condition", "Genotype"), na.rm=TRUE)
+df.tAUC102<-summarySE(lck.peaks.window, measurevar = "TraceAUC10", groupvars = c("Channel", "ROIType","Condition", "Genotype"),na.rm=TRUE)
 
-ggplot(df.pT1, aes(x=Channel,y=peakTime, fill= Condition)) +
+df.tAUC103A<- summarySE(stim.lck.compdata, measurevar = "TraceAUC10", groupvars = c("Channel_Group","Genotype","Condition"),na.rm=TRUE)
+df.tAUC103B<- summarySE(stim.lck.compdata.STIM, measurevar = "TraceAUC10", groupvars = c("Channel_Group","Genotype"),na.rm=TRUE)
+
+df.tAUC104<- summarySE(astro.compdata.stim, measurevar = "TraceAUC10", groupvars = c("Group","Genotype"),na.rm=TRUE)
+df.tAUC105<- summarySE(astro.compdata.stim, measurevar = "TraceAUC10", groupvars = c("Group","ROIType","Genotype"),na.rm=TRUE)
+
+
+ggplot(df.tAUC101, aes(x=interaction(Channel,Genotype),y=TraceAUC10, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("peakTime") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=TraceAUC10-se, ymax=TraceAUC10+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC10") +
   max.theme
 
-ggplot(df.pT2, aes(x=interaction(Channel,Group),y=peakTime, fill= Condition)) +
+ggplot(df.tAUC102, aes(x=interaction(Channel,interaction(Genotype, ROIType)),y=TraceAUC10, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("peakTime") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=TraceAUC10-se, ymax=TraceAUC10+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC10") +
   max.theme
 
-ggplot(df.pT3, aes(x=Channel_Group,y=peakTime, fill= Condition)) +
+ggplot(df.tAUC103A, aes(x=interaction(Channel_Group,Genotype),y=TraceAUC10, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("peakTime") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=TraceAUC10-se, ymax=TraceAUC10+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC10") +
   max.theme
 
-ggplot(df.pT4, aes(x=Channel_Group,y=peakTime, fill= Channel_Group)) +
+ggplot(df.tAUC103B, aes(x=Channel_Group,y=TraceAUC10, fill= Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("peakTime") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=TraceAUC10-se, ymax=TraceAUC10+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC10 tAUC10ing stim trials") +
   max.theme
 
-ggplot(df.pT5, aes(x=Channel_Group,y=peakTime, fill= ROIType)) +
+ggplot(df.tAUC104, aes(x=Group,y=TraceAUC10, fill= Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("peakTime") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=TraceAUC10-se, ymax=TraceAUC10+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC10 during stim trials") +
   max.theme
 
-ggplot(stim.lck.compdata, aes(x=Channel_Group,y=peakTime, fill=Channel_Group)) +
-  geom_boxplot(notch=TRUE)+
-  ylab("peakTime") +
-  ggtitle("lck data- fast vs delayed")+
+ggplot(df.tAUC105, aes(x=interaction(Group, ROIType),y=TraceAUC10, fill= Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC10-se, ymax=TraceAUC10+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC10 during stim trials") +
   max.theme
 
-ggplot(stim.lck.compdata, aes(x=peakTime, y=..density..,fill=Channel_Group)) +
-  geom_histogram(binwidth=0.5, position="dodge")+
-  ylab("density") +
-  xlim(-2,15)+
-  ggtitle("lck data- fast vs delayed")+
+
+
+
+
+#lck-GCaMP ONLY
+Group_Genotype=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$Channel=="GCaMP"],stim.lck.compdata.STIM$Genotype[stim.lck.compdata.STIM$Channel=="GCaMP"])
+Group_Type_Genotype=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$Channel=="GCaMP"],
+                                stim.lck.compdata.STIM$Genotype[stim.lck.compdata.STIM$Channel=="GCaMP"],
+                                stim.lck.compdata.STIM$ROIType[stim.lck.compdata.STIM$Channel=="GCaMP"])
+
+tAUC10.null.GC = lmer(TraceAUC10 ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC10.model2.GC  = lmer(TraceAUC10 ~ Genotype + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC10.model3.GC  = lmer(TraceAUC10 ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC10.model5.GC  = lmer(TraceAUC10 ~ Group_Genotype + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC10.model6.GC  = lmer(TraceAUC10 ~ Group_Type_Genotype + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC10.anova.GC  <- anova(tAUC10.null.GC, tAUC10.model2.GC,tAUC10.model3.GC,tAUC10.model5.GC,tAUC10.model6.GC)
+print(tAUC10.anova.GC)
+
+tAUC10.Group_Gen.GC<- glht(tAUC10.model5.GC, mcp(Group_Genotype= "Tukey"))
+summary(tAUC10.Group_Gen.GC)
+
+tAUC10.Group_gen_ty.GC<- glht(tAUC10.model6.GC, mcp(Group_Type_Genotype= "Tukey"))
+summary(tAUC10.Group_gen_ty.GC)
+
+
+######
+#trace AUc 1s
+df.tAUC11<-summarySE(lck.peaks.window, measurevar = "TraceAUC1", groupvars = c("Channel","Condition", "Genotype"), na.rm=TRUE)
+df.tAUC12<-summarySE(lck.peaks.window, measurevar = "TraceAUC1", groupvars = c("Channel", "ROIType","Condition", "Genotype"),na.rm=TRUE)
+
+df.tAUC13A<- summarySE(stim.lck.compdata, measurevar = "TraceAUC1", groupvars = c("Channel_Group","Genotype","Condition"),na.rm=TRUE)
+df.tAUC13B<- summarySE(stim.lck.compdata.STIM, measurevar = "TraceAUC1", groupvars = c("Channel_Group","Genotype"),na.rm=TRUE)
+
+df.tAUC14<- summarySE(astro.compdata.stim, measurevar = "TraceAUC1", groupvars = c("Group","Genotype"),na.rm=TRUE)
+df.tAUC15<- summarySE(astro.compdata.stim, measurevar = "TraceAUC1", groupvars = c("Group","ROIType","Genotype"),na.rm=TRUE)
+
+
+ggplot(df.tAUC11, aes(x=interaction(Channel,Genotype),y=TraceAUC1, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC1-se, ymax=TraceAUC1+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC1") +
   max.theme
 
-ggplot(lck.peaks.window[lck.peaks.window$Channel_Group=="lck_GCaMP.fast",], aes(x=peakTime, y=..density..,fill=Condition)) +
-  geom_histogram(binwidth=0.5, position="dodge")+
-  ylab("density") +
-  xlim(-2,15)+
-  ggtitle("lck data- fast no stim vs stim")+
+ggplot(df.tAUC12, aes(x=interaction(Channel,interaction(Genotype, ROIType)),y=TraceAUC1, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC1-se, ymax=TraceAUC1+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC1") +
   max.theme
 
-# stats for duration- neurons vs astrocytes
-pT.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|trials), lck.peaks.window,REML=FALSE)
-pT.model1 = lmer(peakTime ~ Channel + (1|Animal) + (1|Spot) + (1|trials), lck.peaks.window,REML=FALSE)
-pT.model2 = lmer(peakTime ~ Condition + (1|Animal) + (1|Spot) + (1|trials) , lck.peaks.window,REML=FALSE)
-pT.model3 = lmer(peakTime ~ Group + (1|Animal) + (1|Spot) + (1|trials), lck.peaks.window,REML=FALSE)
-pT.model4 = lmer(peakTime ~ Channel_Group + (1|Animal) + (1|Spot) + (1|trials), lck.peaks.window,REML=FALSE)
-pT.model5 = lmer(peakTime ~ Group_Channel_Cond + (1|Animal) + (1|Spot) + (1|trials), lck.peaks.window,REML=FALSE)
-pT.model6 = lmer(peakTime ~ Group_Channel_Cond_Type + (1|Animal) + (1|Spot) + (1|trials), lck.peaks.window,REML=FALSE)
-pT.anova <- anova(pT.null, pT.model1,pT.model2,pT.model3,pT.model4,pT.model5,pT.model6)
-print(pT.anova)
+ggplot(df.tAUC13A, aes(x=interaction(Channel_Group,Genotype),y=TraceAUC1, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC1-se, ymax=TraceAUC1+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC1") +
+  max.theme
 
-pT.Group_channel<- glht(pT.model5, mcp(Group_Channel_Cond= "Tukey"))
-summary(pT.Group_channel)
+ggplot(df.tAUC13B, aes(x=Channel_Group,y=TraceAUC1, fill= Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC1-se, ymax=TraceAUC1+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC1 tAUC1ing stim trials") +
+  max.theme
 
-pT.Group_channel_ty<- glht(pT.model6, mcp(Group_Channel_Cond_Type= "Tukey"))
-summary(pT.Group_channel_ty)
+ggplot(df.tAUC14, aes(x=Group,y=TraceAUC1, fill= Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC1-se, ymax=TraceAUC1+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC1 during stim trials") +
+  max.theme
+
+ggplot(df.tAUC15, aes(x=interaction(Group, ROIType),y=TraceAUC1, fill= Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=TraceAUC1-se, ymax=TraceAUC1+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("TraceAUC1 during stim trials") +
+  max.theme
 
 
 
-## only for STIM case
 
-# stats for onset times- neurons vs astrocytes
-pT.stim.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
-pT.stim.model1 = lmer(peakTime ~ Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
-pT.stim.model3 = lmer(peakTime ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
-pT.stim.model4 = lmer(peakTime ~ Group_Channel + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
-pT.stim.model6 = lmer(peakTime ~ Group_Channel_Type + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM,REML=FALSE)
-pT.stim.anova <- anova(pT.stim.null, pT.stim.model1,pT.stim.model3,pT.stim.model4,pT.stim.model6)
-print(pT.stim.anova)
 
-pT.stim.Group_channel<- glht(pT.stim.model4, mcp(Group_Channel= "Tukey"))
-summary(pT.stim.Group_channel)
+#lck-GCaMP ONLY
+Group_Genotype=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$Channel=="GCaMP"],stim.lck.compdata.STIM$Genotype[stim.lck.compdata.STIM$Channel=="GCaMP"])
+Group_Type_Genotype=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$Channel=="GCaMP"],
+                                stim.lck.compdata.STIM$Genotype[stim.lck.compdata.STIM$Channel=="GCaMP"],
+                                stim.lck.compdata.STIM$ROIType[stim.lck.compdata.STIM$Channel=="GCaMP"])
 
-pT.stim.Group_channel_type<- glht(pT.stim.model6, mcp(Group_Channel_Type= "Tukey"))
-summary(pT.stim.Group_channel_type)
+tAUC1.null.GC = lmer(TraceAUC1 ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC1.model2.GC  = lmer(TraceAUC1 ~ Genotype + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC1.model3.GC  = lmer(TraceAUC1 ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC1.model5.GC  = lmer(TraceAUC1 ~ Group_Genotype + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC1.model6.GC  = lmer(TraceAUC1 ~ Group_Type_Genotype + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+tAUC1.anova.GC  <- anova(tAUC1.null.GC, tAUC1.model2.GC,tAUC1.model3.GC,tAUC1.model5.GC,tAUC1.model6.GC)
+print(tAUC1.anova.GC)
+
+tAUC1.Group_Gen.GC<- glht(tAUC1.model5.GC, mcp(Group_Genotype= "Tukey"))
+summary(tAUC1.Group_Gen.GC)
+
+tAUC1.Group_gen_ty.GC<- glht(tAUC1.model6.GC, mcp(Group_Type_Genotype= "Tukey"))
+summary(tAUC1.Group_gen_ty.GC)
 
 
 #######
+#peakAUC
+df.peakAUC1<-summarySE(lck.peaks.window, measurevar = "peakAUC", groupvars = c("Channel","Condition", "Genotype"), na.rm=TRUE)
+df.peakAUC2<-summarySE(lck.peaks.window, measurevar = "peakAUC", groupvars = c("Channel", "ROIType","Condition", "Genotype"),na.rm=TRUE)
 
-# Process ROI area
-df.Rarea1<-summarySE(stim.both.alldata[stim.both.alldata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel", "Condition"))
-df.Rarea2<-summarySE(stim.both.alldata[stim.both.alldata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel", "Group","Condition"))
-df.Rarea3<- summarySE(stim.lck.compdata[stim.lck.compdata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel_Group","Condition"))
-df.Rarea4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$ROIType=="Process",], measurevar = "area", groupvars = c("Channel_Group"))
-df.Rarea6<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="lck_RCaMP"& stim.lck.compdata.STIM$ROIType=="Process",], measurevar = "area", groupvars = c("Group"))
+df.peakAUC3A<- summarySE(stim.lck.compdata, measurevar = "peakAUC", groupvars = c("Channel_Group","Genotype","Condition"),na.rm=TRUE)
+df.peakAUC3B<- summarySE(stim.lck.compdata.STIM, measurevar = "peakAUC", groupvars = c("Channel_Group","Genotype"),na.rm=TRUE)
 
-ggplot(df.Rarea1, aes(x=Channel,y=area, fill= Condition)) +
+df.peakAUC4<- summarySE(astro.compdata.stim, measurevar = "peakAUC", groupvars = c("Group","Genotype"),na.rm=TRUE)
+df.peakAUC5<- summarySE(astro.compdata.stim, measurevar = "peakAUC", groupvars = c("Group","ROIType","Genotype"),na.rm=TRUE)
+
+
+ggplot(df.peakAUC1, aes(x=interaction(Channel,Genotype),y=peakAUC, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("area") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakAUC") +
   max.theme
 
-ggplot(df.Rarea2, aes(x=interaction(Channel,Group),y=area, fill= Condition)) +
+ggplot(df.peakAUC2, aes(x=interaction(Channel,interaction(Genotype, ROIType)),y=peakAUC, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("area") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakAUC") +
   max.theme
 
-ggplot(df.Rarea3, aes(x=Channel_Group,y=area, fill= Condition)) +
+ggplot(df.peakAUC3A, aes(x=interaction(Channel_Group,Genotype),y=peakAUC, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("area") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakAUC") +
   max.theme
 
-ggplot(df.Rarea4, aes(x=Channel_Group,y=area, fill= Channel_Group)) +
+ggplot(df.peakAUC3B, aes(x=Channel_Group,y=peakAUC, fill= Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("area") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakAUC peakAUCing stim trials") +
   max.theme
 
-ggplot(df.Rarea6, aes(x=Group,y=area, fill= Group)) +
+ggplot(df.peakAUC4, aes(x=Group,y=peakAUC, fill= Genotype)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=area-se, ymax=area+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("area") +
-  scale_fill_manual(values=cbbPalette)+
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakAUC during stim trials") +
   max.theme
 
-ggplot(stim.lck.compdata, aes(x=Channel_Group,y=area, fill=Channel_Group)) +
-  geom_boxplot(notch=TRUE)+
-  ylab("area") +
-  ggtitle("lck data- fast vs delayed")+
+ggplot(df.peakAUC5, aes(x=interaction(Group, ROIType),y=peakAUC, fill= Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakAUC-se, ymax=peakAUC+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakAUC during stim trials") +
   max.theme
 
-ggplot(stim.lck.compdata, aes(x=area, y=..density..,fill=Channel_Group)) +
-  geom_histogram(binwidth=10, position="dodge")+
-  ylab("density") +
-  xlim(-2,200)+
-  ggtitle("lck data- fast vs delayed")+
-  max.theme
 
-ggplot(lck.peaks.window[lck.peaks.window$Channel_Group=="lck_GCaMP.fast",], aes(x=area, y=..density..,fill=Condition)) +
-  geom_histogram(binwidth=5, position="dodge")+
-  ylab("density") +
-  xlim(-2,200)+
-  ggtitle("lck data- fast no stim vs stim")+
-  max.theme
 
-#only consider STIM case
-area.null.stim = lmer(area ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="lck_RCaMP" & stim.lck.compdata.STIM$ROIType=="Process",],REML=FALSE)
-area.model1.stim  = lmer(area ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel!="lck_RCaMP" & stim.lck.compdata.STIM$ROIType=="Process",],REML=FALSE)
 
-area.anova.stim  <- anova(area.null.stim, area.model1.stim)
-print(area.anova.stim)
 
-area.stim.group<- glht(area.model1.stim, mcp(Group= "Tukey"))
-summary(area.stim.group)
+#lck-GCaMP ONLY
+Group_Genotype=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$Channel=="GCaMP"],stim.lck.compdata.STIM$Genotype[stim.lck.compdata.STIM$Channel=="GCaMP"])
+Group_Type_Genotype=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$Channel=="GCaMP"],
+                                stim.lck.compdata.STIM$Genotype[stim.lck.compdata.STIM$Channel=="GCaMP"],
+                                stim.lck.compdata.STIM$ROIType[stim.lck.compdata.STIM$Channel=="GCaMP"])
+
+peakAUC.null.GC = lmer(peakAUC ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+peakAUC.model2.GC  = lmer(peakAUC ~ Genotype + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+peakAUC.model3.GC  = lmer(peakAUC ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+peakAUC.model5.GC  = lmer(peakAUC ~ Group_Genotype + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+peakAUC.model6.GC  = lmer(peakAUC ~ Group_Type_Genotype + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+peakAUC.anova.GC  <- anova(peakAUC.null.GC, peakAUC.model2.GC,peakAUC.model3.GC,peakAUC.model5.GC,peakAUC.model6.GC)
+print(peakAUC.anova.GC)
+
+peakAUC.Group_Gen.GC<- glht(peakAUC.model5.GC, mcp(Group_Genotype= "Tukey"))
+summary(peakAUC.Group_Gen.GC)
+
+peakAUC.Group_gen_ty.GC<- glht(peakAUC.model6.GC, mcp(Group_Type_Genotype= "Tukey"))
+summary(peakAUC.Group_gen_ty.GC)
+
 
 ###### 
 # proportion of ROIs that are fast or delayed

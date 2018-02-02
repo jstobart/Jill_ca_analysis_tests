@@ -923,6 +923,7 @@ ggplot(ROInum.lck.8strial[ROInum.lck.8strial$Channel=="RCaMP",], aes(x=Condition
 ggplot(ROInum.lck.8strial[ROInum.lck.8strial$Channel=="GCaMP",], aes(x=Condition, y = ROIsPerTrial)) +
   geom_point(shape = 21,size = 3, colour="#b5b5b5") +
   geom_line(aes(group=Ani_Spot), colour="#b5b5b5")+
+  ylim(0, 50)+
   geom_point(aes(x=Condition, y=ROIsPerTrialMean), size = 5, colour="#008837")+
   geom_line(aes(x=Condition, y=ROIsPerTrialMean,group=Ani_Spot), size=1.5, colour="#008837")+
   geom_errorbar(aes(x=Condition,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
@@ -990,6 +991,7 @@ ggplot(ROInum.cyto.8strial[ROInum.cyto.8strial$Channel=="RCaMP",], aes(x=Conditi
 ggplot(ROInum.cyto.8strial[ROInum.cyto.8strial$Channel=="GCaMP",], aes(x=Condition, y = ROIsPerTrial)) +
   geom_point(shape = 21,size = 3, colour="#b5b5b5") +
   geom_line(aes(group=Ani_Spot), colour="#b5b5b5")+
+  ylim(0, 25)+
   geom_point(aes(x=Condition, y=ROIsPerTrialMean), size = 5, colour="#008837")+
   geom_line(aes(x=Condition, y=ROIsPerTrialMean,group=Ani_Spot), size=1.5, colour="#008837")+
   geom_errorbar(aes(x=Condition,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
@@ -2379,28 +2381,24 @@ summary(fracActive.cyto.stim.pvalue)
 #Robustness scores
 
 lck.robustness<-read.table("D:/Data/GCaMP_RCaMP/Revision/Lck_GCaMP/FilesforR/Lck_robustnessScores.csv", header=TRUE, sep = ",")
-
-#remove IP3KOs and IP3WTs
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG1"),]
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG4"),]
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG5"),]
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG7"),]
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG2"),]
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG3"),]
-lck.robustness<-lck.robustness[!(lck.robustness$All_traces5=="IPRG6"),]
-
 lck.robustness$Animal_Spot<- paste(lck.robustness$All_traces5, lck.robustness$All_traces4, sep="_")
 lck.robustness$Condition<- lck.robustness$All_traces6
+lck.robustness$Ani_Cond<-paste(lck.robustness$Animal_Spot, lck.robustness$Condition, sep="_")
+
+#remove IP3KOs and IP3WTs
+KOs<-c("IPRG1","IPRG4","IPRG5","IPRG7")
+
+lck.robustness<-subset(lck.robustness, !(All_traces5 %in% KOs))
 
 # incorporate total number of astrocyte pixels for each FOV
 Spot.lck.StimPixels$Ani_Cond<-paste(Spot.lck.StimPixels$Animal_Spot, Spot.lck.StimPixels$Condition, sep="_")
-lck.robustness$Ani_Cond<-paste(lck.robustness$Animal_Spot, lck.robustness$Condition, sep="_")
-lck.robustness<-merge(lck.robustness, Spot.lck.StimPixels[, c("Ani_Cond", "meanTotalPix")], by="Ani_Cond", all.x=TRUE)
 
+lck.robustness<-merge(lck.robustness, Spot.lck.StimPixels[, c("Ani_Cond", "meanTotalPix")], by="Ani_Cond", all.x=TRUE)
 lck.robustness$FracPixAboveThres<-lck.robustness$nPxAboveThresh/lck.robustness$meanTotalPix
 
 df.lck.robust1<-summarySE(lck.robustness, measurevar = "score", groupvars = c("Condition"))
 df.lck.robust2<-summarySE(lck.robustness, measurevar = "FracPixAboveThres", groupvars = c("Condition"))
+
 
 # paired line plots
 df.lck.robust1$MeanFracofROIarea<-df.lck.robust1$score
@@ -2429,6 +2427,8 @@ ggplot(lck.robustness, aes(x=Condition, y = FracPixAboveThres)) +
   geom_errorbar(aes(x=Condition,ymin=MeanFracofACarea-MeanFracofACarea_se, ymax=MeanFracofACarea+MeanFracofACarea_se), colour="#1b7837", width=0.2,  size=1.5,position=position_dodge(.9)) +
   ggtitle("Fraction of Repeated Pixels per Total lck astrocyte area")+
   max.theme
+
+
 
 # stats
 # fraction of pixels vs total ROI area
