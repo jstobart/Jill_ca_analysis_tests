@@ -21,7 +21,7 @@ nLines=round(stimwindow/lineTime);
 TimeX(1:nLines) = (1:nLines)*lineTime;
 
 % Calculate the first peak onset time and AUC after stim
-BL_time=118/11.8371;  % number of s for baseline
+BL_time=10;  % number of s for baseline
 nBL_lines=BL_time/lineTime; % number of lines in baseline time
 stimStart=TimeX(1,round(nBL_lines));  % exact time of stimulus start
 baselineCorrectedTime=TimeX-stimStart;

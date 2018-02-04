@@ -218,9 +218,22 @@ all.lck.peaks<-subset(all.lck.peaks, Animal!="IPRG6")
 rm(DSP4,control.DSP4)
 
 
+#pair all data for each drug (matching spots in all cases)                      
+spots.metergoline<-unique(all.lck.peaks$Animal_Spot[all.lck.peaks$Drug=="Metergoline"])
+spots.atropine<-unique(all.lck.peaks$Animal_Spot[all.lck.peaks$Drug=="Atropine"])
+spots.trazodone<-unique(all.lck.peaks$Animal_Spot[all.lck.peaks$Drug=="Trazodone"])
+spots.prazosin<-unique(all.lck.peaks$Animal_Spot[all.lck.peaks$Drug=="Prazosin"])
+matchingSpots1<-intersect(spots.metergoline, spots.atropine)
+matchingSpots2<-intersect(spots.trazodone, spots.prazosin)
+matchingSpots<-intersect(matchingSpots1, matchingSpots2)
+
+
+all.lck.peaks<-subset(all.lck.peaks, Animal_Spot %in% matchingSpots)
+
 ######
 # does neuronal spontaneous activity change?- at any point in nostim trials
 NeuronalNostim<-subset(all.lck.peaks, Channel=="RCaMP" & Condition=="Nostim")
+
 
 Neur.NS.Spot<-ddply(NeuronalNostim, c("Animal","Spot","Drug","Condition", "Animal_Spot"), summarise, nROIs=length(OnsetTime),
                  meanAmp=mean(amplitude))
@@ -248,9 +261,23 @@ ggplot(Neur.NS.Spot, aes(x=Drug, y = ROIsPerTrial)) +
   ggtitle("Spontaneous Neurons")+
   max.theme
 
+ggplot(data=df.NeurNS.ROInum, aes(x=Drug, y= ROIsPerTrial, fill=Drug)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
 ggplot(Neur.NS.Spot, aes(x=Drug, y = meanAmp)) +
   geom_boxplot()+
   ggtitle("Spontaneous Neurons")+ 
+  max.theme
+
+ggplot(data=df.NeurNS.amp, aes(x=Drug, y= meanAmp, fill=Drug)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanAmp-se, ymax=meanAmp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("meanAmp") +
+  scale_fill_manual(values=cbbPalette) + 
   max.theme
 
 ggplot(Neur.NS.Spot.DSP4, aes(x=Drug, y = ROIsPerTrial)) +
@@ -271,6 +298,14 @@ ggplot(both.spont, aes(x=Drug, y = ROIsPerTrial)) +
   ggtitle("Spontaneous Neurons all")+ 
   max.theme
 
+df.NeurNS.ROInum.allDrugs<-summarySE(both.spont, measurevar = "ROIsPerTrial", groupvars = c("Drug"))
+
+ggplot(df.NeurNS.ROInum.allDrugs, aes(x=Drug, y= ROIsPerTrial, fill=Drug)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 # nROI
 RC.spont.nROI.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), Neur.NS.Spot,REML=FALSE)
@@ -470,10 +505,10 @@ drugA=drugA/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Atro
 drugP=drugP/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Prazosin")]
 drugT=drugT/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Trazodone")]
 drugM=drugM/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="Metergoline")]
-drugD=drugD/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="DSP4")]
+#drugD=drugD/ntrials.GC.Pharmacology$ntrials[(ntrials.GC.Pharmacology$Drug=="DSP4")]
 
 #make a data frame for plotting
-lck.histo <- data.frame(cbind(drugC, drugA, drugP, drugT,drugM,drugD))
+lck.histo <- data.frame(cbind(drugC, drugA, drugP, drugT,drugM))
 lck.histo2<-rbind(zeroRow,lck.histo)
 lck.histo2$time<-histseq
 
@@ -587,12 +622,6 @@ ggplot(lck.peaks.window[(lck.peaks.window$Channel=="RCaMP" & lck.peaks.window$Co
   ggtitle("time window 0-12.76s, rcamp, stim")+
   max.theme
 
-ggplot(lck.peaks.window[(lck.peaks.window$Channel=="RCaMP" & lck.peaks.window$Condition=="Stim"),], aes(x=interaction(Channel, Drug),y=peakTime, fill= Condition)) +
-  geom_boxplot()+
-  ylab("peak Time (s)") +
-  ggtitle("time window 0-12.76s, rcamp, stim")+
-  max.theme
-
 ggplot(lck.peaks.window[(lck.peaks.window$Channel=="GCaMP" & lck.peaks.window$Condition=="Stim"),], aes(x=interaction(Channel, Drug),y=peakTime, fill= Condition)) +
   geom_boxplot()+
   ylab("peak Time (s)") +
@@ -662,13 +691,11 @@ DSP4.data.compdata.STIM<-subset(DSP4.data.compdata, Condition=="Stim")
 
 
 ######
-                      
-                      
 
 
 # number of ROIs in each trial for each field of view (across the whole trial)
-lck.8strial<-lck.peaks.window#[lck.peaks.window$OnsetTime<8,]
-DSP4.8strial<-DSP4.data.window#[DSP4.data.window$OnsetTime<8,]
+lck.8strial<-lck.peaks.window[lck.peaks.window$OnsetTime<8,]
+DSP4.8strial<-DSP4.data.window[DSP4.data.window$OnsetTime<8,]
 
 lck.8strial$Channel <- factor(lck.8strial$Channel, levels = c("RCaMP","GCaMP"))
 DSP4.8strial$Channel <- factor(DSP4.8strial$Channel, levels = c("RCaMP","GCaMP"))
@@ -696,29 +723,66 @@ DSP4.ROInum.8strial$ROIsPerTrial<-DSP4.ROInum.8strial$nROIs/DSP4.ROInum.8strial$
 DSP4.ROInum.8strial.group<-merge(DSP4.ROInum.8strial.group, Spot.lck.ntrials[, c("Ani_Spot_Cond_Drug", "nTrials")], by="Ani_Spot_Cond_Drug", all.x=TRUE)
 DSP4.ROInum.8strial.group$ROIsPerTrial<-DSP4.ROInum.8strial.group$nROIs/DSP4.ROInum.8strial.group$nTrials
 
+# remove outliers
+#outlier <- boxplot.stats(ROInum.8strial$ROIsPerTrial[ROInum.8strial$Channel=="GCaMP"])$out
+#ROInum.8strial<-subset(ROInum.8strial, !(ROIsPerTrial %in% outlier))
+
 # mean
 df.ROInum.8strial<-summarySE(ROInum.8strial, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Drug"))
 df.ROInum.8strial.group<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Drug","Group"))
 
-df.ROInum.8strial<-summarySE(ROInum.8strial, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Drug"))
-df.ROInum.8strial.group<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Drug","Group"))
+df.ROInum.8strial.DSP4<-summarySE(DSP4.ROInum.8strial, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Drug"))
+df.ROInum.8strial.group.DSP4<-summarySE(DSP4.ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Drug","Group"))
+
+# paired line plots
+df.ROInum.8strial$ROIsPerTrialMean<-df.ROInum.8strial$ROIsPerTrial
+df.ROInum.8strial$Chan_Cond_Drug<-interaction(df.ROInum.8strial$Channel, df.ROInum.8strial$Condition,df.ROInum.8strial$Drug)
+ROInum.8strial$Chan_Cond_Drug<-interaction(ROInum.8strial$Channel, ROInum.8strial$Condition,ROInum.8strial$Drug)
+
+ROInum.8strial<-merge(ROInum.8strial, df.ROInum.8strial[, c("Chan_Cond_Drug", "ROIsPerTrialMean","se")], by="Chan_Cond_Drug", all.x=TRUE)
+
+df.ROInum.8strial.group$ROIsPerTrialMean<-df.ROInum.8strial.group$ROIsPerTrial
+df.ROInum.8strial.group$Chan_Cond_Drug_Group<-interaction(df.ROInum.8strial.group$Channel, 
+                                                          df.ROInum.8strial.group$Condition,
+                                                          df.ROInum.8strial.group$Drug,
+                                                          df.ROInum.8strial.group$Group)
+ROInum.8strial.group$Chan_Cond_Drug_Group<-interaction(ROInum.8strial.group$Channel, 
+                                                       ROInum.8strial.group$Condition,
+                                                       ROInum.8strial.group$Drug,
+                                                       ROInum.8strial.group$Group)
+
+ROInum.8strial.group<-merge(ROInum.8strial.group, df.ROInum.8strial.group[, c("Chan_Cond_Drug_Group", "ROIsPerTrialMean","se")], by="Chan_Cond_Drug_Group", all.x=TRUE)
+
+#DSP4
+df.ROInum.8strial.DSP4$ROIsPerTrialMean<-df.ROInum.8strial.DSP4$ROIsPerTrial
+df.ROInum.8strial.DSP4$Chan_Cond_Drug<-interaction(df.ROInum.8strial.DSP4$Channel, 
+                                                   df.ROInum.8strial.DSP4$Condition, df.ROInum.8strial.DSP4$Drug)
+DSP4.ROInum.8strial$Chan_Cond_Drug<-interaction(DSP4.ROInum.8strial$Channel, DSP4.ROInum.8strial$Condition,DSP4.ROInum.8strial$Drug)
+
+DSP4.ROInum.8strial<-merge(DSP4.ROInum.8strial, df.ROInum.8strial.DSP4[, c("Chan_Cond_Drug", "ROIsPerTrialMean","se")], by="Chan_Cond_Drug", all.x=TRUE)
+
+df.ROInum.8strial.group.DSP4$ROIsPerTrialMean<-df.ROInum.8strial.group.DSP4$ROIsPerTrial
+df.ROInum.8strial.group.DSP4$Chan_Cond_Drug_Group<-interaction(df.ROInum.8strial.group.DSP4$Channel, 
+                                                          df.ROInum.8strial.group.DSP4$Condition,
+                                                          df.ROInum.8strial.group.DSP4$Drug,
+                                                          df.ROInum.8strial.group.DSP4$Group)
+DSP4.ROInum.8strial.group$Chan_Cond_Drug_Group<-interaction(DSP4.ROInum.8strial.group$Channel, 
+                                                            DSP4.ROInum.8strial.group$Condition,
+                                                            DSP4.ROInum.8strial.group$Drug,
+                                                            DSP4.ROInum.8strial.group$Group)
+
+DSP4.ROInum.8strial.group<-merge(DSP4.ROInum.8strial.group, df.ROInum.8strial.group[, c("Chan_Cond_Drug_Group", "ROIsPerTrialMean","se")], by="Chan_Cond_Drug_Group", all.x=TRUE)
 
 
 # plots
-#boxplot
-ggplot(ROInum.8strial, aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
-  geom_boxplot()+
-  ylab("Lck- ROIs per FOV") +
-  max.theme
-
-ggplot(data=df.ROInum.8strial, aes(x=interaction(Drug, Channel), y= ROIsPerTrial, fill=Condition)) + 
+# RCaMP
+ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="RCaMP",], aes(x=Drug,y=ROIsPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ROIsPerTrial") +
-  scale_fill_manual(values=cbbPalette) + 
+  ylab("num ROIs/trial per field of view during 8s stim") +
   max.theme
 
-ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="RCaMP",], aes(x=Drug,y=ROIsPerTrial, fill= Condition)) +
+ggplot(df.ROInum.8strial[(df.ROInum.8strial$Channel=="RCaMP" & df.ROInum.8strial$Condition=="Stim"),], aes(x=Drug,y=ROIsPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num ROIs/trial per field of view during 8s stim") +
@@ -737,8 +801,25 @@ ggplot(ROInum.8strial[ROInum.8strial$Channel=="RCaMP",], aes(x=interaction(Drug,
   ylab("Lck- ROIs per FOV") +
   max.theme
 
+# paired line plot
+ggplot(ROInum.8strial[(ROInum.8strial$Channel=="RCaMP" & ROInum.8strial$Condition=="Stim"),], aes(x=Drug, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Drug, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Drug, y=ROIsPerTrialMean), size = 5, colour="#7b3294")+
+  geom_line(aes(x=Drug, y=ROIsPerTrialMean,group=Animal_Spot), size=1.5, colour="#7b3294")+
+  geom_errorbar(aes(x=Drug,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#7b3294", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+
 # gcamp
 ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="GCaMP",], aes(x=Drug,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  max.theme
+
+ggplot(df.ROInum.8strial[(df.ROInum.8strial$Channel=="GCaMP" & df.ROInum.8strial$Condition=="Stim"),], aes(x=Drug,y=ROIsPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("num ROIs/trial per field of view during 8s stim") +
@@ -757,18 +838,133 @@ ggplot(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], aes(x=interaction(Drug,
   ylab("Lck- ROIs per FOV") +
   max.theme
 
+# paired line plot
+ggplot(ROInum.8strial[(ROInum.8strial$Channel=="GCaMP" & ROInum.8strial$Condition=="Stim"),], aes(x=Drug, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Drug, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Drug, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Drug, y=ROIsPerTrialMean,group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Drug,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
 # only fast GcaMP
-ggplot(ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Condition=="Stim" & ROInum.8strial.group$Group=="fast_MDs"),], aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
+
+fastROInum<- subset(ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim" & Group=="fast_MDs")
+
+ggplot(fastROInum, aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
   geom_boxplot()+
   ylab("Lck- fast ROIs per FOV") +
   max.theme
 
+ggplot(fastROInum,aes(x=Drug, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Drug, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Drug, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Drug, y=ROIsPerTrialMean, group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Drug,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+
+ggplot(df.ROInum.8strial.group[df.ROInum.8strial.group$Channel=="GCaMP" & 
+                                 df.ROInum.8strial.group$Group=="fast_MDs" &
+                                 df.ROInum.8strial.group$Condition=="Stim",],
+       aes(x=Drug,y=ROIsPerTrial, colour=Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("fast GCaMP ROIs") +
+  max.theme
+
+
+# fast ROIs from dSP4
+fastROInum.DSP4<- subset(DSP4.ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim" & Group=="fast_MDs")
+
+ggplot(fastROInum.DSP4, aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
+  geom_boxplot()+
+  ylab("Lck- fast ROIs per FOV") +
+  max.theme
+
+ggplot(fastROInum.DSP4,aes(x=Drug, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Drug, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Drug, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Drug, y=ROIsPerTrialMean, group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Drug,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+
+ggplot(df.ROInum.8strial.group.DSP4[df.ROInum.8strial.group.DSP4$Channel=="GCaMP" & 
+                                 df.ROInum.8strial.group.DSP4$Group=="fast_MDs" &
+                                 df.ROInum.8strial.group.DSP4$Condition=="Stim",],
+       aes(x=Drug,y=ROIsPerTrial, colour=Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("fast GCaMP ROIs .DSP4") +
+  max.theme
+
+
 #only delayed GCaMP
-ggplot(ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Condition=="Stim" & ROInum.8strial.group$Group=="delayed_MDs"),], aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
+
+delayedROInum<- subset(ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim" & Group=="delayed_MDs")
+
+ggplot(delayedROInum, aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
   geom_boxplot()+
   ylab("Lck- delayed ROIs per FOV") +
   max.theme
 
+ggplot(delayedROInum,aes(x=Drug, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Drug, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Drug, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Drug, y=ROIsPerTrialMean, group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Drug,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+ggplot(df.ROInum.8strial.group[df.ROInum.8strial.group$Channel=="GCaMP" & 
+                                 df.ROInum.8strial.group$Group=="delayed_MDs" &
+                                 df.ROInum.8strial.group$Condition=="Stim",],
+       aes(x=Drug,y=ROIsPerTrial, colour=Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("delayed GCaMP ROIs") +
+  max.theme
+
+
+delayedROInum.DSP4<- subset(DSP4.ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim" & Group=="delayed_MDs")
+
+ggplot(delayedROInum.DSP4, aes(x=interaction(Drug, Channel),y=ROIsPerTrial, fill= Condition)) +
+  geom_boxplot()+
+  ylab("Lck- delayed ROIs per FOV") +
+  max.theme
+
+ggplot(delayedROInum.DSP4,aes(x=Drug, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Drug, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Drug, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Drug, y=ROIsPerTrialMean, group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Drug,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+ggplot(df.ROInum.8strial.group.DSP4[df.ROInum.8strial.group.DSP4$Channel=="GCaMP" & 
+                                 df.ROInum.8strial.group.DSP4$Group=="delayed_MDs" &
+                                 df.ROInum.8strial.group.DSP4$Condition=="Stim",],
+       aes(x=Drug,y=ROIsPerTrial, colour=Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("delayed GCaMP ROIs") +
+  max.theme
+
+
+
+#stats
 # RCaMP
 Condition_Drug_RC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="RCaMP"],ROInum.8strial$Drug[ROInum.8strial$Channel=="RCaMP"])
 nROI.RC.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="RCaMP",],REML=FALSE)
@@ -800,54 +996,48 @@ summary(nROI.GC.stim.Cond_Drug)
 
 
 # fast GC
-Condition_Drug_GC_fast= interaction(ROInum.8strial.group$Condition[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="fast_MDs")],
-                               ROInum.8strial.group$Drug[(ROInum.8strial.group$Channel=="GCaMP"& ROInum.8strial.group$Group=="fast_MDs")])
-nROI.GC.fast.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), 
-                              ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="fast_MDs"),],
-                              REML=FALSE)
-nROI.GC.fast.stim.model1 = lmer(ROIsPerTrial ~ Condition + (1|Animal) + (1|Spot), 
-                              ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="fast_MDs"),],
-                              REML=FALSE)
-nROI.GC.fast.stim.model2 = lmer(ROIsPerTrial ~ Drug + (1|Animal) + (1|Spot), 
-                              ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="fast_MDs"),],
-                              REML=FALSE)
-nROI.GC.fast.stim.model3 = lmer(ROIsPerTrial ~ Condition_Drug_GC_fast + (1|Animal) + (1|Spot), 
-                                ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="fast_MDs"),],
-                                REML=FALSE)
-nROI.GC.fast.stim.anova <- anova(nROI.GC.fast.stim.null, nROI.GC.fast.stim.model1,
-                                 nROI.GC.fast.stim.model2, nROI.GC.fast.stim.model3)
+nROI.GC.fast.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), fastROInum, REML=FALSE)
+nROI.GC.fast.stim.model2 = lmer(ROIsPerTrial ~ Drug + (1|Animal) + (1|Spot),fastROInum, REML=FALSE)
+nROI.GC.fast.stim.anova <- anova(nROI.GC.fast.stim.null, nROI.GC.fast.stim.model2)
 print(nROI.GC.fast.stim.anova)
 
-nROI.GC.fast.stim.Cond_Drug<- glht(nROI.GC.fast.stim.model3, mcp(Condition_Drug_GC_fast= "Tukey"))
+nROI.GC.fast.stim.Cond_Drug<- glht(nROI.GC.fast.stim.model2, mcp(Drug= "Tukey"))
 summary(nROI.GC.fast.stim.Cond_Drug)
 
 # no difference in ROI number across fast AC types
 
 
 # delayed GC
-Condition_Drug_GC_delayed= interaction(ROInum.8strial.group$Condition[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="delayed_MDs")],
-                                    ROInum.8strial.group$Drug[(ROInum.8strial.group$Channel=="GCaMP"& ROInum.8strial.group$Group=="delayed_MDs")])
-nROI.GC.delayed.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), 
-                              ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="delayed_MDs"),],
-                              REML=FALSE)
-nROI.GC.delayed.stim.model1 = lmer(ROIsPerTrial ~ Condition + (1|Animal) + (1|Spot), 
-                                ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="delayed_MDs"),],
-                                REML=FALSE)
-nROI.GC.delayed.stim.model2 = lmer(ROIsPerTrial ~ Drug + (1|Animal) + (1|Spot), 
-                                ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="delayed_MDs"),],
-                                REML=FALSE)
-nROI.GC.delayed.stim.model3 = lmer(ROIsPerTrial ~ Condition_Drug_GC_delayed + (1|Animal) + (1|Spot), 
-                                ROInum.8strial.group[(ROInum.8strial.group$Channel=="GCaMP" & ROInum.8strial.group$Group=="delayed_MDs"),],
-                                REML=FALSE)
-nROI.GC.delayed.stim.anova <- anova(nROI.GC.delayed.stim.null, nROI.GC.delayed.stim.model1,
-                                 nROI.GC.delayed.stim.model2, nROI.GC.delayed.stim.model3)
+nROI.GC.delayed.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), delayedROInum, REML=FALSE)
+nROI.GC.delayed.stim.model2 = lmer(ROIsPerTrial ~ Drug + (1|Animal) + (1|Spot),delayedROInum, REML=FALSE)
+nROI.GC.delayed.stim.anova <- anova(nROI.GC.delayed.stim.null, nROI.GC.delayed.stim.model2)
 print(nROI.GC.delayed.stim.anova)
 
-nROI.GC.delayed.stim.Cond_Drug<- glht(nROI.GC.delayed.stim.model3, mcp(Condition_Drug_GC_delayed= "Tukey"))
+nROI.GC.delayed.stim.Cond_Drug<- glht(nROI.GC.delayed.stim.model2, mcp(Drug= "Tukey"))
 summary(nROI.GC.delayed.stim.Cond_Drug)
 
 
+# DSP4
+# fast GC
+nROI.GC.fast.stim.null.DSP4 = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), fastROInum.DSP4, REML=FALSE)
+nROI.GC.fast.stim.model2.DSP4 = lmer(ROIsPerTrial ~ Drug + (1|Animal) + (1|Spot),fastROInum.DSP4, REML=FALSE)
+nROI.GC.fast.stim.anova.DSP4 <- anova(nROI.GC.fast.stim.null.DSP4, nROI.GC.fast.stim.model2.DSP4)
+print(nROI.GC.fast.stim.anova.DSP4)
 
+nROI.GC.fast.stim.Cond_Drug.DSP4<- glht(nROI.GC.fast.stim.model2.DSP4, mcp(Drug= "Tukey"))
+summary(nROI.GC.fast.stim.Cond_Drug.DSP4)
+
+# no difference in ROI number across fast AC types
+
+
+# delayed GC
+nROI.GC.delayed.stim.null.DSP4 = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), delayedROInum.DSP4, REML=FALSE)
+nROI.GC.delayed.stim.model2.DSP4 = lmer(ROIsPerTrial ~ Drug + (1|Animal) + (1|Spot),delayedROInum.DSP4, REML=FALSE)
+nROI.GC.delayed.stim.anova.DSP4 <- anova(nROI.GC.delayed.stim.null.DSP4, nROI.GC.delayed.stim.model2.DSP4)
+print(nROI.GC.delayed.stim.anova.DSP4)
+
+nROI.GC.delayed.stim.Cond_Drug.DSP4<- glht(nROI.GC.delayed.stim.model2.DSP4, mcp(Drug= "Tukey"))
+summary(nROI.GC.delayed.stim.Cond_Drug.DSP4)
 
 
 
@@ -861,6 +1051,10 @@ lck.peaks.window$Channel <- factor(lck.peaks.window$Channel, levels = c("RCaMP",
 
 Spot.lck.stim<-ddply(lck.peaks.window, c("Animal","Spot","Drug","Trial","Condition","Channel","nFluoPix","nActivePix","pixelsize"), summarise,
                      nROIs=length(unique(ROIs_Cond_Drug)))
+
+Spot.lck.stim.group<-ddply(lck.peaks.window, c("Animal","Spot","Drug","Trial","Condition","Channel","Group","nFluoPix","nActivePix","pixelsize"), summarise,
+                     nROIs=length(unique(ROIs_Cond_Drug)))
+Spot.lck.stim.group$FracActive=Spot.lck.stim.group$nActivePix/Spot.lck.stim.group$nFluoPix
 
 # add in number of trials
 Spot.lck.stim$Ani_Spot_Cond<-paste(Spot.lck.stim$Animal, Spot.lck.stim$Spot, Spot.lck.stim$Condition,Spot.lck.stim$Drug, sep="_")
@@ -891,6 +1085,15 @@ ggplot(data=df.FracActivePerROI, aes(x=Drug, y= FracActivePerROI, fill=Condition
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
+df.FracActive.group<- summarySE(Spot.lck.stim.group[(Spot.lck.stim.group$Channel=="GCaMP" & Spot.lck.stim.group$Condition=="Stim"),], measurevar = "FracActive", groupvars = c("Drug", "Group"))
+
+ggplot(data=df.FracActive.group, aes(x=Group, y= FracActive, fill=Drug)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=FracActive-se, ymax=FracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActive") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
 #only astrocytes
 Cond_Drug= interaction(Spot.lck.stim$Condition[Spot.lck.stim$Channel=="GCaMP"],Spot.lck.stim$Drug[Spot.lck.stim$Channel=="GCaMP"])
 FracActive.lck.stim.null = lmer(FracActive ~ (1|Animal)+ (1|Spot), Spot.lck.stim[Spot.lck.stim$Channel=="GCaMP",],REML=FALSE)
@@ -911,12 +1114,14 @@ summary(FracActive.lck.stim.Cond_Drug)
 
 # calculate the change in amplitude, onset time, AUC, etc. with drug since it is the same cells in each FOV
 
-#########
+
 # mean onset times
 df.OT1<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "OnsetTime", groupvars = c("Channel_Group", "Drug"))
 df.OT2<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",], measurevar = "OnsetTime", groupvars = c("Group", "Drug"))
 df.OT3<- summarySE(stim.lck.compdata.STIM, measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group", "Drug"))
 df.OT4<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="RCaMP",], measurevar = "OnsetTime", groupvars = c("Group", "Drug"))
+
+df.OT5<- summarySE(DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",], measurevar = "OnsetTime", groupvars = c("Group", "Drug"))
 
 ggplot(df.OT1, aes(x=Channel_Group,y=OnsetTime, fill=Drug)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -940,7 +1145,13 @@ ggplot(df.OT4, aes(x=Drug,y=OnsetTime, fill=Drug)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Mean Onset Time (s)") +
-  ggtitl("RCaMP")
+  ggtitle("RCaMP")+
+  max.theme
+
+ggplot(df.OT5, aes(x=Group,y=OnsetTime, fill=Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean Onset Time (s)") +
   max.theme
 
 # stats
@@ -1017,6 +1228,19 @@ print(OT.stim3.anova)
 OT.stim.NeuronDrug<- glht(OT.stim3.model2, mcp(Drug= "Tukey"))
 summary(OT.stim.NeuronDrug)
 
+
+# DSP4
+Group_Drug=interaction(DSP4.data.compdata.STIM$Group[DSP4.data.compdata.STIM$Channel=="GCaMP"],
+                       DSP4.data.compdata.STIM$Drug[DSP4.data.compdata.STIM$Channel=="GCaMP"])
+OT.stim4.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+OT.stim4.model1 = lmer(OnsetTime ~ Group + (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+OT.stim4.model2 = lmer(OnsetTime ~ Group_Drug + (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+OT.stim4.anova <- anova(OT.stim4.null, OT.stim4.model1, OT.stim4.model2)
+print(OT.stim4.anova)
+
+OT.stim.Group_Drug<- glht(OT.stim4.model2, mcp(Group_Drug= "Tukey"))
+summary(OT.stim.Group_Drug)
+
 #############
 # mean peak time
 df.PT1<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], measurevar = "peakTime", groupvars = c("Channel_Group", "Drug"))
@@ -1091,6 +1315,7 @@ df.amp3B<- summarySE(stim.lck.compdata.STIM, measurevar = "amplitude", groupvars
 df.amp4<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Group","Drug"))
 df.amp5<- summarySE(stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Group","ROIType","Drug"))
 
+df.amp6<- summarySE(DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Group","Drug"))
 
 ggplot(df.amp1, aes(x=interaction(Channel,Drug),y=amplitude, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -1128,7 +1353,11 @@ ggplot(df.amp5, aes(x=interaction(Group, ROIType),y=amplitude, fill= Drug)) +
   ylab("amplitude during stim trials") +
   max.theme
 
-
+ggplot(df.amp6, aes(x=Group,y=amplitude, fill= Drug)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude during stim trials") +
+  max.theme
 
 
 
@@ -1138,11 +1367,11 @@ Group_Type_Drug=interaction(stim.lck.compdata.STIM$Group[stim.lck.compdata.STIM$
                                stim.lck.compdata.STIM$Drug[stim.lck.compdata.STIM$Channel=="GCaMP"],
                                stim.lck.compdata.STIM$ROIType[stim.lck.compdata.STIM$Channel=="GCaMP"])
 
-amp.null.GC = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
-amp.model2.GC  = lmer(amplitude ~ Drug + (1|Animal) + (1|Spot) + (1|trials) , stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
-amp.model3.GC  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
-amp.model5.GC  = lmer(amplitude ~ Group_Drug + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
-amp.model6.GC  = lmer(amplitude ~ Group_Type_Drug + (1|Animal) + (1|Spot) + (1|trials), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.null.GC = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|Trial), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model2.GC  = lmer(amplitude ~ Drug + (1|Animal) + (1|Spot) + (1|Trial) , stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model3.GC  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|Trial), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model5.GC  = lmer(amplitude ~ Group_Drug + (1|Animal) + (1|Spot) + (1|Trial), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model6.GC  = lmer(amplitude ~ Group_Type_Drug + (1|Animal) + (1|Spot) + (1|Trial), stim.lck.compdata.STIM[stim.lck.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
 amp.anova.GC  <- anova(amp.null.GC, amp.model2.GC,amp.model3.GC,amp.model5.GC,amp.model6.GC)
 print(amp.anova.GC)
 
@@ -1151,6 +1380,23 @@ summary(amp.Group_Drug.GC)
 
 amp.Group_Drug_ty.GC<- glht(amp.model6.GC, mcp(Group_Type_Drug= "Tukey"))
 summary(amp.Group_Drug_ty.GC)
+
+#DSP4
+Group_Drug=interaction(DSP4.data.compdata.STIM$Group[DSP4.data.compdata.STIM$Channel=="GCaMP"],DSP4.data.compdata.STIM$Drug[DSP4.data.compdata.STIM$Channel=="GCaMP"])
+Group_Type_Drug=interaction(DSP4.data.compdata.STIM$Group[DSP4.data.compdata.STIM$Channel=="GCaMP"],
+                            DSP4.data.compdata.STIM$Drug[DSP4.data.compdata.STIM$Channel=="GCaMP"],
+                            DSP4.data.compdata.STIM$ROIType[DSP4.data.compdata.STIM$Channel=="GCaMP"])
+
+amp.null.GC2 = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model2.GC2  = lmer(amplitude ~ Drug + (1|Animal) + (1|Spot) + (1|Trial) , DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model3.GC2  = lmer(amplitude ~ Group + (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model5.GC2  = lmer(amplitude ~ Group_Drug + (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.model6.GC2  = lmer(amplitude ~ Group_Type_Drug + (1|Animal) + (1|Spot) + (1|Trial), DSP4.data.compdata.STIM[DSP4.data.compdata.STIM$Channel=="GCaMP",],REML=FALSE)
+amp.anova.GC2  <- anova(amp.null.GC2, amp.model2.GC2,amp.model3.GC2,amp.model5.GC2,amp.model6.GC2)
+print(amp.anova.GC2)
+
+amp.Group_Drug.GC2<- glht(amp.model5.GC2, mcp(Group_Drug= "Tukey"))
+summary(amp.Group_Drug.GC2)
 
 
 ########

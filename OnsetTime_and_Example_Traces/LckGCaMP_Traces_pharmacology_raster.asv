@@ -149,39 +149,39 @@ end
 
 
 % %% compare peak onsets for each RCaMP and GCaMP ROIs
-% 
+%
 % % find astrocytes and neurons that are closest in time
 % % find astrocytes and neurons that are closest in space
-% 
+%
 % %if ~exist(saveFiles1, 'file')
 % tic
-% 
+%
 % Lck_traces_nonNaNs=~cellfun(@isnan,Lck_traces(:,14));
 % Lck_traces=Lck_traces(Lck_traces_nonNaNs,:);
-% 
+%
 % AvsN_SpaceOnsets=[];
 % Trials= unique(Lck_traces(:,18));
 % Drug=unique(Lck_traces(:,17));
 % Condition={'Nostim','Stim'};
-% 
+%
 % % onset times comparisons
 % for iDrug=1:length(Drug)
 %     CurrentDrug=Drug(iDrug);
 %     matchingDrugIdx = find(~cellfun(@isempty, regexp(Lck_traces(:,17), CurrentDrug)));
 %     DrugData = Lck_traces(matchingDrugIdx,:);
-%     
+%
 %     for iCond=1:length(Condition)
 %         CurrentCondition=Condition(iCond);
 %         matchingCondIdx = find(~cellfun(@isempty, regexp(DrugData(:,6), CurrentCondition)));
 %         ConditionData = DrugData(matchingCondIdx,:);
-%         
+%
 %         for itrial=1:length(Trials)
 %             CurrentTrial=Trials(itrial);
 %             % Find the idx of paths matching trial
 %             matchingTrialIdx = find(~cellfun(@isempty, regexp(ConditionData(:,18), CurrentTrial)));
 %             TrialData = ConditionData(matchingTrialIdx,:);
-%             
-%             
+%
+%
 %             % find neuronal onset times in this trial
 %             NeuronalIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'RCaMP')));
 %             NeuronalData=TrialData(NeuronalIdx,:);
@@ -189,8 +189,8 @@ end
 %             % onsets in the onset window)
 %             Neuro_nonNaNs=~cellfun(@isnan,NeuronalData(:,14));
 %             NeuronalData=NeuronalData(Neuro_nonNaNs,:);
-%             
-%             
+%
+%
 %             % find similar astrocyte onset times
 %             AstroIdx = find(~cellfun(@isempty, regexp(TrialData(:,3), 'GCaMP')));
 %             AstroData=TrialData(AstroIdx,:);
@@ -198,17 +198,17 @@ end
 %             % onsets in the onset window)
 %             Astro_nonNaNs=~cellfun(@isnan,AstroData(:,14));
 %             AstroData=AstroData(Astro_nonNaNs,:);
-%             
+%
 %             if ~isempty(AstroData)
 %                 if ~isempty(NeuronalData)
-%                     
+%
 %                     % considering astrocytes first
 %                     for nAstro= 1:size(AstroData,1)
 %                         AOnset=AstroData{nAstro,14};
-%                         
+%
 %                         for nNeuro=1:size(NeuronalData,1)
 %                             NOnsets{nNeuro,1}=NeuronalData{nNeuro,14};
-%                             
+%
 %                             % masks for ROI distance calculations
 %                             %create a binary image with each pair of ROIs
 %                             % for the first ROI
@@ -221,7 +221,7 @@ end
 %                             else
 %                                 Image1=[];
 %                             end
-%                             
+%
 %                             % for the second ROI
 %                             if isnumeric(AstroData{nAstro,10})
 %                                 Image2=zeros(128,128);
@@ -232,13 +232,13 @@ end
 %                             else
 %                                 Image2=[];
 %                             end
-%                             
+%
 %                             Mask=Image1+Image2;
 %                             Mask=im2bw(Mask);
-%                             
+%
 %                             % find the minimium distance between the edges of the two ROIs
 %                             %Pythaogrean theorem method
-%                             
+%
 %                             % Define object boundaries
 %                             boundaries = bwboundaries(Mask);
 %                             numberOfBoundaries = size(boundaries, 1);
@@ -264,27 +264,27 @@ end
 %                                 distance{nNeuro,1} = [];
 %                             end
 %                         end
-%                         
+%
 %                         %find the neuron that is closest in space
 %                         N_spaceMin=min(cell2mat(distance));
 %                         N_spaceMinIdx = find([distance{:}] == N_spaceMin);
 %                         NSpaceOnset=NOnsets(N_spaceMinIdx,1);
-%                         
+%
 %                         % find the astrocyte ROI area
 %                         %                 CurrentAstro=AstroData(nAstro,19);
 %                         %                 matchingROIIdx= find(~cellfun(@isempty, regexp(Lck_traces(:,23), CurrentAstro)));
 %                         %                 A_ROIarea = Lck_traces(matchingROIIdx(1,1),18);
-%                         
-%                         
+%
+%
 %                         % preallocation
 %                         AvsN_space=cell(1,16);
-%                         
+%
 %                         for iSpace=1:length(NSpaceOnset)
 %                             % find the spatial astrocyte ROI area
 %                             %                     CurrentNeuro2=NeuronalData(N_spaceMinIdx(iSpace),19);
 %                             %                     matchingROIIdx3= find(~cellfun(@isempty, regexp(ShortstimPeaks(:,23), CurrentNeuro2)));
 %                             %                     N_ROIarea2 = ShortstimPeaks(matchingROIIdx3(1,1),18);
-%                             
+%
 %                             AvsN_space(iSpace,1)=AstroData(nAstro,5); % animal
 %                             AvsN_space(iSpace,2)=AstroData(nAstro,4); % spot
 %                             AvsN_space(iSpace,3)=AstroData(nAstro,2); % trial
@@ -293,7 +293,7 @@ end
 %                             AvsN_space(iSpace,6)=CurrentDrug; % astro ROI type
 %                             AvsN_space(iSpace,7)=CurrentCondition; % astro ROI type
 %                             %                     AvsN_space(iSpace,6)=A_ROIarea;
-%                             
+%
 %                             AvsN_space(iSpace,8)=NeuronalData(N_spaceMinIdx(iSpace),19); % unique neuro ROI name
 %                             AvsN_space(iSpace,9)=NeuronalData(N_spaceMinIdx(iSpace),20); % neuro ROI type
 %                             %                     AvsN_space(iSpace,9)=N_ROIarea2; % astrocyte ROI area
@@ -304,30 +304,30 @@ end
 %                             AvsN_space{iSpace,14}=AstroData{nAstro,9}; %astro trace
 %                             AvsN_space{iSpace,15}=NeuronalData{N_spaceMinIdx(iSpace),9}; %neuronal trace
 %                         end
-%                         
+%
 %                         % concatenate all data into a big matrix
 %                         AvsN_SpaceOnsets=vertcat(AvsN_SpaceOnsets,AvsN_space);
-%                         
+%
 %                         clear boundaries boundary1 boundary2 boundary1x boundary1y boundary2x boundary2y
 %                         clear minDistance indexofMin distance AvsN_space NOnsets
 %                     end
-%                     
+%
 %                 end
 %             end
 %         end
 %     end
 % end
 % toc
-% 
+%
 % % only consider ROIs that are within -20 and 20 s
-% 
+%
 % AvsN_SpaceOnsetsIdx=find(cell2mat(AvsN_SpaceOnsets(:,13))>=-12 & cell2mat(AvsN_SpaceOnsets(:,13))<=12);
 % AvsN_SpaceOnsets=AvsN_SpaceOnsets(AvsN_SpaceOnsetsIdx,:);
-% 
+%
 % Anames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
 %     'Drug', 'N_ROI', 'N_ROIType','N_area','Distance','AOnset','NOnset','TimeDiff',...
 %     'Atrace','Ntrace','blank'};
-% 
+%
 % AvsN_SpaceOnsets2=vertcat(Anames,AvsN_SpaceOnsets);
 % cell2csv('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforR\Pharmacology\AvsN_SpaceOnsets.csv',AvsN_SpaceOnsets2);
 
@@ -357,41 +357,43 @@ Prazosin=AvsN_SpaceOnsets(Praz_str',:);
 AvsN_SpaceOnsets=AvsN_SpaceOnsets(Dis_idx,:);
 clearvars Dis_idx
 
+Drug=unique(Lck_traces(:,17));
+Condition={'Nostim','Stim'};
 for iDrug=1:length(Drug)
     CurrentDrug=Drug(iDrug);
     matchingDrugIdx = find(~cellfun(@isempty, regexp(AvsN_SpaceOnsets(:,6), CurrentDrug)));
     DrugData = AvsN_SpaceOnsets(matchingDrugIdx,:);
     
-    %
-    figure('name', 'Raster plot AvsN_SpaceOnsets- sorted by distance & coloured by group')
-    hold on
-    set(gca,'ytick',[])
-    set(gca,'YColor',get(gcf,'Color'))
-    for iComp=1:length(DrugData)
-        if  DrugData{iComp,11}<1
-            scatter(DrugData{iComp,13}, iComp, 5, 'filled','b')
-        elseif (DrugData{iComp,11}>=1 &&  DrugData{iComp,11}<12)
-            scatter(DrugData{iComp,13}, iComp, 5, 'filled','g')
+    for iCond=1:length(Condition)
+        CurrentCondition=Condition{iCond};
+        matchingCondIdx = find(~cellfun(@isempty, regexp(DrugData(:,7), CurrentCondition)));
+        ConditionData = DrugData(matchingCondIdx,:);
+        %
+        figure('name', 'Raster plot AvsN_SpaceOnsets- sorted by distance & coloured by group')
+        hold on
+        set(gca,'ytick',[])
+        set(gca,'YColor',get(gcf,'Color'))
+        for iComp=1:length(ConditionData)
+            if  ConditionData{iComp,11}<1
+                scatter(ConditionData{iComp,13}, iComp, 5, 'filled','b')
+            elseif (ConditionData{iComp,11}>=1 &&  ConditionData{iComp,11}<12)
+                scatter(ConditionData{iComp,13}, iComp, 5, 'filled','g')
+            end
+            xlim([-12 12])
+            
         end
-        xlim([-12 12])
+        plot([0 0],[0 length(ConditionData)], 'r--','LineWidth', 1)
+        xlabel('time from neuronal event')
+        
+        figure('name', 'histogram: A vs N- closest in space')
+        histogram(cell2mat(ConditionData(:,13)),158, 'Normalization','pdf')
+        xlim([-20 20])
+        % ylim([0 0.09])
+        xlabel('time from neuronal event')
         
     end
-    plot([0 0],[0 length(DrugData)], 'r--','LineWidth', 1)
-    xlabel('time from neuronal event')
-    
-    
-    figure('name', 'Raster plot AvsN_SpaceOnsets- no colour')
-    hold on
-    set(gca,'ytick',[])
-    set(gca,'YColor',get(gcf,'Color'))
-    % set(gca, 'XScale', 'log')
-    for iComp=1:length(DrugData)
-        scatter(DrugData{iComp,13}, iComp, 5, 'filled','b')
-        xlim([-12 12])
-    end
-    plot([0 0],[0 length(DrugData)], 'r--','LineWidth', 1)
-    xlabel('time from neuronal event')
 end
+
 
 
 

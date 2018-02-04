@@ -1425,6 +1425,12 @@ ggplot(stim.lck.alldata, aes(x=Channel_Group,y=OnsetTime, fill=Channel_Group)) +
   ggtitle("lck data- fast vs delayed")+
   max.theme
 
+ggplot(stim.lck.compdata.STIM, aes(x=Channel_Group,y=OnsetTime, fill=Channel_Group)) +
+  geom_boxplot()+
+  ylab("Onset Time (s)") +
+  ggtitle("lck data- fast vs delayed")+
+  max.theme
+
 # stats
 Group_Channel_Cond_Type=interaction(stim.lck.alldata$Group,stim.lck.alldata$Channel,stim.lck.alldata$Condition,stim.lck.alldata$ROIType)
 Group_Channel_Cond=interaction(stim.lck.alldata$Channel_Group,stim.lck.alldata$Condition)
@@ -1473,6 +1479,22 @@ plot(fitted(OT.stim.model4), residuals(OT.stim.model4),
 abline(h=0, lty=2)
 lines(smooth.spline(fitted(OT.stim.model4), residuals(OT.stim.model4)), col=46, lwd=2.5)
 
+
+#median test 
+
+median.test <- function(x, y){
+  z <- c(x, y)
+  g <- rep(1:2, c(length(x), length(y)))
+  m <- median(z)
+  fisher.test(z < m, g)$p.value
+}
+
+median.test(stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Group=="RCaMP.fast"], 
+            stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Group=="GCaMP.fast"])
+
+wilcox.test(stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Group=="RCaMP.fast"], 
+            stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Group=="GCaMP.fast"])
+
 ######
 # peak time
 df.pT1<-summarySE(stim.cyto.alldata, measurevar = "peakTime", groupvars = c("Channel", "Condition"))
@@ -1518,7 +1540,7 @@ ggplot(df.pT6, aes(x=Channel_Group,y=peakTime, fill= Channel_Group)) +
   max.theme
 
 ggplot(stim.lck.compdata, aes(x=Channel_Group,y=peakTime, fill=Channel_Group)) +
-  geom_boxplot(notch=TRUE)+
+  geom_boxplot()+
   ylab("peakTime") +
   ggtitle("lck data- fast vs delayed")+
   max.theme

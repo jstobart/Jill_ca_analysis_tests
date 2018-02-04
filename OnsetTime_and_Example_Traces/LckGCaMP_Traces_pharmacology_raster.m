@@ -365,7 +365,7 @@ for iDrug=1:length(Drug)
     DrugData = AvsN_SpaceOnsets(matchingDrugIdx,:);
     
     for iCond=1:length(Condition)
-        CurrentCondition=Condition(iCond);
+        CurrentCondition=Condition{iCond};
         matchingCondIdx = find(~cellfun(@isempty, regexp(DrugData(:,7), CurrentCondition)));
         ConditionData = DrugData(matchingCondIdx,:);
         %
@@ -377,7 +377,7 @@ for iDrug=1:length(Drug)
             if  ConditionData{iComp,11}<1
                 scatter(ConditionData{iComp,13}, iComp, 5, 'filled','b')
             elseif (ConditionData{iComp,11}>=1 &&  ConditionData{iComp,11}<12)
-                scatter(ConditionData{iComp,13}, iComp, 5, 'filled','g')
+                scatter(ConditionData{iComp,13}, iComp, 5, 'filled','b')
             end
             xlim([-12 12])
             
@@ -388,7 +388,7 @@ for iDrug=1:length(Drug)
         figure('name', 'histogram: A vs N- closest in space')
         histogram(cell2mat(ConditionData(:,13)),158, 'Normalization','pdf')
         xlim([-20 20])
-        % ylim([0 0.09])
+        ylim([0 0.3])
         xlabel('time from neuronal event')
         
     end

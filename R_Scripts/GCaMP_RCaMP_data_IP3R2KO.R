@@ -521,123 +521,248 @@ summary(FracActive.lck.stim.Cond_Genotype)
 # not different between stim and no stim for IP3KOs!
 
 #####################
-# number of ROIs in each trial for each field of view (during the 8s stimulus)
+lck.peaks.window$Animal_Spot<- paste(lck.peaks.window$Animal, lck.peaks.window$Spot, sep="_")
 
-ROInum.lck<-ddply(lck.peaks.window, c("Animal","Spot","Condition","Channel","Genotype","trials"), summarise, nROIs=length(OnsetTime))
+# number of ROIs in each trial for each field of view (across the whole trial)
+lck.8strial<-lck.peaks.window[lck.peaks.window$OnsetTime<8,]
+
+lck.8strial$Channel <- factor(lck.8strial$Channel, levels = c("RCaMP","GCaMP"))
+
+ROInum.8strial<-ddply(lck.8strial, c("Animal","Spot","Genotype","Condition","Channel","Animal_Spot"), summarise, nROIs=length(OnsetTime))
+ROInum.8strial.group<-ddply(lck.8strial, c("Animal","Spot","Genotype","Condition","Channel","Animal_Spot","Group"), summarise, nROIs=length(OnsetTime))
 
 # add in number of trials
-ROInum.lck$Ani_Spot_Cond<-paste(ROInum.lck$Animal, ROInum.lck$Spot, ROInum.lck$Condition, sep="_")
-ROInum.lck<-merge(ROInum.lck, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
-ROInum.lck$ROIsPerTrial<-ROInum.lck$nROIs/ROInum.lck$nTrials
+ROInum.8strial$Ani_Spot_Cond_Genotype<-paste(ROInum.8strial$Animal_Spot, ROInum.8strial$Condition,ROInum.8strial$Genotype, sep="_")
+ROInum.8strial.group$Ani_Spot_Cond_Genotype<-paste(ROInum.8strial.group$Animal_Spot, ROInum.8strial.group$Condition,ROInum.8strial.group$Genotype, sep="_")
+
+Spot.lck.ntrials$Ani_Spot_Cond_Genotype<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot,Spot.lck.ntrials$Condition,Spot.lck.ntrials$Genotype, sep="_")
+ROInum.8strial<-merge(ROInum.8strial, Spot.lck.ntrials[, c("Ani_Spot_Cond_Genotype", "nTrials")], by="Ani_Spot_Cond_Genotype", all.x=TRUE)
+ROInum.8strial$ROIsPerTrial<-ROInum.8strial$nROIs/ROInum.8strial$nTrials
+ROInum.8strial.group<-merge(ROInum.8strial.group, Spot.lck.ntrials[, c("Ani_Spot_Cond_Genotype", "nTrials")], by="Ani_Spot_Cond_Genotype", all.x=TRUE)
+ROInum.8strial.group$ROIsPerTrial<-ROInum.8strial.group$nROIs/ROInum.8strial.group$nTrials
+
+# remove outliers
+#outlier <- boxplot.stats(ROInum.8strial$ROIsPerTrial[ROInum.8strial$Channel=="GCaMP"])$out
+#ROInum.8strial<-subset(ROInum.8strial, !(ROIsPerTrial %in% outlier))
 
 # mean
-df.lck.ROInum<-summarySE(ROInum.lck, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition", "Genotype"))
-
-
-ggplot(df.lck.ROInum, aes(x=interaction(Channel,Genotype),y=ROIsPerTrial, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view") +
-  max.theme
-
-ggplot(df.lck.ROInum[df.lck.ROInum$Channel=="GCaMP",], aes(x=Genotype,y=ROIsPerTrial, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view") +
-  max.theme
-
-ggplot(df.lck.ROInum[df.lck.ROInum$Channel=="RCaMP",], aes(x=Genotype,y=ROIsPerTrial, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view") +
-  max.theme
+df.ROInum.8strial<-summarySE(ROInum.8strial, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Genotype"))
+df.ROInum.8strial.group<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Channel", "Condition","Genotype","Group"))
 
 
 # paired line plots
-df.lck.ROInum$ROIsPerTrialMean<-df.lck.ROInum$ROIsPerTrial
-df.lck.ROInum$Chan_Cond<-interaction(df.lck.ROInum$Genotype, df.lck.ROInum$Condition)
-ROInum.lck$Chan_Cond<-interaction(ROInum.lck$Genotype, ROInum.lck$Condition)
+df.ROInum.8strial$ROIsPerTrialMean<-df.ROInum.8strial$ROIsPerTrial
+df.ROInum.8strial$Chan_Cond_Genotype<-interaction(df.ROInum.8strial$Channel, df.ROInum.8strial$Condition,df.ROInum.8strial$Genotype)
+ROInum.8strial$Chan_Cond_Genotype<-interaction(ROInum.8strial$Channel, ROInum.8strial$Condition,ROInum.8strial$Genotype)
 
-ROInum.lck<-merge(ROInum.lck, df.lck.ROInum[, c("Chan_Cond", "ROIsPerTrialMean","se")], by="Chan_Cond", all.x=TRUE)
-ROInum.lck$Animal_Spot<-paste(ROInum.lck$Animal, ROInum.lck$Spot, sep="_")
+ROInum.8strial<-merge(ROInum.8strial, df.ROInum.8strial[, c("Chan_Cond_Genotype", "ROIsPerTrialMean","se")], by="Chan_Cond_Genotype", all.x=TRUE)
 
-ggplot(ROInum.lck, aes(x=interaction(Genotype,Condition), y = ROIsPerTrial, group=Condition)) +
+df.ROInum.8strial.group$ROIsPerTrialMean<-df.ROInum.8strial.group$ROIsPerTrial
+df.ROInum.8strial.group$Chan_Cond_Genotype_Group<-interaction(df.ROInum.8strial.group$Channel, 
+                                                          df.ROInum.8strial.group$Condition,
+                                                          df.ROInum.8strial.group$Genotype,
+                                                          df.ROInum.8strial.group$Group)
+ROInum.8strial.group$Chan_Cond_Genotype_Group<-interaction(ROInum.8strial.group$Channel, 
+                                                       ROInum.8strial.group$Condition,
+                                                       ROInum.8strial.group$Genotype,
+                                                       ROInum.8strial.group$Group)
+
+ROInum.8strial.group<-merge(ROInum.8strial.group, df.ROInum.8strial.group[, c("Chan_Cond_Genotype_Group", "ROIsPerTrialMean","se")], by="Chan_Cond_Genotype_Group", all.x=TRUE)
+
+
+# plots
+# RCaMP
+ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="RCaMP",], aes(x=Genotype,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  max.theme
+
+ggplot(df.ROInum.8strial[(df.ROInum.8strial$Channel=="RCaMP" & df.ROInum.8strial$Condition=="Stim"),], aes(x=Genotype,y=ROIsPerTrial, fill= Condition)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  max.theme
+
+ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="RCaMP",],aes(x=Genotype,y=ROIsPerTrial, group=Condition)) +
+  geom_point(aes(x=Genotype,y=ROIsPerTrial),stat="identity", size=3)+
+  geom_line(aes(x=Genotype, y=ROIsPerTrial, colour=Condition))+
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("RCaMP ROIs")+
+  max.theme
+
+ggplot(ROInum.8strial[ROInum.8strial$Channel=="RCaMP",], aes(x=interaction(Genotype, Channel),y=ROIsPerTrial, fill= Condition)) +
+  geom_boxplot()+
+  ylab("Lck- ROIs per FOV") +
+  max.theme
+
+# paired line plot
+ggplot(ROInum.8strial[(ROInum.8strial$Channel=="RCaMP" & ROInum.8strial$Condition=="Stim"),], aes(x=Genotype, y = ROIsPerTrial)) +
   geom_point(shape = 21,size = 3, colour="#b5b5b5") +
-  geom_line(aes(group=Animal_Spot), colour="#b5b5b5")+
-  geom_point(aes(x=interaction(Genotype,Condition), y=ROIsPerTrialMean), size = 5, colour="#7b3294")+
-  geom_line(aes(x=interaction(Genotype,Condition), y=ROIsPerTrialMean,group=Animal_Spot), size=1.5, colour="#7b3294")+
-  geom_errorbar(aes(x=interaction(Genotype,Condition),ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#7b3294", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  geom_line(aes(x=Genotype, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Genotype, y=ROIsPerTrialMean), size = 5, colour="#7b3294")+
+  geom_line(aes(x=Genotype, y=ROIsPerTrialMean,group=Animal_Spot), size=1.5, colour="#7b3294")+
+  geom_errorbar(aes(x=Genotype,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#7b3294", width=0.2,  size=1.5,position=position_dodge(.9)) +
   max.theme
 
-Condition_Channel2= interaction(ROInum.lck$Condition,ROInum.lck$Channel)
-Condition_Channel_Geno= interaction(ROInum.lck$Condition,ROInum.lck$Channel,ROInum.lck$Genotype)
-nROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck,REML=FALSE)
-nROI.lck.stim.model1 = lmer(ROIsPerTrial~ Channel + (1|Animal), ROInum.lck,REML=FALSE)
-nROI.lck.stim.model2A = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.lck,REML=FALSE)
-nROI.lck.stim.model2B = lmer(ROIsPerTrial ~ Genotype + (1|Animal), ROInum.lck,REML=FALSE)
-nROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Condition_Channel2+ Genotype + (1|Animal), ROInum.lck,REML=FALSE)
-nROI.lck.stim.model4 = lmer(ROIsPerTrial ~ Condition_Channel_Geno + (1|Animal), ROInum.lck,REML=FALSE)
-nROI.lck.stim.anova <- anova(nROI.lck.stim.null, nROI.lck.stim.model1,nROI.lck.stim.model2A,
-                             nROI.lck.stim.model2B,nROI.lck.stim.model3,nROI.lck.stim.model4)
-print(nROI.lck.stim.anova)
 
-nROI.lck.stim.Cond_Channel_Geno<- glht(nROI.lck.stim.model4, mcp(Condition_Channel_Geno= "Tukey"))
-summary(nROI.lck.stim.Cond_Channel_Geno)
-
-
-# only GCaMP
-Condition_Geno= interaction(ROInum.lck$Condition[ROInum.lck$Channel=="GCaMP"],ROInum.lck$Genotype[ROInum.lck$Channel=="GCaMP"])
-nROI.lck.stim.null.gc = lmer(ROIsPerTrial ~ (1|Animal), ROInum.lck[ROInum.lck$Channel=="GCaMP",],REML=FALSE)
-nROI.lck.stim.model1.gc = lmer(ROIsPerTrial ~ Condition + (1|Animal), ROInum.lck[ROInum.lck$Channel=="GCaMP",],REML=FALSE)
-nROI.lck.stim.model2.gc = lmer(ROIsPerTrial ~ Genotype + (1|Animal), ROInum.lck[ROInum.lck$Channel=="GCaMP",],REML=FALSE)
-nROI.lck.stim.model3.gc = lmer(ROIsPerTrial ~ Condition_Geno + (1|Animal), ROInum.lck[ROInum.lck$Channel=="GCaMP",],REML=FALSE)
-nROI.lck.stim.anova.gc <- anova(nROI.lck.stim.null.gc, nROI.lck.stim.model1.gc,nROI.lck.stim.model2.gc,nROI.lck.stim.model3.gc)
-print(nROI.lck.stim.anova.gc)
-
-nROI.lck.stim.Cond_Geno.gc<- glht(nROI.lck.stim.model3.gc, mcp(Condition_Geno= "Tukey"))
-summary(nROI.lck.stim.Cond_Geno.gc)
-
-#################
-# number of fastROIs per trial
-FastROInum.lck.stim<-ddply(lck.peaks.window[lck.peaks.window$Condition=="Stim",], c("Animal","Spot","Genotype","Condition","Channel","Group","Channel_Group"), summarise, nROIs=length(OnsetTime))
-
-# add in number of trials
-FastROInum.lck.stim$Ani_Spot_Cond<-paste(FastROInum.lck.stim$Animal, FastROInum.lck.stim$Spot, FastROInum.lck.stim$Condition, sep="_")
-
-FastROInum.lck.stim<-merge(FastROInum.lck.stim, Spot.lck.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
-
-FastROInum.lck.stim$ROIsPerTrial<-FastROInum.lck.stim$nROIs/FastROInum.lck.stim$nTrials
-
-# mean number of total ROIs per trial
-df.lck.FastROInum.mean<-summarySE(FastROInum.lck.stim, measurevar = "ROIsPerTrial", groupvars = c("Channel_Group", "Genotype"))
-df.lck.FastROInum.GC<-summarySE(FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Group", "Genotype"))
-
-
-ggplot(df.lck.FastROInum.mean, aes(x=Channel_Group,y=ROIsPerTrial, fill= Genotype)) +
+# gcamp
+ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="GCaMP",], aes(x=Genotype,y=ROIsPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view during stimulation") +
+  ylab("num ROIs/trial per field of view during 8s stim") +
   max.theme
 
-ggplot(df.lck.FastROInum.GC, aes(x=Group,y=ROIsPerTrial, fill= Genotype)) +
+ggplot(df.ROInum.8strial[(df.ROInum.8strial$Channel=="GCaMP" & df.ROInum.8strial$Condition=="Stim"),], aes(x=Genotype,y=ROIsPerTrial, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view during stimulation") +
+  ylab("num ROIs/trial per field of view during 8s stim") +
   max.theme
 
-#only astrocytes
-Group_Genotype= interaction(FastROInum.lck.stim$Group[FastROInum.lck.stim$Channel=="GCaMP"],FastROInum.lck.stim$Genotype[FastROInum.lck.stim$Channel=="GCaMP"])
-FastnROI.lck.stim.null = lmer(ROIsPerTrial ~ (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
-FastnROI.lck.stim.model1 = lmer(ROIsPerTrial~ Group + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
-FastnROI.lck.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
-FastnROI.lck.stim.model3 = lmer(ROIsPerTrial ~ Group + Genotype + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
-FastnROI.lck.stim.model4 = lmer(ROIsPerTrial ~ Group_Genotype + (1|Animal), FastROInum.lck.stim[FastROInum.lck.stim$Channel=="GCaMP",],REML=FALSE)
-FastnROI.lck.stim.anova <- anova(FastnROI.lck.stim.null, FastnROI.lck.stim.model1,FastnROI.lck.stim.model2,
-                                 FastnROI.lck.stim.model3,FastnROI.lck.stim.model4)
-print(FastnROI.lck.stim.anova)
+ggplot(df.ROInum.8strial[df.ROInum.8strial$Channel=="GCaMP",],aes(x=Genotype,y=ROIsPerTrial, group=Condition)) +
+  geom_point(aes(x=Genotype,y=ROIsPerTrial),stat="identity", size=3)+
+  geom_line(aes(x=Genotype, y=ROIsPerTrial, colour=Condition))+
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("GCaMP ROIs") +
+  max.theme
 
-FastnROI.lck.stim.Group_Genotype<- glht(FastnROI.lck.stim.model4, mcp(Group_Genotype= "Tukey"))
-summary(FastnROI.lck.stim.Group_Genotype)
+ggplot(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], aes(x=interaction(Genotype, Channel),y=ROIsPerTrial, fill= Condition)) +
+  geom_boxplot()+
+  ylab("Lck- ROIs per FOV") +
+  max.theme
+
+# paired line plot
+ggplot(ROInum.8strial[(ROInum.8strial$Channel=="GCaMP" & ROInum.8strial$Condition=="Stim"),], aes(x=Genotype, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Genotype, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Genotype, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Genotype, y=ROIsPerTrialMean,group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Genotype,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+# only fast GcaMP
+
+fastROInum<- subset(ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim" & Group=="fast_MDs")
+
+ggplot(fastROInum, aes(x=interaction(Genotype, Channel),y=ROIsPerTrial, fill= Condition)) +
+  geom_boxplot()+
+  ylab("Lck- fast ROIs per FOV") +
+  max.theme
+
+ggplot(fastROInum,aes(x=Genotype, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Genotype, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Genotype, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Genotype, y=ROIsPerTrialMean, group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Genotype,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+
+ggplot(df.ROInum.8strial.group[df.ROInum.8strial.group$Channel=="GCaMP" & 
+                                 df.ROInum.8strial.group$Group=="fast_MDs" &
+                                 df.ROInum.8strial.group$Condition=="Stim",],
+       aes(x=Genotype,y=ROIsPerTrial, colour=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("fast GCaMP ROIs") +
+  max.theme
+
+
+
+#only delayed GCaMP
+
+delayedROInum<- subset(ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim" & Group=="delayed_MDs")
+
+ggplot(delayedROInum, aes(x=interaction(Genotype, Channel),y=ROIsPerTrial, fill= Condition)) +
+  geom_boxplot()+
+  ylab("Lck- delayed ROIs per FOV") +
+  max.theme
+
+ggplot(delayedROInum,aes(x=Genotype, y = ROIsPerTrial)) +
+  geom_point(shape = 21,size = 3, colour="#b5b5b5") +
+  geom_line(aes(x=Genotype, y=ROIsPerTrial,group=Animal_Spot), colour="#b5b5b5")+
+  #ylim(0, 50)+
+  geom_point(aes(x=Genotype, y=ROIsPerTrialMean), size = 5, colour="#008837")+
+  geom_line(aes(x=Genotype, y=ROIsPerTrialMean, group=Animal_Spot), size=1.5, colour="#008837")+
+  geom_errorbar(aes(x=Genotype,ymin=ROIsPerTrialMean-se, ymax=ROIsPerTrialMean+se), colour="#008837", width=0.2,  size=1.5,position=position_dodge(.9)) +
+  max.theme
+
+ggplot(df.ROInum.8strial.group[df.ROInum.8strial.group$Channel=="GCaMP" & 
+                                 df.ROInum.8strial.group$Group=="delayed_MDs" &
+                                 df.ROInum.8strial.group$Condition=="Stim",],
+       aes(x=Genotype,y=ROIsPerTrial, colour=Genotype)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("num ROIs/trial per field of view during 8s stim") +
+  ggtitle("delayed GCaMP ROIs") +
+  max.theme
+
+
+
+#stats
+# RCaMP
+Condition_Genotype_RC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="RCaMP"],ROInum.8strial$Genotype[ROInum.8strial$Channel=="RCaMP"])
+nROI.RC.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="RCaMP",],REML=FALSE)
+nROI.RC.stim.model1 = lmer(ROIsPerTrial ~ Condition + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="RCaMP",],REML=FALSE)
+nROI.RC.stim.model2 = lmer(ROIsPerTrial ~ Condition_Genotype_RC + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="RCaMP",],REML=FALSE)
+nROI.RC.stim.anova <- anova(nROI.RC.stim.null, nROI.RC.stim.model1,nROI.RC.stim.model2)
+print(nROI.RC.stim.anova)
+
+nROI.RC.stim.Cond_Genotype<- glht(nROI.RC.stim.model2, mcp(Condition_Genotype_RC= "Tukey"))
+summary(nROI.RC.stim.Cond_Genotype)
+
+# ALL GenotypeS ARE P<0.01 less than control for stim case
+# atropine and metergoline do not have sig difference between no stim and stim
+
+# GCaMP
+Condition_Genotype_GC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="GCaMP"],ROInum.8strial$Genotype[ROInum.8strial$Channel=="GCaMP"])
+Condition_Genotype_Group_GC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="GCaMP"],
+                                         ROInum.8strial$Genotype[ROInum.8strial$Channel=="GCaMP"],
+                                         ROInum.8strial$Group[ROInum.8strial$Channel=="GCaMP"])
+
+nROI.GC.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
+nROI.GC.stim.model1 = lmer(ROIsPerTrial ~ Condition + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
+nROI.GC.stim.model2 = lmer(ROIsPerTrial ~ Condition_Genotype_GC + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
+nROI.GC.stim.model3 = lmer(ROIsPerTrial ~ Condition_Genotype_Group_GC + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
+nROI.GC.stim.anova <- anova(nROI.GC.stim.null, nROI.GC.stim.model1,nROI.GC.stim.model2,nROI.GC.stim.model3)
+print(nROI.GC.stim.anova)
+
+nROI.GC.stim.Cond_Genotype<- glht(nROI.GC.stim.model2, mcp(Condition_Genotype_GC= "Tukey"))
+summary(nROI.GC.stim.Cond_Genotype)
+
+# metergoline, trazodone, prazosin- no sig difference between stim and control
+
+# trazodone, and prazosin- sig fewer ROIs compared to control
+
+
+# fast GC
+nROI.GC.fast.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), fastROInum, REML=FALSE)
+nROI.GC.fast.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal) + (1|Spot),fastROInum, REML=FALSE)
+nROI.GC.fast.stim.anova <- anova(nROI.GC.fast.stim.null, nROI.GC.fast.stim.model2)
+print(nROI.GC.fast.stim.anova)
+
+nROI.GC.fast.stim.Cond_Genotype<- glht(nROI.GC.fast.stim.model2, mcp(Genotype= "Tukey"))
+summary(nROI.GC.fast.stim.Cond_Genotype)
+
+# no difference in ROI number across fast AC types
+
+
+# delayed GC
+nROI.GC.delayed.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), delayedROInum, REML=FALSE)
+nROI.GC.delayed.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal) + (1|Spot),delayedROInum, REML=FALSE)
+nROI.GC.delayed.stim.anova <- anova(nROI.GC.delayed.stim.null, nROI.GC.delayed.stim.model2)
+print(nROI.GC.delayed.stim.anova)
+
+nROI.GC.delayed.stim.Cond_Genotype<- glht(nROI.GC.delayed.stim.model2, mcp(Genotype= "Tukey"))
+summary(nROI.GC.delayed.stim.Cond_Genotype)
+
+
 
 
 #########
