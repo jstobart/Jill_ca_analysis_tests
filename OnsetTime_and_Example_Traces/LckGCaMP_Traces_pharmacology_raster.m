@@ -357,8 +357,9 @@ Prazosin=AvsN_SpaceOnsets(Praz_str',:);
 AvsN_SpaceOnsets=AvsN_SpaceOnsets(Dis_idx,:);
 clearvars Dis_idx
 
+Medians=[];
 Drug=unique(Lck_traces(:,17));
-Condition={'Nostim','Stim'};
+Condition={'Stim'};
 for iDrug=1:length(Drug)
     CurrentDrug=Drug(iDrug);
     matchingDrugIdx = find(~cellfun(@isempty, regexp(AvsN_SpaceOnsets(:,6), CurrentDrug)));
@@ -390,6 +391,12 @@ for iDrug=1:length(Drug)
         xlim([-20 20])
         ylim([0 0.3])
         xlabel('time from neuronal event')
+        
+       Median_subset(1,1)= ConditionData(1,6);
+       Median_subset(1,2)= ConditionData(1,7);
+       Median_subset{1,3}=median(cell2mat(ConditionData(:,13)));
+       
+       Medians=vertcat(Medians,Median_subset);
         
     end
 end

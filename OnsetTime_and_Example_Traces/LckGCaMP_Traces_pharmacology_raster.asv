@@ -357,6 +357,7 @@ Prazosin=AvsN_SpaceOnsets(Praz_str',:);
 AvsN_SpaceOnsets=AvsN_SpaceOnsets(Dis_idx,:);
 clearvars Dis_idx
 
+Medians=[];
 Drug=unique(Lck_traces(:,17));
 Condition={'Nostim','Stim'};
 for iDrug=1:length(Drug)
@@ -377,7 +378,7 @@ for iDrug=1:length(Drug)
             if  ConditionData{iComp,11}<1
                 scatter(ConditionData{iComp,13}, iComp, 5, 'filled','b')
             elseif (ConditionData{iComp,11}>=1 &&  ConditionData{iComp,11}<12)
-                scatter(ConditionData{iComp,13}, iComp, 5, 'filled','g')
+                scatter(ConditionData{iComp,13}, iComp, 5, 'filled','b')
             end
             xlim([-12 12])
             
@@ -388,8 +389,13 @@ for iDrug=1:length(Drug)
         figure('name', 'histogram: A vs N- closest in space')
         histogram(cell2mat(ConditionData(:,13)),158, 'Normalization','pdf')
         xlim([-20 20])
-        % ylim([0 0.09])
+        ylim([0 0.3])
         xlabel('time from neuronal event')
+        
+       Median_subset(1,1)= ConditionData(1,6);
+       Median_subset(1,2)= ConditionData(1,7);
+       Median_subset(1,3)=median(ConditionData{:,13});
+        
         
     end
 end

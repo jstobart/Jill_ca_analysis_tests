@@ -450,7 +450,7 @@ lck.peaks.window$Group[lck.peaks.window$OnsetTime>=fastTh]<-"delayed_MDs"
 
 lck.peaks.window$Group <- factor(lck.peaks.window$Group, levels = c("fast_MDs","delayed_MDs"))
 lck.peaks.window$Channel <- factor(lck.peaks.window$Channel, levels = c("RCaMP","GCaMP"))
-
+lck.peaks.window$Group<-as.factor(lck.peaks.window$Group)
 
 # fast vs delayed
 lck.peaks.window$Channel_Group<-interaction(lck.peaks.window$Channel, lck.peaks.window$Group)
@@ -717,53 +717,35 @@ print(nROI.RC.stim.anova)
 nROI.RC.stim.Cond_Genotype<- glht(nROI.RC.stim.model2, mcp(Condition_Genotype_RC= "Tukey"))
 summary(nROI.RC.stim.Cond_Genotype)
 
-# ALL GenotypeS ARE P<0.01 less than control for stim case
-# atropine and metergoline do not have sig difference between no stim and stim
 
-# GCaMP
-Condition_Genotype_GC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="GCaMP"],ROInum.8strial$Genotype[ROInum.8strial$Channel=="GCaMP"])
-Condition_Genotype_Group_GC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="GCaMP"],
-                                         ROInum.8strial$Genotype[ROInum.8strial$Channel=="GCaMP"],
-                                         ROInum.8strial$Group[ROInum.8strial$Channel=="GCaMP"])
+# GCaMP knockouts vs controls, no stim vs stim
+Condition_Genotype_GC= interaction(ROInum.8strial$Condition[ROInum.8strial$Channel=="GCaMP"],
+                                   ROInum.8strial$Genotype[ROInum.8strial$Channel=="GCaMP"])
 
 nROI.GC.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
 nROI.GC.stim.model1 = lmer(ROIsPerTrial ~ Condition + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
-nROI.GC.stim.model2 = lmer(ROIsPerTrial ~ Condition_Genotype_GC + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
-nROI.GC.stim.model3 = lmer(ROIsPerTrial ~ Condition_Genotype_Group_GC + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
+nROI.GC.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
+nROI.GC.stim.model3 = lmer(ROIsPerTrial ~ Condition_Genotype_GC + (1|Animal)+ (1|Spot), ROInum.8strial[ROInum.8strial$Channel=="GCaMP",],REML=FALSE)
 nROI.GC.stim.anova <- anova(nROI.GC.stim.null, nROI.GC.stim.model1,nROI.GC.stim.model2,nROI.GC.stim.model3)
 print(nROI.GC.stim.anova)
 
 nROI.GC.stim.Cond_Genotype<- glht(nROI.GC.stim.model2, mcp(Condition_Genotype_GC= "Tukey"))
 summary(nROI.GC.stim.Cond_Genotype)
 
-# metergoline, trazodone, prazosin- no sig difference between stim and control
 
-# trazodone, and prazosin- sig fewer ROIs compared to control
+# groups
+GC.stim<-subset(ROInum.8strial.group, Channel=="GCaMP" & Condition=="Stim")
 
+Genotype_Group_GC= interaction(GC.stim$Genotype, GC.stim$Group)
+nROI.GC.group.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), GC.stim,REML=FALSE)
+nROI.GC.group.model1 = lmer(ROIsPerTrial ~ Group + (1|Animal)+ (1|Spot), GC.stim,REML=FALSE)
+nROI.GC.group.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal)+ (1|Spot), GC.stim,REML=FALSE)
+nROI.GC.group.model3 = lmer(ROIsPerTrial ~ Genotype_Group_GC + (1|Animal)+ (1|Spot), GC.stim,REML=FALSE)
+nROI.GC.group.anova <- anova(nROI.GC.group.null, nROI.GC.group.model1,nROI.GC.group.model2,nROI.GC.group.model3)
+print(nROI.GC.group.anova)
 
-# fast GC
-nROI.GC.fast.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), fastROInum, REML=FALSE)
-nROI.GC.fast.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal) + (1|Spot),fastROInum, REML=FALSE)
-nROI.GC.fast.stim.anova <- anova(nROI.GC.fast.stim.null, nROI.GC.fast.stim.model2)
-print(nROI.GC.fast.stim.anova)
-
-nROI.GC.fast.stim.Cond_Genotype<- glht(nROI.GC.fast.stim.model2, mcp(Genotype= "Tukey"))
-summary(nROI.GC.fast.stim.Cond_Genotype)
-
-# no difference in ROI number across fast AC types
-
-
-# delayed GC
-nROI.GC.delayed.stim.null = lmer(ROIsPerTrial ~ (1|Animal) + (1|Spot), delayedROInum, REML=FALSE)
-nROI.GC.delayed.stim.model2 = lmer(ROIsPerTrial ~ Genotype + (1|Animal) + (1|Spot),delayedROInum, REML=FALSE)
-nROI.GC.delayed.stim.anova <- anova(nROI.GC.delayed.stim.null, nROI.GC.delayed.stim.model2)
-print(nROI.GC.delayed.stim.anova)
-
-nROI.GC.delayed.stim.Cond_Genotype<- glht(nROI.GC.delayed.stim.model2, mcp(Genotype= "Tukey"))
-summary(nROI.GC.delayed.stim.Cond_Genotype)
-
-
-
+nROI.GC.Genotype_Group<- glht(nROI.GC.group.model3, mcp(Genotype_Group_GC= "Tukey"))
+summary(nROI.GC.Genotype_Group)
 
 #########
 # mean onset times
