@@ -1,20 +1,22 @@
 %% 1 lck no stim
 clearvars
-
-AllData= [];
+%addpath(genpath('C:\Program Files\2p-img-analysis'));
+%addpath(genpath('C:\Program Files\CHIPS'));
+%addpath(genpath('E:\Jill\matlab'));
+%AllData= [];
 All_traces= [];
 
 
 %% Information about your images
 channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 
+calibration ='E:\matlab\CalibrationFiles\calibration_20x.mat';
+CalibrationFile = CalibrationPixelSize.load(calibration);
 
-%How fast should we consider
-
-FastTime=2;
+FastTime=1;
 %% make a mixing matrix for spectral unmixing of RCaMP and GCaMP
 
-load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix.mat'));
+load('E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results\RCaMP_mGCaMP_Matrix_4Ch.mat');
 
 
 
@@ -22,17 +24,19 @@ load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix.mat'));
       
             
             CurrentCondition = 'Stim';
-            BL_frames = 59;
+            BL_frames = 59*2;
             
             
             % Create an array of ScanImage Tiffs
-            ImgArray =  SCIM_Tif([], channel, []);
+            HighRes = SCIM_Tif([],channel, CalibrationFile);
+            ImgArray =  SCIM_Tif([], channel, CalibrationFile);
+           
             
             % Spectral Unmixing of GCaMP and RCaMP
             ImgArray= ImgArray.unmix_chs(false, [], cell2mat(RCaMP_mGCaMP_Matrix));
             
             % Run motion correction          
-            HighRes = SCIM_Tif([],channel, []);
+            
             % Extract a reference image
             refImg = mean(HighRes.rawdata(:,:,2,:),4);
             %figure, imagesc(refImg), axis image, axis off, colormap(gray)
@@ -48,29 +52,29 @@ load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix.mat'));
             % 2D automated selection for peaks
             AC_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_memb_astro', 'baselineFrames',...
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
-                'sigmaT', 0.1,'threshold_std', 7, 'threshold_2D', 0.2,...
-                'min_rise_time',0.0845, 'max_rise_time', 1,'minPuffArea', 10,...
+                'sigmaT', 0.1,'thresholdPuff', 7, 'threshold2D', 0.2,...
+                'minRiseTime',0.0845, 'maxRiseTime', 1,'minPuffArea', 10,...
                 'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1,...
-                'discardBorderROIs',true);
+                'discardBorderROIs',false);
             
             % 3D automated selection for time and space estimations
             AC_findConf{3} = ConfigFindROIsFLIKA_3D.from_preset('ca_memb_astro', 'baselineFrames',...
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
-                'sigmaT', 0.1,'threshold_std', 7, 'threshold_2D', 0.2,...
-                'min_rise_time',0.0845, 'max_rise_time', 1,'minPuffArea', 10,...
+                'sigmaT', 0.1,'thresholdPuff', 7, 'threshold2D', 0.2,...
+                'minRiseTime',0.0845, 'maxRiseTime', 1,'minPuffArea', 10,...
                 'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1,...
-                'discardBorderROIs',true);
+                'discardBorderROIs',false);
             
             %% Configuration for measuring ROIs
             % AWAKE astrocyte membrane calcium
             detectConf{1} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...'normMethod', 'z-score','zIters', 100,...
                 'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 1.5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdSD_low', 3,'thresholdSD_band', 5);
+                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 3,'thresholdSP', 5);
             
             % AWAKE neuron calcium
             detectConf{2} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,... 'normMethod','z-score',... 'zIters', 10000,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 2, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdSD_low', 3,'thresholdSD_band', 5);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 3,'thresholdSP', 5);
             
              % for 3D FLIKA
             detectConf{3} = ConfigDetectSigsDummy();
@@ -91,8 +95,8 @@ load(fullfile(Settings.MainDir, 'Results','RCaMP_mGCaMP_Matrix.mat'));
             %% Process the images
             CSArray_Ch1_FLIKA =CSArray_Ch1_FLIKA.process();
 
-            CSArray_Ch1_FLIKA.plot();
-            
+           % CSArray_Ch1_FLIKA.plot();
+            %CSArray_Ch1_FLIKA.opt_config();
             %% Output data
             
             % Astrocyte FLIKA
@@ -133,16 +137,11 @@ FrameRate=CSArray_Ch1_FLIKA(1,1).rawImg.metadata.frameRate;
 nframes=CSArray_Ch1_FLIKA(1,1).rawImg.metadata.nFrames;
 TimeX(1:nframes) = (1:nframes)/FrameRate;
 
-baselineCorrectedTime=TimeX-5;
+baselineCorrectedTime=TimeX-(BL_frames/FrameRate);
 
 % peak onsets and AUC in the first second after stim for each ROI
-for iROI= 1:length(All_traces)
+for iROI= 1:size(All_traces,1)
     trace=All_traces{iROI,8};
-    %first 1 sec after stim onset
-    x1=round(FrameRate*5);
-    x2=round(FrameRate*6);
-    x3= round(FrameRate*10);
-    x4= round(FrameRate*15);
     % onset time
     if size(trace,1)>590
         Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:592),2.5,2);
@@ -150,30 +149,28 @@ for iROI= 1:length(All_traces)
             Onsets=nan(1,1);
         end
         All_traces{iROI, 16}= Onsets;
-        % AUC
-        All_traces{iROI,17}=trapz(trace(x1:x2));
-        All_traces{iROI,18}=trapz(trace(x3:x4));
+
     else
         All_traces{iROI,16}=NaN;
-        All_traces{iROI,17}=NaN;
-        All_traces{iROI,18}=NaN;
     end    
 end
 
 
 % plot onset times histogram
-
-figure
-histogram(cell2mat(All_traces(:,16)), 'BinWidth',0.5);
+% X=cell2mat(All_traces(:,16));
+% X(isnan(X)) = [];
+% figure
+% histc(X, 'BinWidth',0.5);
 
 %% show fast ROIs
 for iROI=1:size(All_traces, 1)
   
 fastIdx(iROI)=~isempty(find(All_traces{iROI,16}<FastTime));
-
+delayedIdx(iROI)=~isempty(find(All_traces{iROI,16}<12 && All_traces{iROI,16}>FastTime));
 end
 
 fastROIs=All_traces(fastIdx,:);
+slowROIs=All_traces(delayedIdx,:);
 
 ProcMap1=zeros(127,128);
 for iFast=1:size(fastROIs,1)
@@ -188,14 +185,200 @@ ProcMaps=[ProcMap1;ProcMap2];
 ACMask=im2bw(ProcMaps);
 AC_B=bwboundaries(ACMask);
 
-figure();
-imshow(zeros(128,128)); hold on
+figure('name','fastROI mask');
+%imshow(mean(CSArray_Ch1_FLIKA(1,1).rawImg.rawdata(:,:,2,:),4));%((128,128)); 
+imshow(zeros(128,128)); 
+hold on
 for k=1:length(AC_B)
     border=AC_B{k};
     plot(border(:,2),border(:,1),'g','linewidth',1.5);
 end
 
+clearvars fastIdx TimeX
 
 
+%% Plot fastROIs
+nframes=round(30*FrameRate);
+
+figure ('name', 'fast ROI traces')
+hold on
+axis off
+ROIs=39:45;
+for ii=1:size(fastROIs,1)
+    
+    tempY1=smooth(fastROIs{ii,8},3);
+    tempY1=tempY1(1:nframes);
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'g')%'LineWidth',1);
+    plot([0 0],[0 50], 'k','LineWidth', 1)
+end
+
+figure ('name', 'fast ROI traces- 4')
+hold on
+axis off
+ROIs=[10,4];
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(fastROIs{ROInum,8},5);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'b')%'LineWidth',1);
+end
+plot([0 0],[0 6], 'k','LineWidth', 1)
+plot([-10 -10],[0 1], 'k','LineWidth', 1)
+
+
+
+
+figure ('name', 'slow ROIs trial 4')
+hold on
+axis off
+ROIs=39:45;
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(slowROIs{ROInum,8},3);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'g')%'LineWidth',1);
+end
+plot([0 0],[0 40], 'k','LineWidth', 1)
+
+figure ('name', 'slow ROIs trial 8')
+hold on
+axis off
+ROIs=94:107;
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(slowROIs{ROInum,8},3);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'g')%'LineWidth',1);
+end
+plot([0 0],[0 40], 'k','LineWidth', 1)
+
+% PLOT THE ROI MASK
+
+figure ('name', 'slow ROIs trial 1')
+hold on
+axis off
+ROIs=1:7;
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(slowROIs{ROInum,8},3);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'g')%'LineWidth',1);
+end
+plot([0 0],[0 40], 'k','LineWidth', 1)
+
+
+figure ('name', 'fast and slow ROI traces- trial 4')
+hold on
+axis off
+ROIs=[10,4];
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(fastROIs{ROInum,8},3);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'b')%'LineWidth',1);
+end
+ROIs=[41,42];
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(slowROIs{ROInum,8},3);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(5*ii+2),'g')%'LineWidth',1);
+end
+rectangle('Position', [0 -1 8 20])
+plot([-10 -10],[0 1], 'k','LineWidth', 1)
+
+
+
+
+%% extract ROI masks
+
+
+% fast ROIs
+Mask1=zeros(127,128);
+Mask1(fastROIs{10,11})=1;
+Mask1(fastROIs{4,11})=1;
+Mask1(slowROIs{41,11})=1;
+Mask1(slowROIs{42,11})=1;
+
+
+ProcMap2=zeros(1,128);
+ProcMaps=[Mask1;ProcMap2];
+
+ACMask=im2bw(ProcMaps);
+AC_B=bwboundaries(ACMask);
+
+figure('name','example ROI mask');
+imshow(zeros(128,128)); 
+hold on
+for k=1:length(AC_B)
+    border=AC_B{k};
+    plot(border(:,2),border(:,1),'g','linewidth',1.5);
+end
+
+%% extract ROI masks
+
+
+% fast ROIs
+Mask1=zeros(127,128);
+Mask1(fastROIs{10,11})=1;
+Mask1(fastROIs{4,11})=1;
+Mask1(slowROIs{41,11})=1;
+Mask1(slowROIs{42,11})=1;
+
+
+ProcMap2=zeros(1,128);
+ProcMaps=[Mask1;ProcMap2];
+
+ACMask=im2bw(ProcMaps);
+AC_B=bwboundaries(ACMask);
+
+figure('name','example ROI mask');
+imshow(zeros(128,128)); 
+hold on
+for k=1:length(AC_B)
+    border=AC_B{k};
+    plot(border(:,2),border(:,1),'g','linewidth',1.5);
+end
+%% cytosolic
+
+nframes=round(30*FrameRate);
+
+figure ('name', 'fast ROI traces')
+hold on
+axis off
+ROIs=99:118;
+for ii=1:size(ROIs,2)    
+    ROInum=ROIs(ii);
+    tempY1=smooth(All_traces{ii,10},3);
+    tempY1=tempY1(1:nframes);
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'g')%'LineWidth',1);
+   % plot([0 0],[0 50], 'k','LineWidth', 1)
+end
+rectangle('Position', [0 -1 8 50])
+
+figure ('name', 'slow ROIs trial 4')
+hold on
+axis off
+ROIs=[106, 115];
+for ii=1:size(ROIs,2)
+    ROInum=ROIs(ii);
+    tempY1=smooth(All_traces{ROInum,10},5);
+    tempY1=tempY1(1:nframes);    
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'g')%'LineWidth',1);
+end
+plot([0 0],[0 50], 'k','LineWidth', 1)
+
+figure ('name', 'neuron traces')
+hold on
+axis off
+ROIs=[119:155];
+for ii=1:size(ROIs,2)    
+    ROInum=ROIs(ii);
+    tempY1=smooth(All_traces{ii,10},3);
+    tempY1=tempY1(1:nframes);
+    plot(baselineCorrectedTime(1:nframes),tempY1'+(3*(ii-1)),'r')%'LineWidth',1);
+   % plot([0 0],[0 50], 'k','LineWidth', 1)
+end
+rectangle('Position', [0 -1 8 50])
 
 
