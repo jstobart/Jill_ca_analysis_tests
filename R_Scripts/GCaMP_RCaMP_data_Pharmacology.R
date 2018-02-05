@@ -1585,3 +1585,163 @@ ggplot(Spot.diff.OT, aes(x=interaction(variable, Condition), y=value, fill=Chann
   max.theme
 
 df.OT.diff<-summarySE(Spot.diff.OT, measurevar = "value", groupvars = c("Channel", "Condition","variable"))
+
+
+
+
+#onset time comparisons (astrocytes vs closest spatial neuron)
+#what is the effect of pharmacology
+
+# histograms for onset time comparison RASTERs
+AvsN.Space<- read.table("D:/Data/GCaMP_RCaMP/Revision/Lck_GCaMP/FilesforR/Pharmacology/AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
+
+AvsN.Space$Group<-"other"
+AvsN.Space$AOnset<-as.numeric(as.character(AvsN.Space$AOnset))
+AvsN.Space$TimeDiff<-as.numeric(as.character(AvsN.Space$TimeDiff))
+AvsN.Space$Group[AvsN.Space$AOnset<1.09]<-"fast"
+AvsN.Space$Group[(AvsN.Space$AOnset>=1.09 & AvsN.Space$AOnset<12)]<-"delayed"
+AvsN.Space<-subset(AvsN.Space, Group!="other")
+
+
+#remove DSMO_control
+AvsN.Space<-subset(AvsN.Space, Drug!="DMSO_Control")
+
+AvsN.Space$Animal_Spot<-paste(AvsN.Space$Animal, AvsN.Space$Spot, sep="_")
+AvsN.Space.pharma<-subset(AvsN.Space, Animal_Spot %in% matchingSpots)
+AvsN.Space.DSP4<-subset(AvsN.Space, Animal_Spot %in% DSP4_spots)
+DSP4_drugs<-c("Control", "DSP4")
+AvsN.Space.DSP4<-subset(AvsN.Space, Drug %in% DSP4_drugs)
+
+pharma.median.timediff<-ddply(AvsN.Space.pharma,  c("Drug"), summarise, 
+                       Median=median(TimeDiff))
+
+pharma.median.timediff.group<-ddply(AvsN.Space.pharma,  c("Drug","Group"), summarise, 
+                        Median=median(TimeDiff))
+
+DSP4.median.timediff<-ddply(AvsN.Space.DSP4,  c("Drug"), summarise, 
+                              Median=median(TimeDiff))
+
+DSP4.median.timediff.group<-ddply(AvsN.Space.DSP4,  c("Drug","Group"), summarise, 
+                                    Median=median(TimeDiff))
+
+# histograms
+# no colour
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=1, position="dodge")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim .pharma")+
+  #ylim(0,350)+
+  xlim(-12,12)+
+  max.theme
+
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other"),], aes(x=TimeDiff, y=..density..,colour=Drug)) + 
+  geom_freqpoly(binwidth=1)+
+  #geom_histogram(binwidth=1, position="dodge")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  #ylim(0,350)+
+  xlim(-12,12)+
+  max.theme
+
+
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other" & AvsN.Space.pharma$Drug=="Control"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=pharma.median.timediff$Median[pharma.median.timediff$Drug=="Control"])+
+  xlim(-12,12)+
+  max.theme
+
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other" & AvsN.Space.pharma$Drug=="Atropine"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=pharma.median.timediff$Median[pharma.median.timediff$Drug=="Atropine"])+
+  xlim(-12,12)+
+  max.theme
+
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other" & AvsN.Space.pharma$Drug=="Metergoline"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=pharma.median.timedif$Median[pharma.median.timediff$Drug=="Metergoline"])+
+  xlim(-12,12)+
+  max.theme
+
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other" & AvsN.Space.pharma$Drug=="Trazodone"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=pharma.median.timediff$Median[pharma.median.timediff$Drug=="Trazodone"])+
+  xlim(-12,12)+
+  max.theme
+
+ggplot(AvsN.Space.pharma[(AvsN.Space.pharma$Group!="other" & AvsN.Space.pharma$Drug=="Prazosin"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=pharma.median.timediff$Median[pharma.median.timediff$Drug=="Prazosin"])+
+  xlim(-12,12)+
+  max.theme
+
+
+
+ggplot(AvsN.Space.DSP4[(AvsN.Space.DSP4$Group!="other" & AvsN.Space.DSP4$Drug=="DSP4"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=DSP4.median.timediff$Median[DSP4.median.timediff$Drug=="DSP4"])+
+  xlim(-12,12)+
+  max.theme
+
+ggplot(AvsN.Space.DSP4[(AvsN.Space.DSP4$Group!="other" & AvsN.Space.DSP4$Drug=="Control"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=0.5, position="dodge", colour="black")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim")+
+  geom_vline(xintercept=DSP4.median.timediff$Median[DSP4.median.timediff$Drug=="Control"])+
+  xlim(-12,12)+
+  max.theme
+
+# compare distributions
+AvsN.Space.kstest.pharma<- ks.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"],
+                            AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Atropine"])
+print(AvsN.Space.kstest.pharma)
+
+
+control.vs.atropine<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
+            AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Atropine"])
+print(control.vs.atropine)
+
+
+control.vs.metergoline<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
+                                 AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Metergoline"])
+print(control.vs.metergoline)
+
+
+control.vs.trazodone<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
+                                 AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Trazodone"])
+print(control.vs.trazodone)
+
+
+control.vs.prazosin<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
+                                 AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Prazosin"])
+print(control.vs.prazosin)
+
+
+control.vs.DSP4<-wilcox.test(AvsN.Space.DSP4$TimeDiff[AvsN.Space.DSP4$Drug=="Control"], 
+                                 AvsN.Space.DSP4$TimeDiff[AvsN.Space.DSP4$Drug=="DSP4"])
+print(control.vs.DSP4)
+
+
+# only atropine and control are different distributions??
+atropine.control.drugs<-c("Control", "Atropine")
+atropine.control<-subset(AvsN.Space.pharma, Drug %in% atropine.control.drugs)
+
+
+ggplot(atropine.control[(atropine.control$Group!="other"),], aes(x=TimeDiff, y=..density..,fill=Drug)) + 
+  geom_histogram(binwidth=1, position="dodge")+
+  #geom_density(aes(y = ..density..*(164*0.1)))+
+  ggtitle("AvsN Space Stim control vs atropine")+
+  #ylim(0,350)+
+  xlim(-12,12)+
+  max.theme

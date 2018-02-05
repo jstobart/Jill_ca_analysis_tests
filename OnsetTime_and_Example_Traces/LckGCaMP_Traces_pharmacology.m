@@ -254,22 +254,22 @@ end
 WT_LR4=Control(wt_str',:);
 
 for iROI=1:length(WT_LR4)
-    spt3_str(iROI)= ~isempty(strfind(WT_LR4{iROI,18},'spot3'));
+    spt3B_str(iROI)= ~isempty(strfind(WT_LR4{iROI,18},'spot3'));
 end
-WT_LR4_spot3=WT_LR1(spt3_str',:);
+WT_LR4_spot3=WT_LR4(spt3B_str',:);
 
 for iROI=1:length(WT_LR4_spot3)
     rcamp_str(iROI)= ~isempty(strfind(WT_LR4_spot3{iROI,3},'RCaMP'));
 end
 WT_LR4_spot3_RC=WT_LR4_spot3(rcamp_str',:);
 
-% trial 8
+% trial 1
 for iROI=1:length(WT_LR4_spot3_RC)
-    trial_str(iROI)= ~isempty(strfind(WT_LR4_spot3_RC{iROI,2},'trial04'));
+    trial_str(iROI)= ~isempty(strfind(WT_LR4_spot3_RC{iROI,2},'trial01'));
 end
 trial8=WT_LR4_spot3_RC(trial_str',:);
 
-figure('name', 'responding RCaMP ROIs- WT_LR4, Spot3 Trial4')
+figure('name', 'responding RCaMP ROIs- WT_LR4, Spot3 Trial1')
 hold on
 axis off
 for ii=1:length(trial8)

@@ -325,8 +325,8 @@ end
 % AvsN_SpaceOnsets=AvsN_SpaceOnsets(AvsN_SpaceOnsetsIdx,:);
 %
 % Anames={'Animal','Spot','Trial','A_ROI','A_ROIType',...
-%     'Drug', 'N_ROI', 'N_ROIType','N_area','Distance','AOnset','NOnset','TimeDiff',...
-%     'Atrace','Ntrace','blank'};
+%     'Drug', 'Condition', 'N_ROI','N_ROIType','Distance','AOnset','NOnset','TimeDiff',...
+%     'Atrace','Ntrace'};
 %
 % AvsN_SpaceOnsets2=vertcat(Anames,AvsN_SpaceOnsets);
 % cell2csv('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforR\Pharmacology\AvsN_SpaceOnsets.csv',AvsN_SpaceOnsets2);
