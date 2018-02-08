@@ -41,8 +41,14 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-all.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-all.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+
+pharm.lck.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Pharmacology/Peaks_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+pharm.lck.OT<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Pharmacology/OnsetTimes_pharmacology_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+
+lck.peaks1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/Peaks_1stCohort_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.OT1<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/OnsetTimes_1stCohort_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.peaks2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/Peaks_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+lck.OT2<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/OnsetTimes_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
 
 ##### 
 #home files
@@ -1595,6 +1601,9 @@ df.OT.diff<-summarySE(Spot.diff.OT, measurevar = "value", groupvars = c("Channel
 # histograms for onset time comparison RASTERs
 AvsN.Space<- read.table("D:/Data/GCaMP_RCaMP/Revision/Lck_GCaMP/FilesforR/Pharmacology/AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
 
+# histograms for onset time comparison RASTERs
+AvsN.Space<- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Pharmacology/AvsN_SpaceOnsets.csv", header=TRUE, sep = ",")
+
 AvsN.Space$Group<-"other"
 AvsN.Space$AOnset<-as.numeric(as.character(AvsN.Space$AOnset))
 AvsN.Space$TimeDiff<-as.numeric(as.character(AvsN.Space$TimeDiff))
@@ -1703,9 +1712,10 @@ ggplot(AvsN.Space.DSP4[(AvsN.Space.DSP4$Group!="other" & AvsN.Space.DSP4$Drug=="
   max.theme
 
 # compare distributions
-AvsN.Space.kstest.pharma<- ks.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"],
+library("kSamples")
+AvsN.Space.kstest.CvsA<- ks.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"],
                             AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Atropine"])
-print(AvsN.Space.kstest.pharma)
+print(AvsN.Space.kstest.CvsA)
 
 
 control.vs.atropine<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
@@ -1713,24 +1723,46 @@ control.vs.atropine<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Dr
 print(control.vs.atropine)
 
 
+
+
 control.vs.metergoline<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
                                  AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Metergoline"])
 print(control.vs.metergoline)
+
+AvsN.Space.kstest.CvsM<- ks.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"],
+                                   AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Metergoline"])
+print(AvsN.Space.kstest.CvsM)
+
 
 
 control.vs.trazodone<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
                                  AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Trazodone"])
 print(control.vs.trazodone)
 
+AvsN.Space.kstest.CvsT<- ks.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"],
+                                 AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Trazodone"])
+print(AvsN.Space.kstest.CvsT)
+
+
+
 
 control.vs.prazosin<-wilcox.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"], 
                                  AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Prazosin"])
 print(control.vs.prazosin)
 
+AvsN.Space.kstest.CvsP<- ks.test(AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Control"],
+                                 AvsN.Space.pharma$TimeDiff[AvsN.Space.pharma$Drug=="Prazosin"])
+print(AvsN.Space.kstest.CvsP)
+
+
 
 control.vs.DSP4<-wilcox.test(AvsN.Space.DSP4$TimeDiff[AvsN.Space.DSP4$Drug=="Control"], 
                                  AvsN.Space.DSP4$TimeDiff[AvsN.Space.DSP4$Drug=="DSP4"])
 print(control.vs.DSP4)
+
+AvsN.Space.kstest.CvsDSP4<- ks.test(AvsN.Space.DSP4$TimeDiff[AvsN.Space.DSP4$Drug=="Control"],
+                                 AvsN.Space.DSP4$TimeDiff[AvsN.Space.DSP4$Drug=="DSP4"])
+print(AvsN.Space.kstest.CvsDSP4)
 
 
 # only atropine and control are different distributions??
