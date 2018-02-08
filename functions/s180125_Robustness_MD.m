@@ -180,5 +180,63 @@ colorbar
 
 %WT_LR4.... %spot3
 
+%% pharmacology traces
+load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Robustness\Results_pharmacology_Lck_nostim_vs_longstim_12_2017.mat');
+pharmacology=scores;
+DMSOIdx = regexp(pharmacology{:,4}, regexptranslate('wildcard', 'DMSO*'));
+DMSOIdx = cellfun(@isempty, DMSOIdx);
+pharmacology = pharmacology(DMSOIdx, :);
+
+gIdx2 = strcmp(pharmacology{:,2}, 'WT_LR1');
+pharma_WT_LR1 = pharmacology(gIdx2, :);
+
+%load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Robustness\Results_1stCohort_Lck_nostim_vs_longstim_12_2017.mat');
+load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Robustness\Results_2ndCohort_Lck_nostim_vs_longstim_01_2018.mat');
+control=scores;
+gIdx = strcmp(control{:,2}, 'WT_LR1');
+control_WT_LR1 = control(gIdx, :);
 
 
+%%
+% spot 1
+% Show figure
+figure;
+subplot(2,3,1)
+imagesc(control_WT_LR1{10,5}{1});
+axis square
+title(sprintf('control; score = %f', control_WT_LR1{2,4}{1}))
+caxis([0 1])
+colormap('parula')
+colorbar
+
+subplot(2,3,2)
+imagesc(pharma_WT_LR1{29,7}{1});
+axis square
+title(sprintf('atropine; score = %f', pharma_WT_LR1{13,6}{1}))
+caxis([0 1])
+colormap('parula')
+colorbar
+
+subplot(2,3,3)
+imagesc(pharma_WT_LR1{30,7}{1});
+axis square
+title(sprintf('metergoline; score = %f', pharma_WT_LR1{6,6}{1}))
+caxis([0 1])
+colormap('jet')
+colorbar
+
+subplot(2,3,4)
+imagesc(pharma_WT_LR1{31,7}{1});
+axis square
+title(sprintf('prazosin; score = %f', pharma_WT_LR1{7,6}{1}))
+caxis([0 1])
+colormap('jet')
+colorbar
+
+subplot(2,3,5)
+imagesc(pharma_WT_LR1{32,7}{1});
+axis square
+title(sprintf('trazodone; score = %f', pharma_WT_LR1{8,6}{1}))
+caxis([0 1])
+colormap('jet')
+colorbar

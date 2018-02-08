@@ -202,6 +202,12 @@ all.lck.peaks$Animal_Spot<-paste(all.lck.peaks$Animal, all.lck.peaks$Spot, sep= 
 Spot.lck.ntrials<-ddply(all.lck.peaks, c("Animal","Spot","Condition"), summarise, nTrials=length(unique(Trial)))
 Spot.lck.ntrials$Ani_Spot_Cond<-paste(Spot.lck.ntrials$Animal, Spot.lck.ntrials$Spot, Spot.lck.ntrials$Condition, sep="_")
 
+Spot.TotalROIs<- ddply(all.lck.peaks[all.lck.peaks$Condition=="Stim",], c("trials","trials_Cond", "Channel"), summarise, nROIs=length(unique(ROIs_Cond)))
+
+# if there were no ROIs with a signal during the trial, make it zero
+noPeaks.stim<-subset(all.lck.peaks, peakType=="NoPeak" & Condition=="Stim")
+Spot.noPeaks<- ddply(noPeaks.stim, c("trials_Cond", "Channel"), summarise, nROIs=length(unique(ROIs_Cond)))
+
 
 # remove ROIs with no peaks
 all.lck.peaks<-all.lck.peaks[!(all.lck.peaks$peakType=="NoPeak"),]
@@ -498,6 +504,7 @@ ggplot(Lck.combinedTimes[Lck.combinedTimes$time<40,],aes(x=time, fill=TimeType))
   max.theme
 
 rm(AstroStim.Lck.PT, AstroStim.Lck, Lck.Onsettime,Lck.Peaktime,Lck.combinedTimes)
+
 
 ##################
 # cyto Astrocytes
@@ -1198,6 +1205,10 @@ summary(cyto.nROI.either1s.Cond_Gr)
 LongN_PTwind=8  # 8 seconds
 LongN_OTwind=8  # 8 seconds
 
+# test for normal distribution of astrocyte onset times
+astro.LCk.stim<-subset(all.lck.OT, Channel=="GCaMP" & Condition=="Stim")
+shapiro.test(astro.LCk.stim$OnsetTime)
+
 # remove data that is outside the above windows
 # lck
 stim.lck.OT.window<-subset(all.lck.OT, OnsetTime<=threshold.Lck.OT)
@@ -1207,6 +1218,9 @@ stim.lck.OT.G<-subset(all.lck.OT, Channel=="GCaMP" & OnsetTime<=threshold.Lck.OT
 
 # neurons have a different window that astrocytes
 stim.lck.OT.window2<-rbind(stim.lck.OT.R, stim.lck.OT.G)
+
+# test for normal distribution of astrocyte onset times
+shapiro.test(stim.lck.OT.G$OnsetTime[stim.lck.OT.G$Condition=="Stim"])
 
 
 #cyto
@@ -1397,6 +1411,9 @@ df.OT3<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim",], meas
 df.OT4<- summarySE(stim.lck.compdata[stim.lck.compdata$Condition=="Stim"& stim.lck.compdata$Channel=="GCaMP",], measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group"))
 df.OT5<- summarySE(stim.lck.compdata.STIM, measurevar = "OnsetTime", groupvars = c("ROIType","Channel_Group"))
 
+median.Lck<-group_by(stim.lck.compdata, Channel_Group, Condition)
+summarise(median.Lck, Median=median(OnsetTime))
+
 ggplot(df.OT2, aes(x=Channel_Group,y=OnsetTime, fill= Condition)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
@@ -1494,6 +1511,8 @@ median.test(stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Grou
 
 wilcox.test(stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Group=="RCaMP.fast"], 
             stim.lck.compdata.STIM$OnsetTime[stim.lck.compdata.STIM$Channel_Group=="GCaMP.fast"])
+
+
 
 ######
 # peak time
@@ -2409,8 +2428,9 @@ lck.robustness$Ani_Cond<-paste(lck.robustness$Animal_Spot, lck.robustness$Condit
 
 #remove IP3KOs and IP3WTs
 KOs<-c("IPRG1","IPRG4","IPRG5","IPRG7")
-
+WTs<-c("IPRG2","IPRG3","IPRG6")
 lck.robustness<-subset(lck.robustness, !(All_traces5 %in% KOs))
+lck.robustness<-subset(lck.robustness, !(All_traces5 %in% WTs))
 
 # incorporate total number of astrocyte pixels for each FOV
 Spot.lck.StimPixels$Ani_Cond<-paste(Spot.lck.StimPixels$Animal_Spot, Spot.lck.StimPixels$Condition, sep="_")
@@ -3207,22 +3227,6 @@ ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Chann
 
 
 # number of ROIs
-
-
-
-# find total number of astrocyte ROIs or neuronal ROIs with a peak at some point during the trial
-# use this for response probability calculation
-
-Spot.TotalROIs<- ddply(all.lck.peaks[all.lck.peaks$Condition=="Stim",], c("trials","trials_Cond", "Channel"), summarise, nROIs=length(peakTime))
-
-
-# if there were no ROIs with a signal during the trial, make it zero
-
-
-
-noPeaks.stim<-subset(all.lck.peaks, roiName=="none" & Condition=="Stim")
-
-Spot.noPeaks<- ddply(noPeaks.stim, c("trials_Cond", "Channel"), summarise, nROIs=0)
 
 Spot.TotalROIs<-merge(Spot.TotalROIs2, Spot.noPeaks[, c("trials_Cond", "nROIs")], by="trials_Cond", all.x=TRUE)
 
