@@ -453,11 +453,27 @@ wilcox.test(IP3.window.stim.compdata$OnsetTime[IP3.window.stim.compdata$Genotype
 # Pharmacology
 
 Pharma<-subset(all.lck.OT, Genotype!="IP3R2_KO" | is.na(Genotype))
-Pharm.all.stim<-subset(Pharma,Condition=="Stim")
-stim.lck.OT.window.compdataA<-subset(stim.lck.OT.window.compdata,  Genotype!="IP3R2_KO" | is.na(Genotype))
-Pharm.window.stim.compdata<-subset(stim.lck.OT.window.compdataA, Condition=="Stim")
+Pharma$drug<-factor(Pharma$drug, levels=c("Control","Atropine","Metergoline","Trazodone","Prazosin"))
 
-rm(Pharma, stim.lck.OT.window.compdataA)
+ # remove DSP4 because there is not enough data
+Pharma<-subset(Pharma, drug!="DSP4")
+Pharma<-subset(Pharma, Animal!="IPRG6")
+
+
+Pharm.all.stim<-subset(Pharma,Condition=="Stim")
+Pharm.all.stim.R<-subset(Pharm.all.stim, Channel=="RCaMP" & OnsetTime<=LongN_OTwind2)
+Pharm.all.stim.G<-subset(Pharm.all.stim, Channel=="GCaMP" & OnsetTime<=LongAC_OTwind2)
+
+Pharm.all.stim.window<-rbind(Pharm.all.stim.R, Pharm.all.stim.G)
+
+
+rm(Pharm.all.stim.G,Pharm.all.stim.R, Pharma)
+
+
+# removed delayed neurons
+Pharm.window.stim.compdata<-Pharm.all.stim.window[!(Pharm.all.stim.window$Channel=="RCaMP"& Pharm.all.stim.window$Group=="delayed_MDs"),]
+
+
 ################
 #onset time histogram
 ggplot(Pharm.all.stim[(Pharm.all.stim$OnsetTime<15 & Pharm.all.stim$drug=="Control"),],aes(x=OnsetTime,y=..density..,fill=interaction(Channel,drug))) +
@@ -545,6 +561,27 @@ abline(h=0, lty=2)
 lines(smooth.spline(fitted(OT.Pharm.model5), residuals(OT.Pharm.model5)), col=46, lwd=2.5)
 
 
+
+# stats for neurons only
+OT.Pharm.neur.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), Pharm.window.stim.compdata[Pharm.window.stim.compdata$Channel=="RCaMP",],REML=FALSE)
+OT.Pharm.neur.model2 = lmer(OnsetTime ~ drug + (1|Animal) + (1|Spot) + (1|Spot_trial), Pharm.window.stim.compdata[Pharm.window.stim.compdata$Channel=="RCaMP",],REML=FALSE)
+OT.Pharm.neur.anova <- anova(OT.Pharm.neur.null, OT.Pharm.neur.model2)
+
+OT.neur<- glht(OT.Pharm.neur.model2, mcp(drug= "Tukey"))
+summary(OT.neur)
+
+
+
+# stats for astrocytes only
+OT.Pharm.ac.null = lmer(OnsetTime ~ (1|Animal) + (1|Spot) + (1|Spot_trial), Pharm.window.stim.compdata[Pharm.window.stim.compdata$Channel_Group=="GCaMP.fast_MDs",],REML=FALSE)
+OT.Pharm.ac.model2 = lmer(OnsetTime ~ drug + (1|Animal) + (1|Spot) + (1|Spot_trial), Pharm.window.stim.compdata[Pharm.window.stim.compdata$Channel_Group=="GCaMP.fast_MDs",],REML=FALSE)
+OT.Pharm.ac.anova <- anova(OT.Pharm.ac.null, OT.Pharm.ac.model2)
+
+OT.ac<- glht(OT.Pharm.ac.model2, mcp(drug= "Tukey"))
+summary(OT.ac)
+
+
+
 medianOT.pharma<-group_by(Pharm.window.stim.compdata, Channel_Group, drug)
 summarise(medianOT.pharma, Median=median(OnsetTime))
 
@@ -553,6 +590,16 @@ GCaMP.fast.pharma<-subset(Pharm.window.stim.compdata, Channel_Group=="GCaMP.fast
 
 wilcox.test(GCaMP.fast.pharma$OnsetTime[GCaMP.fast.pharma$drug=="Control"], 
             GCaMP.fast.pharma$OnsetTime[GCaMP.fast.pharma$drug=="Prazosin"])
+
+
+GCaMP.fast.pharma<-subset(Pharm.window.stim.compdata, Channel_Group=="GCaMP.fast_MDs")
+
+wilcox.test(GCaMP.fast.pharma$OnsetTime[GCaMP.fast.pharma$drug=="Control"], 
+            GCaMP.fast.pharma$OnsetTime[GCaMP.fast.pharma$drug=="Prazosin"])
+
+pharm.medians<-pairwise.wilcox.test(x=GCaMP.fast.pharma$OnsetTime, GCaMP.fast.pharma$drug,
+                     p.adj = "holm")
+print(pharm.medians)
 
 ################
 
