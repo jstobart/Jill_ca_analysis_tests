@@ -38,10 +38,10 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
-lck.peaks1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-lck.OT1<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_allMice_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
-lck.peaks2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Peaks_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
-lck.OT2<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/OnsetTimes_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+lck.peaks1 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/Peaks_1stCohort_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.OT1<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/OnsetTimes_1stCohort_Lck_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
+lck.peaks2 <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/Peaks_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
+lck.OT2<-read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/FilesforR/Control_untreated/OnsetTimes_2ndCohort_Lck_nostim_vs_longstim_01_2018.csv", header=TRUE, sep = ",")
 
 
 all.cyto.peaks <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/cyto_GCaMP6s/Results/FilesforR/Peaks_allMice_cyto_nostim_vs_longstim_12_2017.csv", header=TRUE, sep = ",")
@@ -652,6 +652,7 @@ OT.lck.RC.NSvsS.kstest<- ks.test(Nostim.N,Stim.N)
 print(OT.lck.RC.NSvsS.kstest)
 
 
+Lck.OT.distribution<-Stim.A
 
 # Anderson Darling
 library("kSamples")
@@ -805,6 +806,13 @@ print(OT.cyto.GC.NSvsS.adtest)
 # neurons
 OT.cyto.RC.NSvsS.adtest<- ad.test(Nostim.N,Stim.N)
 print(OT.cyto.RC.NSvsS.adtest)
+
+
+cyto.OT.distribution<-Stim.A
+
+# compar cyto and lck onset distributions
+cyto.lck.OT.kstest<- ks.test(cyto.OT.distribution,Lck.OT.distribution)
+print(cyto.lck.OT.kstest)
 
 rm(cyto.long.histo, cyto.long.histo2)
 #####
@@ -2561,7 +2569,7 @@ summary(cyto.robust.totalAC.pvalue)
 ##### 
 # correlation data 
 
-CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations.csv", header=TRUE, sep = ",")
+CorrData <- read.table("E:/Data/Two_Photon_Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/First_Neuron_Submission/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 CorrData <- read.table("D:/Data/GCaMP_RCaMP/Lck_GCaMP6f/Results/LongStim_Correlations_fixedDis.csv", header=TRUE, sep = ",")
 
 
@@ -2584,47 +2592,49 @@ GCaMP_RCaMP<-subset(GCaMP_RCaMP, !(CompType %in% ntypes))
 
 # consider only comparisons between astrocyte and neuronal ROIs that respond to stimulation 
 
-respGC<-subset(stim.both.alldata, Channel=="lck_GCaMP" & Condition=="Stim") 
-respRC<-subset(stim.both.alldata, Channel=="lck_RCaMP" & Condition=="Stim") 
+respGC<-subset(stim.lck.compdata.STIM, Channel=="GCaMP" & Condition=="Stim") 
+respRC<-subset(stim.lck.compdata.STIM, Channel=="RCaMP" & Condition=="Stim") 
 
 # list of responding astrocytes and their corresponding group
 respGC2<-unique(respGC[c("ROIs_trial","Group")])
 respRC2<-unique(respRC[c("ROIs_trial","Group")])
 
 # only correlations from responding astrocytes and neurons
-GCaMP_RCaMP<-subset(GCaMP_RCaMP, ROIs_trial %in% respGC2$ROIs_trial)
-GCaMP_RCaMP<-subset(GCaMP_RCaMP, RCaMP_ROIs %in% unique(respRC$ROIs_trial))
+GCaMP_RCaMP.resp<-subset(GCaMP_RCaMP, RCaMP_ROIs %in% unique(respRC$ROIs_trial))
+GCaMP_RCaMP.resp2<-subset(GCaMP_RCaMP.resp, ROIs_trial %in% respGC2$ROIs_trial)
 
 # put group information into correlation table ("fast or delayed")
-GCaMP_RCaMP.group<-merge(GCaMP_RCaMP, respGC2[, c("ROIs_trial", "Group")], by="ROIs_trial")
+GCaMP_RCaMP.resp2.group<-merge(GCaMP_RCaMP.resp2, respGC2[, c("ROIs_trial", "Group")], by="ROIs_trial")
 
 
-ggplot(GCaMP_RCaMP.group, aes(x=Short_Corr, fill=Group)) + geom_density(alpha=0.3)+
+
+###########
+ggplot(GCaMP_RCaMP.resp2.group, aes(x=Short_Corr, fill=Group)) + geom_density(alpha=0.3)+
   ggtitle("density-") + max.theme
 
-ggplot(GCaMP_RCaMP.group, aes(x=MinDistance, y=Short_Corr, colour=Group))+
+ggplot(GCaMP_RCaMP.resp2.group, aes(x=MinDistance, y=Short_Corr, colour=Group))+
   geom_point(alpha=0.3) +
   max.theme
 
-ggplot(GCaMP_RCaMP.group, aes(x=MinDistance, y=Short_Corr, color=Group)) + 
+ggplot(GCaMP_RCaMP.resp2.group, aes(x=MinDistance, y=Short_Corr, color=Group)) + 
   geom_point(alpha=0.3) + 
   geom_density2d()+
   max.theme
 
-ggplot(GCaMP_RCaMP.group[GCaMP_RCaMP.group$Group=="fast",], aes(x=MinDistance, y=Short_Corr)) + 
+ggplot(GCaMP_RCaMP.resp2.group[GCaMP_RCaMP.resp2.group$Group=="fast",], aes(x=MinDistance, y=Short_Corr)) + 
   geom_point() + 
   geom_smooth(method='lm')+
   max.theme
 
 
 #  means considering all correlations
-GCaMP_RCaMP.group$Group <- factor(GCaMP_RCaMP.group$Group, levels = c("fast","delayed"))
+GCaMP_RCaMP.resp.group$Group <- factor(GCaMP_RCaMP.resp.group$Group, levels = c("fast","delayed"))
 
 #########
 # significant correlation (and respond to stimulation)
 
 # comparisons with significant P values
-GR_Corr_Sig<-subset(GCaMP_RCaMP.group, ShortPvalue<0.05)
+GR_Corr_Sig<-subset(GCaMP_RCaMP.resp2.group, ShortPvalue<0.05)
 
 ggplot(GR_Corr_Sig, aes(x=Short_Corr, fill=Group)) + geom_density(alpha=0.3)+
   ggtitle("density-") + max.theme
@@ -2634,9 +2644,9 @@ ggplot(GR_Corr_Sig, aes(x=MinDistance, y=Short_Corr, colour=Group))+
   max.theme
 
 
-df5A1<- summarySE(GCaMP_RCaMP.group, measurevar="Short_Corr", groupvars=c("Group"))
-df5A2<- summarySE(GCaMP_RCaMP.group, measurevar="Short_Corr", groupvars=c("CompType"))
-df5A3<- summarySE(GCaMP_RCaMP.group, measurevar="Short_Corr", groupvars=c("Group","CompType"))
+df5A1<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="Short_Corr", groupvars=c("Group"))
+df5A2<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="Short_Corr", groupvars=c("CompType"))
+df5A3<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="Short_Corr", groupvars=c("Group","CompType"))
 
 df5B1<- summarySE(GR_Corr_Sig, measurevar="Short_Corr", groupvars=c("Group"))
 df5B2<- summarySE(GR_Corr_Sig, measurevar="Short_Corr", groupvars=c("CompType"))
@@ -2691,9 +2701,9 @@ ggplot(data=df5B3, aes(x=CompType, y=Short_Corr, fill=Group)) +
   max.theme
 
 
-df6A1<- summarySE(GCaMP_RCaMP.group, measurevar="xCorr", groupvars=c("Group"))
-df6A2<- summarySE(GCaMP_RCaMP.group, measurevar="xCorr", groupvars=c("CompType"))
-df6A3<- summarySE(GCaMP_RCaMP.group, measurevar="xCorr", groupvars=c("Group","CompType"))
+df6A1<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="xCorr", groupvars=c("Group"))
+df6A2<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="xCorr", groupvars=c("CompType"))
+df6A3<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="xCorr", groupvars=c("Group","CompType"))
 
 df6B1<- summarySE(GR_Corr_Sig, measurevar="xCorr", groupvars=c("Group"))
 df6B2<- summarySE(GR_Corr_Sig, measurevar="xCorr", groupvars=c("CompType"))
@@ -2748,9 +2758,9 @@ ggplot(data=df6B3, aes(x=CompType, y=xCorr, fill=Group)) +
   max.theme
 
 
-df7A1<- summarySE(GCaMP_RCaMP.group, measurevar="Lag", groupvars=c("Group"))
-df7A2<- summarySE(GCaMP_RCaMP.group, measurevar="Lag", groupvars=c("CompType"))
-df7A3<- summarySE(GCaMP_RCaMP.group, measurevar="Lag", groupvars=c("Group","CompType"))
+df7A1<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="Lag", groupvars=c("Group"))
+df7A2<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="Lag", groupvars=c("CompType"))
+df7A3<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="Lag", groupvars=c("Group","CompType"))
 
 df7B1<- summarySE(GR_Corr_Sig, measurevar="Lag", groupvars=c("Group"))
 df7B2<- summarySE(GR_Corr_Sig, measurevar="Lag", groupvars=c("CompType"))
@@ -2806,9 +2816,9 @@ ggplot(data=df7B3, aes(x=CompType, y=Lag, fill=GroupX)) +
 
 #######
 # mean distance
-df8A1<- summarySE(GCaMP_RCaMP.group, measurevar="MinDistance", groupvars=c("Group"))
-df8A2<- summarySE(GCaMP_RCaMP.group, measurevar="MinDistance", groupvars=c("CompType"))
-df8A3<- summarySE(GCaMP_RCaMP.group, measurevar="MinDistance", groupvars=c("Group","CompType"))
+df8A1<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="MinDistance", groupvars=c("Group"))
+df8A2<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="MinDistance", groupvars=c("CompType"))
+df8A3<- summarySE(GCaMP_RCaMP.resp2.group, measurevar="MinDistance", groupvars=c("Group","CompType"))
 
 df8B1<- summarySE(GR_Corr_Sig, measurevar="MinDistance", groupvars=c("Group"))
 df8B2<- summarySE(GR_Corr_Sig, measurevar="MinDistance", groupvars=c("CompType"))
@@ -2832,8 +2842,8 @@ ggplot(data=df8B1, aes(x=Group, y=MinDistance, fill=Group)) +
 
 
 # stats 
-minDis.lck.null = lmer(MinDistance ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP_RCaMP.group,REML=FALSE)
-minDis.lck.model1 = lmer(MinDistance ~ Group + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP_RCaMP.group,REML=FALSE)
+minDis.lck.null = lmer(MinDistance ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP_RCaMP.resp2.group,REML=FALSE)
+minDis.lck.model1 = lmer(MinDistance ~ Group + (1|Animal) + (1|Spot) + (1|ROIs_trial), GCaMP_RCaMP.resp2.group,REML=FALSE)
 minDis.lck.anova <- anova(minDis.lck.null, minDis.lck.model1)
 print(minDis.lck.anova)
 
@@ -2855,7 +2865,7 @@ respGC$minDistance=NA
 for (ii in 1:nrow(respGC))
 {
   ROIx=respGC$ROIs_trial[ii]
-  subset1=subset(GCaMP_RCaMP.groups, ROIs_trial==ROIx)
+  subset1=subset(GCaMP_RCaMP.resp2.groups, ROIs_trial==ROIx)
   if (nrow(subset1)>0)
   {
     respGC$minDistance[ii]=min(subset1$MinDistance)
@@ -2952,7 +2962,7 @@ for (ii in 1:nrow(NeuronDendrites))
 }
 
 all.lck.peaks.group$roiNameUnique<-paste(all.lck.peaks.group$Animal,all.lck.peaks.group$Spot,all.lck.peaks.group$roiName, sep="_")
-#GCaMP_RCaMP.groups$Nresponders=0
+#GCaMP_RCaMP.resp2.groups$Nresponders=0
 for (ii in 1:nrow(NeuronSomas))
 {
   Soma=NeuronSomas$roiNameUnique[ii]
@@ -2974,7 +2984,7 @@ all.lck.peaks.Nresp<-rbind(all.lck.peaks.Nresp, all.lck.peaks.group[all.lck.peak
 # subsets to look for example ROIs for movies
 
 lck.fast<-subset(stim.lck.compdata.STIM, Channel_Group=="lck_GCaMP.fast")
-lck.fast.corr<-subset(GCaMP_RCaMP.groups, GroupX=="fast A")
+lck.fast.corr<-subset(GCaMP_RCaMP.resp2.groups, GroupX=="fast A")
 lck.fast.corr.close<-subset(lck.fast.corr, MinDistance<15)
 
 
@@ -3214,141 +3224,50 @@ propdelayed.proc=delayedROIs.proc/allROIs.proc
 # conditional probabilty of astrocyte response given a nearby neuronal response
 
 
-# find total number of astrocyte ROIs or neuronal ROIs in a field of view
-# find number of responding astrocytes or responding neuronal per trial
-# find the number of fast astrocytes per field of view
+# find the total number of nearby neurons (within 15um) to any astrocyte ROI
+close_GCaMP_RCaMP<-subset(GCaMP_RCaMP, MinDistance<=30)
+AC.nearbyNeurons<-ddply(close_GCaMP_RCaMP, c("Animal","Spot","Trial","ROI_X", "ROIs_trial","ROI_X_type"), summarise,
+                        totalNeuronROIs=length(unique(RCaMP_ROIs)))
+
+# find total number of nearby neurons with a response to any astrocyte ROI
+close_GCaMP_RCaMP.resp<-subset(GCaMP_RCaMP.resp, MinDistance<=30)
+AC.nearbyNeurons.resp<-ddply(close_GCaMP_RCaMP.resp, c("Animal","Spot","Trial","ROI_X","ROIs_trial", "ROI_X_type"), summarise,
+                        respNeuronROIs=length(unique(RCaMP_ROIs)))
 
 
-# number of ROIs in each trial for each field of view (across the time window (2 s for neurons, 15 s for AC))
+# make Ac ROIs that have no nearby active neurons (zero)
+nearbyAC.resp.ROIs<-unique(AC.nearbyNeurons.resp$ROIs_trial)
 
-stim.lck.OT.window2$Channel <- factor(stim.lck.OT.window2$Channel, levels = c("RCaMP","GCaMP"))
+AC.nearbyNeurons.total.subset<-subset(AC.nearbyNeurons, ROIs_trial %in% nearbyAC.resp.ROIs)
+AC.nearbyNeurons.total.subset$respNeuronROIs<-AC.nearbyNeurons.resp$respNeuronROIs
+AC.nearbyNeurons.total.zero<-subset(AC.nearbyNeurons, !(ROIs_trial %in% nearbyAC.resp.ROIs))
+AC.nearbyNeurons.total.zero$respNeuronROIs<-0
 
-ROInum.lck.stim<-ddply(stim.lck.OT.window2, c("Animal","Spot","Condition","Channel"), summarise, nROIs=length(OnsetTime))
-
-
-# number of ROIs
-
-Spot.TotalROIs<-merge(Spot.TotalROIs2, Spot.noPeaks[, c("trials_Cond", "nROIs")], by="trials_Cond", all.x=TRUE)
-
+AC.nearbyNeurons2<-rbind(AC.nearbyNeurons.total.subset, AC.nearbyNeurons.total.zero)
 
 
-#remove peaks with zero peakAUC
+# add in if astrocytes responded by adding in group
+AC.resp.subset<-subset(AC.nearbyNeurons2, ROIs_trial %in% unique(respGC2$ROIs_trial))
+AC.resp.subset<-merge(AC.resp.subset, respGC2[, c("ROIs_trial", "Group")], by="ROIs_trial")
+AC.resp.subset.other<-subset(AC.nearbyNeurons2, !(ROIs_trial %in% unique(respGC2$ROIs_trial)))
+AC.resp.subset.other$Group="Other"
 
-count.peaks <- ddply (post30.sig.peaks, c("Animal", "Spot", "Layer", "Condition","ROI","ROIType","peakType"), summarise,
-                      Peaks = length(numPeaks))
+AC.nearbyNeurons.group<-rbind(AC.resp.subset,AC.resp.subset.other)
 
-#divide by the number of trials for each ROI
-count.peaks$peakPertrial <-0
+# calculate conditional probability
+AC.nearbyNeurons.group$CondProb<-AC.nearbyNeurons.group$respNeuronROIs/AC.nearbyNeurons.group$totalNeuronROIs
 
-#Nostim
-#NS.peaks <- subset(count.peaks,Condition=="Nostim")
-#NS.ROI.p30 <- subset(post30.ROI,Condition=="Nostim")
-sigroiNamesNS <-as.character(unique(post30.ROI$ROI))
-count.peaks2 <-data.frame()
-for (ii in 1:length(sigroiNamesNS))
-{
-  name =sigroiNamesNS[ii]
-  subset1 = subset(post30.ROI, ROI == name)
-  subset2 = subset(count.peaks, ROI == name)
-  for (iii in 1:length(subset2$ROI))
-  {
-    #subset2$peakPertrial<- subset2$Peaks[iii]/subset1$N    
-    subset2$Trial<- subset1$N[1]   
-  }
-  count.peaks2<- rbind(count.peaks2,subset2)
-}
+ggplot(AC.nearbyNeurons.group, aes(x=CondProb)) +
+  geom_histogram(position=position_dodge())+
+  ggtitle("conditional probability within 10 um")
+  max.theme
 
+ggplot(AC.nearbyNeurons.group[AC.nearbyNeurons.group$Group!="Other",], aes(x=CondProb, fill=Group)) +
+  geom_histogram(position=position_dodge())
 
-# if no peak of a particular type exists for individual ROI, it becomes zero
-ROI = as.character(unique(count.peaks$ROI))
-count.peaks3 <- data.frame()
+ggplot(AC.nearbyNeurons.group[AC.nearbyNeurons.group$Group!="Other",], aes(x=CondProb)) +
+  geom_histogram(position=position_dodge())+
+  ggtitle("conditional probability of responders within 30 um")+
+  max.theme
 
-for (ii in 1:length(ROI))
-{
-  name = ROI[ii]
-  ROIubset.NS = subset(count.peaks2 , ROI == name & Condition == "Nostim")
-  ROIubset.S = subset(count.peaks2 , ROI == name & Condition == "Stim")
-  # use data from stim if there are no peaks during no stim
-  if ((nrow(ROIubset.NS) ==0)==TRUE)
-  {ROIubset.NS<- head(ROIubset.S,1)
-  ROIubset.NS$Condition ="Nostim"
-  ROIubset.NS$peakType ="NaN"
-  }
-  # fill in zero ROI for each type
-  if ((nrow(ROIubset.NS) ==3)==TRUE)
-  {count.peaks3<- rbind(count.peaks3,ROIubset.NS)
-  } else {
-    # find peakTypes with matches
-    single.NS = grepl("Singlepeak",ROIubset.NS$peakType)
-    multi.NS = grepl("Multipeak",ROIubset.NS$peakType)
-    plateau.NS = grepl("Plateau",ROIubset.NS$peakType)
-    
-    if (nrow(ROIubset.NS[single.NS,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[single.NS,])
-    } else {
-      zeros <- head(ROIubset.NS,1)
-      zeros$peakType = "Singlepeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.NS[multi.NS,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[multi.NS,])
-    } else {
-      zeros <- head(ROIubset.NS,1)
-      zeros$peakType = "Multipeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.NS[plateau.NS,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.NS[plateau.NS,])
-    } else {
-      zeros <- head(ROIubset.NS,1)
-      zeros$peakType = "Plateau"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }  
-  }
-  
-  if ((nrow(ROIubset.S) ==3)==TRUE)
-  {count.peaks3<- rbind(count.peaks3,ROIubset.S)
-  } else {
-    # find peakTypes with matches
-    single.S = grepl("Singlepeak",ROIubset.S$peakType)
-    multi.S = grepl("Multipeak",ROIubset.S$peakType)
-    plateau.S = grepl("Plateau",ROIubset.S$peakType)
-    
-    if (nrow(ROIubset.S[single.S,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.S[single.S,])
-    } else {
-      zeros <- head(ROIubset.S,1)
-      zeros$peakType = "Singlepeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.S[multi.S,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.S[multi.S,])
-    } else {
-      zeros <- head(ROIubset.S,1)
-      zeros$peakType = "Multipeak"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }
-    if (nrow(ROIubset.S[plateau.S,])>0)
-    { count.peaks3<- rbind(count.peaks3,ROIubset.S[plateau.S,])
-    } else {
-      zeros <- head(ROIubset.S,1)
-      zeros$peakType = "Plateau"
-      zeros$Peaks = 0
-      zeros$peakPertrial = 0
-      count.peaks3<- rbind(count.peaks3,zeros)  
-    }  
-  }
-}
-
-
-count.peaks3$peakPertrial<- count.peaks3$Peaks/count.peaks3$Trial 
+df.CondProb<-summarySE(AC.nearbyNeurons.group, measurevar = "CondProb", groupvars = c("Group"))
