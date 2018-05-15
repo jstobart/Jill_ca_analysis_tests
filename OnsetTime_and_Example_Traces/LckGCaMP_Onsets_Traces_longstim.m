@@ -146,7 +146,6 @@ Shortstim = Shortstim(nonOverlapIdx2',:);
 % peak onsets and AUC in the first second after stim for each ROI
 for iROI= 1:length(Shortstim)
     
-    
     trace=Shortstim{iROI,9};
     FrameRate=Shortstim{iROI,13};
     nframes=length(trace);

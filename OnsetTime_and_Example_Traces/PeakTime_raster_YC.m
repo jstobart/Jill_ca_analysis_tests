@@ -55,7 +55,7 @@ if ~exist(saveFiles1, 'file')
                     temp1{1,6} = TrialData(kROI,15); % peak time for ROI1
                     temp1{1,7} = TrialData(iROI,16); % ROIname2
                     temp1{1,8} = TrialData(iROI,15); % peak time for ROI2
-                    temp1{1,9} = (TrialData(kROI,15)-TrialData(iROI,15)); % peak time for ROI2
+                    temp1{1,9} = (TrialData(kROI,15)-TrialData(iROI,15)); % peak time difference
                 end
             end
             
