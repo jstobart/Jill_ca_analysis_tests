@@ -6,6 +6,8 @@ AllData= [];
 All_traces= [];
 
 
+% NOTE: NO unmixing, NO motion correction
+
 %% Information about your images
 Settings.MainDir = 'G:\ZurichData\Astrocyte_Calcium\P2Y1_Mice';
 
@@ -13,17 +15,17 @@ Settings.AnimalNames = {
     'PYRG7',...
     };
 Settings.ScoreSheetNames = {
-    'PYRG7_Scoresheet_cytoGCaMP.xls',...
+    'PYRG7_Scoresheet_LckGCaMP.xls',...
     };
 Settings.NameConditions = {'WPstim','nostim'};
 
-channel = struct('Ca_Cyto_Astro',1,'Ca_Neuron',2);
+channel = struct('Ca_Memb_Astro',1,'Ca_Neuron',2);
 plotMotion =0;
 
 % final data file name
-SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'cytoGC_P2Y1_timepoints_peaks_05_2018_B.csv');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'cytoGC_P2Y1_timepoints_peaks_05_2018_B.mat');%'Control_Peaks_3Conds.csv'); % all data
-SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','cytoGC_P2Y1_timepoints_traces_05_2018_B.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
+SaveFiles{1,1} = fullfile(Settings.MainDir, 'Results', 'lckGC_P2Y1_timepoints_peaks_05_2018.csv');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,2} = fullfile(Settings.MainDir, 'Results', 'lckGC_P2Y1_timepoints_peaks_05_2018.mat');%'Control_Peaks_3Conds.csv'); % all data
+SaveFiles{1,3}= fullfile(Settings.MainDir, 'Results','lckGC_P2Y1_timepoints_traces_05_2018.mat'); %'Control_TraceAUC_20sWindow_3Conds.csv'); % neuronal hand click cell scan
 
 %% Load calibration file
 calibration ='C:\JillsFiles\matlab\CalibrationFiles\calibration_20x.mat';
@@ -90,24 +92,26 @@ for iAnimal = 1:numAnimals
                 %% Configs for Finding ROIs
                 %ASTROCYTES
                 % 2D automated selection for peaks
-                AC_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_cyto_astro', 'baselineFrames',...
-                    BL_frames,'sigmaXY', 2, 'sigmaT', 0.5,'thresholdPuff', 5, 'threshold2D',0,...
-                    'minRiseTime',0.1689, 'maxRiseTime', 8, 'minROIarea', 1.5,...
-                    'dilateXY', 5,'dilateT', 0.5,'erodeXY', 1,'erodeT', 0.1);
+                  AC_findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_memb_astro', 'baselineFrames',...
+                BL_frames,'freqPassBand',1,'sigmaXY', 2,...
+                'sigmaT', 0.16,'thresholdPuff', 7, 'threshold2D', 0.2,...
+                'minRiseTime',0.2, 'maxRiseTime', 1,'minROIarea', 10,...
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1,...
+                'discardBorderROIs',true);
                 
-                %AC_findConf{1} = load('C:\JillsFiles\matlab\CalibrationFiles\ConfigCellScan_P2Y1.mat')
-                % hand selected- peaks from cellular structures
+       %AC_findConf{1} = load('C:\JillsFiles\matlab\CalibrationFiles\ConfigCellScan_P2Y1.mat')     
+% hand selected- peaks from cellular structures
                 x_pix= Settings.Xres(1,1); y_pix= Settings.Yres(1,1);
                 AC_findConf{2} = ConfigFindROIsDummy.from_ImageJ(fullfile(testRoot,'Astrocytes.zip'), x_pix, y_pix,1);
                 
                 
                 
                 %% Configuration for measuring ROIs
-                % AWAKE astrocyte cyto calcium
+                % AWAKE astrocyte lck calcium
                 detectConf{1} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...'normMethod', 'z-score','zIters', 100,...
-                    'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                    'spPassBandMin',0.025, 'spPassBandMax', 0.075, 'thresholdLP', 5,'thresholdSP', 7);
-                
+                'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 2, 'spFilterOrder', 6,...
+                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 3,'thresholdSP', 7);
+            
                 % for 3D FLIKA
                 detectConf{3} = ConfigDetectSigsDummy();
                 
@@ -139,7 +143,7 @@ for iAnimal = 1:numAnimals
                 % for working out find peaks parameters
                 %CSArray_Ch2_FLIKA(1).opt_config()
                 
-                %CSArray_Ch1_FLIKA(2).opt_config()
+               % CSArray_Ch1_FLIKA(2).opt_config()
                 %CSArray_Ch1_FLIKA(1).opt_config()
                 %CSArray_Ch1_FLIKA(4).opt_config()
                 %% Output data
@@ -151,16 +155,6 @@ for iAnimal = 1:numAnimals
                 
                 % Astrocyte FLIKA
                 for itrial=1:length(CSArray_Ch1_FLIKA)
-                    
-                    % get fraction of active MD area
-                    neuroMask = zeros(128,128);
-                    if ndims(neuroMask) == 3
-                        neuroMask = max(neuroMask, [], 3);
-                    end
-                    neuroMask=logical(neuroMask);
-                    [nFluoPix, nActivePix, nTotalPix] = ...
-                        getFracActive(CSArray_Ch1_FLIKA(1,itrial), 'nanMask', ...
-                        neuroMask);
                     
                     % peak output
                     temp=CSArray_Ch1_FLIKA(1,itrial).calcDetectSigs.data;
@@ -174,8 +168,6 @@ for iAnimal = 1:numAnimals
                     temp2.area = {};
                     temp2.pixelsize = {};
                     temp2.TimePoint = {};
-                    temp2.nFluoPix = {};
-                    temp2.nActivePix = {};
                     
                     % extract fields from Class
                     for jField = 1:numel(listFields)
@@ -190,15 +182,14 @@ for iAnimal = 1:numAnimals
                     % create fields for trial, animal, spot, condition, etc.
                     for iPeak = 1:length(temp.amplitude)
                         temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
-                        temp2.channel{iPeak,1}= 'GCaMP';
+                        temp2.channel{iPeak,1}= 'LckGCaMP';
                         temp2.Spot{iPeak,1}= spotId;
                         temp2.animalname{iPeak,1}= CurrentAnimal;
                         temp2.Cond{iPeak,1} = CurrentCondition;
                         temp2.depth{iPeak,1} = CurrentDepth(1,1);
                         temp2.pixelsize{iPeak,1} = CSArray_Ch1_FLIKA(1,itrial).rawImg.metadata.pixelSize;
                         temp2.TimePoint{iPeak,1} = TPId;
-                        temp2.nFluoPix{iPeak,1} = nFluoPix;
-                        temp2.nActivePix{iPeak,1} = nActivePix;
+                        
                         % get the indices  and area for a particular ROI
                         jroiName = temp.roiName{iPeak};
                         ROIindex= strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames,jroiName);
@@ -250,9 +241,6 @@ for iAnimal = 1:numAnimals
                         data.area = {};
                         data.overlap = {};
                         data.pixelsize={};
-                        data.nFluoPix = {};
-                        data.nActivePix = {};
-                        data.TimePoint= {};
                     end
                     data.Trial= [data.Trial; temp2.trialname];
                     data.Animal= [data.Animal; temp2.animalname];
@@ -264,8 +252,6 @@ for iAnimal = 1:numAnimals
                     data.overlap= [data.overlap; temp2.overlap];
                     data.pixelsize= [data.pixelsize; temp2.pixelsize];
                     data.TimePoint= [data.TimePoint; temp2.TimePoint];
-                    data.nFluoPix = [data.nFluoPix; temp2.nFluoPix];
-                    data.nActivePix = [data.nActivePix; temp2.nActivePix];
                     
                     %traces output processes
                     if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
@@ -277,7 +263,7 @@ for iAnimal = 1:numAnimals
                         for iROI = 1:size(traces,2)
                             Trace_data{iROI,1}= CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{iROI,1};
                             Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
-                            Trace_data{iROI,3}= 'GCaMP';
+                            Trace_data{iROI,3}= 'LckGCaMP';
                             Trace_data{iROI,4}= spotId;
                             Trace_data{iROI,5}= CurrentAnimal;
                             Trace_data{iROI,6}= CurrentCondition;
@@ -345,8 +331,6 @@ for iAnimal = 1:numAnimals
                     temp2.area = {};
                     temp2.pixelsize = {};
                     temp2.TimePoint= {};
-                    temp2.nFluoPix = {};
-                    temp2.nActivePix = {};
                     
                     % extract fields from Class
                     for jField = 1:numel(listFields)
@@ -357,7 +341,7 @@ for iAnimal = 1:numAnimals
                     % create fields for trial, animal, spot, condition, etc.
                     for iPeak = 1:length(temp.amplitude)
                         temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
-                        temp2.channel{iPeak,1}= 'GCaMP';
+                        temp2.channel{iPeak,1}= 'LckGCaMP';
                         temp2.Spot{iPeak,1}= spotId;
                         temp2.animalname{iPeak,1}= CurrentAnimal;
                         temp2.Cond{iPeak,1} = CurrentCondition;
@@ -366,8 +350,6 @@ for iAnimal = 1:numAnimals
                         temp2.overlap{iPeak,1} = 0;
                         temp2.pixelsize{iPeak,1} = CSArray_Ch1_FLIKA(1,itrial).rawImg.metadata.pixelSize;
                         temp2.TimePoint{iPeak,1}= TPId;
-                        temp2.nFluoPix{iPeak,1} = 0;
-                        temp2.nActivePix{iPeak,1} = 0;
                     end
                     
                     data.Trial= [data.Trial; temp2.trialname];
@@ -380,8 +362,6 @@ for iAnimal = 1:numAnimals
                     data.overlap= [data.overlap; temp2.overlap];
                     data.pixelsize= [data.pixelsize; temp2.pixelsize];
                     data.TimePoint= [data.TimePoint; temp2.TimePoint];
-                    data.nFluoPix = [data.nFluoPix; temp2.nFluoPix];
-                    data.nActivePix = [data.nActivePix; temp2.nActivePix];
                     
                     %traces output
                     traces= CSArray_Ch1_Hand(1,itrial).calcMeasureROIs.data.tracesNorm;
@@ -390,7 +370,7 @@ for iAnimal = 1:numAnimals
                     for iROI = 1:size(traces,2)
                         Trace_data{iROI,1}= CSArray_Ch1_Hand(1,itrial).calcFindROIs.data.roiNames{iROI,1};
                         Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
-                        Trace_data{iROI,3}= 'GCaMP';
+                        Trace_data{iROI,3}= 'LckGCaMP';
                         Trace_data{iROI,4}= spotId;
                         Trace_data{iROI,5}= CurrentAnimal;
                         Trace_data{iROI,6}= CurrentCondition;

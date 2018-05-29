@@ -197,8 +197,8 @@ for iAnimal = 1:numAnimals
                         temp2.depth{iPeak,1} = CurrentDepth(1,1);
                         temp2.pixelsize{iPeak,1} = CSArray_Ch1_FLIKA(1,itrial).rawImg.metadata.pixelSize;
                         temp2.TimePoint{iPeak,1} = TPId;
-                        temp2.nFluoPix{iPeak,1} = nFluoPix;
-                        temp2.nActivePix{iPeak,1} = nActivePix;
+                        temp2.nFluoPix = nFluoPix;
+                        temp2.nActivePix = nActivePix;
                         % get the indices  and area for a particular ROI
                         jroiName = temp.roiName{iPeak};
                         ROIindex= strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames,jroiName);
@@ -264,8 +264,8 @@ for iAnimal = 1:numAnimals
                     data.overlap= [data.overlap; temp2.overlap];
                     data.pixelsize= [data.pixelsize; temp2.pixelsize];
                     data.TimePoint= [data.TimePoint; temp2.TimePoint];
-                    data.nFluoPix = [data.nFluoPix; temp2.nFluoPix];
-                    data.nActivePix = [data.nActivePix; temp2.nActivePix];
+                    data.nFluoPix = [data.nFluoPix; nFluoPix];
+                    data.nActivePix = [data.nActivePix; nActivePix];
                     
                     %traces output processes
                     if strcmp(CSArray_Ch1_FLIKA(1,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
@@ -366,8 +366,8 @@ for iAnimal = 1:numAnimals
                         temp2.overlap{iPeak,1} = 0;
                         temp2.pixelsize{iPeak,1} = CSArray_Ch1_FLIKA(1,itrial).rawImg.metadata.pixelSize;
                         temp2.TimePoint{iPeak,1}= TPId;
-                        temp2.nFluoPix{iPeak,1} = 0;
-                        temp2.nActivePix{iPeak,1} = 0;
+                        temp2.nFluoPix = 0;
+                        temp2.nActivePix = 0;
                     end
                     
                     data.Trial= [data.Trial; temp2.trialname];
