@@ -1062,18 +1062,18 @@ end
 % xlabel('time from neuronal event')
 % 
 % 
-% figure('name', 'Raster plot NvsA_SpaceOnsets, distance- delayed')
-% hold on
-% set(gca,'ytick',[])
-% set(gca,'YColor',get(gcf,'Color'))
-% %set(gca, 'XScale', 'log')
-% ylim([0 5900])
-% for iComp=1:length(NvsA_SpaceOnsetsD_D)
-%     scatter(NvsA_SpaceOnsetsD_D{iComp,13}, iComp, 5, 'filled','g')
-%     xlim([-15 15])
-% end
-% plot([0 0],[0 length(NvsA_SpaceOnsetsD_D)], 'k--','LineWidth', 1)
-% xlabel('time from neuronal event')
+figure('name', 'Raster plot NvsA_SpaceOnsets, distance- delayed')
+hold on
+set(gca,'ytick',[])
+set(gca,'YColor',get(gcf,'Color'))
+%set(gca, 'XScale', 'log')
+ylim([0 5900])
+for iComp=1:length(NvsA_SpaceOnsetsD_D)
+    scatter(NvsA_SpaceOnsetsD_D{iComp,13}, iComp, 5, 'filled','g')
+    xlim([-15 15])
+end
+plot([0 0],[0 length(NvsA_SpaceOnsetsD_D)], 'k--','LineWidth', 1)
+xlabel('time from neuronal event')
 % 
 % 
 
