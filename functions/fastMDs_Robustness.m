@@ -1,25 +1,53 @@
-%% Robustness of FOV
+%% Robustness of fast MDs
+
+load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Control_untreated\Traces_1stCohort_Lck_nostim_vs_longstim_12_2017.mat')
+All_traces(:,14)=strcat(All_traces(:,5),{'_'},All_traces(:,4),{'_'},All_traces(:,2),...
+    {'_'},All_traces(:,1),{'_'},All_traces(:,6));
+
+Cohort1=All_traces;
+Cohort1(:,7)= [];
+Cohort1(:,7)= [];
 
 load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Control_untreated\Traces_2ndCohort_Lck_nostim_vs_longstim_01_2018.mat')
 All_traces(:,18)=strcat(All_traces(:,5),{'_'},All_traces(:,4),{'_'},All_traces(:,2),...
     {'_'},All_traces(:,1),{'_'},All_traces(:,6));
 
+All_traces(:,7)= [];
+All_traces(:,7)= [];
+All_traces(:,7)= [];
+All_traces(:,12)= [];
+All_traces(:,12)= [];
+All_traces(:,12)= [];
+
+AllData=vertcat(Cohort1, All_traces);
+
+
+
 respondingData=load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Control_untreated\Astrocyte_respondingROIs.mat');
 respondingROIs=respondingData.x.ROIs_Cond;
+respondingROIs(:,2)=respondingData.x.Group;
 
-Match=ismember(All_traces(:,18), respondingROIs);
-respondingTraces=All_traces(Match,:);
+DelayedMatch=ismember(respondingROIs(:,2), {'delayed'});
+DelayedROIs=respondingROIs(DelayedMatch,1);
+FastROIs=respondingROIs(~DelayedMatch,1);
 
-bigtable = cell2table(All_traces);
-bigtable = bigtable(:, [1:6, 11]);
+
+Match1=ismember(AllData(:,12), DelayedROIs);
+DelayedTraces=AllData(Match1,:);
+
+Match2=ismember(AllData(:,12), FastROIs);
+FastTraces=AllData(Match2,:);
+
+
+clearvars AllData All_traces Cohort1
+
+%% FAST ROIs
+bigtable = cell2table(FastTraces);
+bigtable = bigtable(:, [1:6, 8,12]);
 
 % 127x128 px images
 nRows = 127;
 nCols = 128;
-
-% Only GCaMP ROIs
-gIdx = strcmp(bigtable{:,3}, 'GCaMP');
-bigtable = bigtable(gIdx, :);
 
 % Only FLIKA ROIs
 hcIdx = regexp(bigtable{:,1}, regexptranslate('wildcard', 'roi*'));
@@ -70,7 +98,7 @@ for iAnimal = 1:numel(animals)
                 % Store mask
                 for iLen = 1:size(masks, 1)
                     if all(strcmp([masks{iLen,1:4}], [trials(iTrial), spots(iSpot), animals(iAnimal), conditions(iCond)]))
-                        masks(iLen, 5) = {mask};
+                        masks(iLen, 5) = cell2table({mask});
                         break
                     end
                 end
@@ -82,7 +110,7 @@ for iAnimal = 1:numel(animals)
             fracImg = sum(trialmasks,3)./numel(trials);
             
             for iLen = 1:size(masks, 1)
-                if ~isempty(masks{iLen, 5}) && all(strcmp([masks{iLen,1:4}], [{'trial01'}, spots(iSpot), animals(iAnimal), conditions(iCond)]))
+                if ~isempty(masks{iLen, 5}) && all(strcmp([masks{iLen,2:4}], [spots(iSpot), animals(iAnimal), conditions(iCond)]))
                     masks{iLen, 7} = {fracImg};
                     break
                 end
@@ -107,9 +135,9 @@ for iAnimal = 1:numel(animals)
                 warning('Uncaught condition');
             end
             
-            % Store score
+%             % Store score
             for iLen = 1:size(masks, 1)
-                if ~isempty(masks{iLen, 5}) && all(strcmp([masks{iLen,1:4}], [{'trial01'}, spots(iSpot), animals(iAnimal), conditions(iCond)]))
+                if ~isempty(masks{iLen, 5}) && all(strcmp([masks{iLen,2:4}], [spots(iSpot), animals(iAnimal), conditions(iCond)]))
                     masks{iLen, 6} = {score};
                     break
                 end
@@ -130,122 +158,22 @@ scores = scores(~cellfun(@isempty, scores{:,end}), :);
 % Extract values for some simple tests
 allscores = scores{:,5};
 allscores=cell2mat(allscores);
-nostim = allscores(1:2:size(allscores,1));
-stim = allscores(2:2:size(allscores,1));
+%nostim = allscores(1:2:size(allscores,1));
+%stim = allscores(2:2:size(allscores,1));
 
 % Simple ttest on stim/nostim scores
-[h,p]=ttest(nostim, stim, 'Alpha', 0.001);
+%[h,p]=ttest(nostim, stim, 'Alpha', 0.001);
 
 %% Plot random sample
 
-% remove entries that don't have a matching stim or no stim
-% cytosolic data
-%scores([5,72,75],:) = [];
-
-% Lck data  1st cohort
-%scores([1,32,33,44,53,78],:) = [];
-
-
-% sampIdx = randi(size(scores,1));
-% if mod(sampIdx,2)
-%     sampIdx = [sampIdx, sampIdx+1];
-% else
-%     sampIdx = [sampIdx-1, sampIdx];
-% end
-samp = scores(sampIdx, :);
-
 % Show figure
 figure;
-subplot(1,2,1)
-imagesc(samp{1,5}{1});
+imagesc(scores{36,6}{1});
 axis square
-title(sprintf('Nostim; score = %f', samp{1,4}{1}))
+%title(sprintf('fast; score = %f', scores{3,1}{1}))
 caxis([0 1])
 colormap('parula')
 colorbar
 
-subplot(1,2,2)
-imagesc(samp{2,5}{1});
-axis square
-title(sprintf('Stim; score = %f', samp{2,4}{1}))
-caxis([0 1])
-colormap('jet')
-colorbar
-
-% cyto example:  RG14-18_02_2016.... not great example
-% lck example: RG14 08_03_2016.... ok
-
-%RG14- 16_03_10_spot1
-% RG17 -{'16_02_24_spot1'}
-% RG14 -{'16_02_24_spot1'}
 
 
-% alternative Lck examples
-% RG14 {'16_02_26_spot2'}
-% IPRG2 {'17_11_22_spot5'}
-% RG14 {'16_03_04_spot1'}
-% RG16 {'16_03_11_spot1'}
-
-
-%WT_LR4.... %spot3
-
-%% pharmacology traces
-load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Robustness\Results_pharmacology_Lck_nostim_vs_longstim_12_2017.mat');
-pharmacology=scores;
-DMSOIdx = regexp(pharmacology{:,4}, regexptranslate('wildcard', 'DMSO*'));
-DMSOIdx = cellfun(@isempty, DMSOIdx);
-pharmacology = pharmacology(DMSOIdx, :);
-
-gIdx2 = strcmp(pharmacology{:,2}, 'WT_LR1');
-pharma_WT_LR1 = pharmacology(gIdx2, :);
-
-%load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Robustness\Results_1stCohort_Lck_nostim_vs_longstim_12_2017.mat');
-load('D:\Data\GCaMP_RCaMP\Revision\Lck_GCaMP\FilesforMatlab\Robustness\Results_2ndCohort_Lck_nostim_vs_longstim_01_2018.mat');
-control=scores;
-gIdx = strcmp(control{:,2}, 'WT_LR1');
-control_WT_LR1 = control(gIdx, :);
-
-
-%%
-% spot 1
-% Show figure
-figure;
-subplot(2,3,1)
-imagesc(control_WT_LR1{10,5}{1});
-axis square
-title(sprintf('control; score = %f', control_WT_LR1{2,4}{1}))
-caxis([0 1])
-colormap('parula')
-colorbar
-
-subplot(2,3,2)
-imagesc(pharma_WT_LR1{29,7}{1});
-axis square
-title(sprintf('atropine; score = %f', pharma_WT_LR1{13,6}{1}))
-caxis([0 1])
-colormap('parula')
-colorbar
-
-subplot(2,3,3)
-imagesc(pharma_WT_LR1{30,7}{1});
-axis square
-title(sprintf('metergoline; score = %f', pharma_WT_LR1{6,6}{1}))
-caxis([0 1])
-colormap('jet')
-colorbar
-
-subplot(2,3,4)
-imagesc(pharma_WT_LR1{31,7}{1});
-axis square
-title(sprintf('prazosin; score = %f', pharma_WT_LR1{7,6}{1}))
-caxis([0 1])
-colormap('jet')
-colorbar
-
-subplot(2,3,5)
-imagesc(pharma_WT_LR1{32,7}{1});
-axis square
-title(sprintf('trazodone; score = %f', pharma_WT_LR1{8,6}{1}))
-caxis([0 1])
-colormap('jet')
-colorbar

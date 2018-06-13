@@ -1389,6 +1389,9 @@ ROInum.lck.group<-merge(ROInum.lck.group, Spot.lck.ntrials[, c("Ani_Spot_Cond", 
 
 ROInum.lck.group$ROIsPerTrial<-ROInum.lck.group$nROIs/ROInum.lck.group$nTrials
 
+#export list of responding lck astrocyte ROIs (delayed and fast)
+library("R.matlab")
+writeMat(con="D:/Data/GCaMP_RCaMP/Revision/Lck_GCaMP/FilesforMatlab/Control_untreated/Astrocyte_respondingROIs.mat", x=lck.stim)
 
 # mean
 df.lck.ROInum.group.mean<-summarySE(ROInum.lck.group, measurevar = "ROIsPerTrial", groupvars = c("Group"))
