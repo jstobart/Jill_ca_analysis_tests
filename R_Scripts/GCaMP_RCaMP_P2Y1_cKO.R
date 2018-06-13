@@ -42,6 +42,9 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 lck <- read.table("G:/ZurichData/Astrocyte_Calcium/P2Y1_Mice/Results/lckGC_P2Y1_timepoints_peaks_05_2018.csv", header=TRUE, sep = ",")
 cyto <- read.table("G:/ZurichData/Astrocyte_Calcium/P2Y1_Mice/Results/cytoGC_P2Y1_timepoints_peaks_05_2018.csv", header=TRUE, sep = ",")
 
+lck <- read.table("H:/P2Y1_Data/Results/lckGC_P2Y1_timepoints_peaks_05_2018.csv", header=TRUE, sep = ",")
+cyto <- read.table("H:/P2Y1_Data/Results/cytoGC_P2Y1_timepoints_peaks_05_2018.csv", header=TRUE, sep = ",")
+
 ##########
 
 astro.peaks<-rbind(lck, cyto)
@@ -203,6 +206,7 @@ ggplot(df.dur.cyto2, aes(x=Condition,y=Duration, fill= TimePoint)) +
 #RCaMP
 
 RCaMP <- read.table("G:/ZurichData/Astrocyte_Calcium/P2Y1_Mice/Results/RC_P2Y1_timepoints_peaks_05_2018.csv", header=TRUE, sep = ",")
+RCaMP <- read.table("H:/P2Y1_Data/Results/RC_P2Y1_timepoints_peaks_05_2018.csv", header=TRUE, sep = ",")
 
 
 RCaMP$Spot_trial_TP<-paste(RCaMP$Spot, RCaMP$Trial, RCaMP$TimePoint, sep="_")
@@ -225,10 +229,13 @@ RCaMP$ROIType<- as.factor(RCaMP$ROIType)
 
 #Time Point Type
 RCaMP$TimeGroup[grepl("B",RCaMP$TimePoint)]="before"
-RCaMP$TimeGroup[grepl("T",RCaMP$TimePoint)]="after"
+RCaMP$TimeGroup[grepl("TM1",RCaMP$TimePoint)]="1month"
+RCaMP$TimeGroup[grepl("TM2",RCaMP$TimePoint)]="1month"
+RCaMP$TimeGroup[grepl("TM4",RCaMP$TimePoint)]="2months"
+RCaMP$TimeGroup[grepl("TM8",RCaMP$TimePoint)]="2months"
 
 RCaMP$TimeGroup<- as.factor(RCaMP$TimeGroup)
-RCaMP$TimeGroup<- factor(RCaMP$TimeGroup, levels = c("before","after"))
+RCaMP$TimeGroup<- factor(RCaMP$TimeGroup, levels = c("before","1month","2months"))
 
 
 # adjust peak time and duration
@@ -286,11 +293,27 @@ RCaMP.ROIs<-ddply(RCaMP, c("Animal","Spot","Condition","TimePoint","TimeGroup", 
 
 RCaMP.ROIs$Freq<-RCaMP.ROIs$nPeaks/RCaMP.ROIs$nTrials
 
+# sum number of ROIs per field of view
+respRCaMP<-subset(RCaMP, peakTime<10 & Condition=="WPstim")
+respNeurons<-unique(respRCaMP$Spot_TP_ROI)
+respSpotROI<-unique(respRCaMP$Spot_ROI)
+
+RCaMP.respPeaks<-subset(RCaMP, Spot_ROI %in% respSpotROI)
+
+RCaMP.respROIs<-ddply(RCaMP.respPeaks, c("Animal","Spot","Condition","TimePoint","TimeGroup", "Spot_ROI","Spot_TP_ROI"), summarise, 
+                  nPeaks=sum(numPeaks), nTrials=length(unique(Trial)),
+                  meanAmp=mean(amplitude), meanDur=mean(Duration),
+                  meanpeakAUC=mean(peakAUC))
+
+RCaMP.respROIs$Freq<-RCaMP.respROIs$nPeaks/RCaMP.respROIs$nTrials
+
+# responding ROIs
+
 
 #distributions
 
 # amplitude
-ggplot(RCaMP.ROIs, aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
+ggplot(RCaMP.respROIs, aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
   geom_boxplot(notch=TRUE)+
   ylab("RCaMP ROIs amplitude") +
   ggtitle("notched")+
@@ -298,20 +321,20 @@ ggplot(RCaMP.ROIs, aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
 
 
 # duration
-ggplot(RCaMP.ROIs, aes(x=Condition,y=meanDur, fill= TimeGroup)) +
+ggplot(RCaMP.respROIs, aes(x=Condition,y=meanDur, fill= TimeGroup)) +
   geom_boxplot(notch=TRUE)+
   ylab("RCaMP ROIs Duration") +
   ggtitle("notched")+
   max.theme
 
 # frequency (signals/trial)
-ggplot(RCaMP.ROIs, aes(x=Condition,y=Freq, fill= TimeGroup)) +
+ggplot(RCaMP.respROIs, aes(x=Condition,y=Freq, fill= TimeGroup)) +
   geom_boxplot(notch=TRUE)+
   ylab("signals/trial") +
   ggtitle("notched")+
   max.theme
 
-ggplot(RCaMP.ROIs, aes(x=Condition,y=Freq, fill= TimePoint)) +
+ggplot(RCaMP.respROIs, aes(x=Condition,y=Freq, fill= TimePoint)) +
   geom_boxplot(notch=TRUE)+
   ylab("signals/trial") +
   ggtitle("notched")+
@@ -319,8 +342,8 @@ ggplot(RCaMP.ROIs, aes(x=Condition,y=Freq, fill= TimePoint)) +
 
 #means
 
-df.amp1.RC<-summarySE(RCaMP.ROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimeGroup"))
-df.amp2.RC<-summarySE(RCaMP.ROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimePoint"))
+df.amp1.RC<-summarySE(RCaMP.respROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimeGroup"))
+df.amp2.RC<-summarySE(RCaMP.respROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimePoint"))
 
 ggplot(df.amp1.RC, aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -350,6 +373,35 @@ ggplot(df.freq2.RC, aes(x=Condition,y=Freq, fill= TimePoint)) +
   geom_errorbar(aes(ymin=Freq-se, ymax=Freq+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Mean signals/trial") +
   max.theme
+
+
+
+#############
+#stats
+# Likelihood-ratio test amplitude
+amp.RC.resp.null = lmer(meanAmp ~ (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+amp.RC.resp.model1 = lmer(meanAmp ~ Condition + (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+amp.RC.resp.model2 = lmer(meanAmp ~ TimeGroup + (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+amp.RC.resp.model3 = lmer(meanAmp ~ Condition*TimeGroup + (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+amp.RC.resp.anova <- anova(amp.RC.resp.null, amp.RC.resp.model1, amp.RC.resp.model2, amp.RC.resp.model3)
+print(amp.RC.resp.anova)
+
+# p values
+amp.RC.resp <- lsmeans(amp.RC.resp.model3, pairwise ~ Condition*TimeGroup, glhargs=list())
+summary(amp.RC.resp)
+
+
+# Likelihood-ratio test amplitude
+freq.RC.resp.null = lmer(Freq ~ (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+freq.RC.resp.model1 = lmer(Freq ~ Condition + (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+freq.RC.resp.model2 = lmer(Freq ~ TimeGroup + (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+freq.RC.resp.model3 = lmer(Freq ~ Condition*TimeGroup + (1|Spot) + (1|Spot_ROI), RCaMP.respROIs,REML=FALSE)
+freq.RC.resp.anova <- anova(freq.RC.resp.null, freq.RC.resp.model1, freq.RC.resp.model2, freq.RC.resp.model3)
+print(freq.RC.resp.anova)
+
+# p values
+freq.RC.resp <- lsmeans(freq.RC.resp.model3, pairwise ~ Condition*TimeGroup, glhargs=list())
+summary(freq.RC.resp)
 
 
 ###########
@@ -428,6 +480,18 @@ frequency<-RCaMP.ROIs[,c("Spot_ROI","TimePoint","Condition","Freq")]
 duration<-RCaMP.ROIs[,c("Spot_ROI","TimePoint","Condition","meanDur")]
 frac.resp.df<-RCaMP.ROIs[,c("Spot_ROI","TimePoint","Condition","frac.resp")]
 peakAUC<-RCaMP.ROIs[,c("Spot_ROI","TimePoint","Condition","meanpeakAUC")]
+
+
+
+summary.freq <- summarySE(frequency, measurevar="Freq", groupvars=c("Condition","TimePoint"))
+
+
+ggplot(df.fracResp1.RC, aes(x=Condition,y=frac.resp, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=frac.resp-se, ymax=frac.resp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("frac.resp") +
+  max.theme
+
 #############
 #stats
 # Likelihood-ratio test frequency
