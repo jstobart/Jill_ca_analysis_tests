@@ -57,7 +57,7 @@ astro.peaks$Spot_trial_TP_Cond_ROI<-paste(astro.peaks$Spot_trial_TP_Cond,astro.p
 
 astro.peaks$Spot_trial_TP_ROI<-paste(astro.peaks$Spot_trial_TP,astro.peaks$roiName, sep="_")
 
-
+astro.peaks$Spot_ROI<-paste(astro.peaks$Spot,astro.peaks$roiName, sep="_")
 
 # ROITypes
 astro.peaks$ROIType[grepl("r",astro.peaks$roiName)]="Process"
@@ -69,6 +69,7 @@ astro.peaks$ROIType<- as.factor(astro.peaks$ROIType)
 #Time Point Type
 astro.peaks$TimeGroup[grepl("B",astro.peaks$TimePoint)]="before"
 astro.peaks$TimeGroup[grepl("T",astro.peaks$TimePoint)]="after"
+
 
 astro.peaks$TimeGroup<- as.factor(astro.peaks$TimeGroup)
 astro.peaks$TimeGroup<- factor(astro.peaks$TimeGroup, levels = c("before","after"))
@@ -86,12 +87,8 @@ astro.peaks$Duration<- astro.peaks$halfWidth*2
 # drop peaks that occur before the start of stimulation
 astro.peaks<-subset(astro.peaks,peakTime>0)
 
-
-
-
 ######
 #distributions
-
 
 # amplitude
 #Lck
@@ -126,12 +123,19 @@ ggplot(astro.peaks[astro.peaks$Channel=="GCaMP",], aes(x=Condition,y=Duration, f
 
 
 ######
-#means
+#means of all peaks
 
+# time groups
 df.amp.lck<-summarySE(astro.peaks[astro.peaks$Channel=="LckGCaMP",], measurevar = "amplitude", groupvars = c("Condition", "TimeGroup"))
 df.amp.cyto<-summarySE(astro.peaks[astro.peaks$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Condition", "TimeGroup"))
 
 ggplot(df.amp.lck, aes(x=Condition,y=amplitude, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean amplitude") +
+  max.theme
+
+ggplot(df.amp.lck[df.amp.lck$Condition=="nostim",], aes(x=Condition,y=amplitude, fill= TimeGroup)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("Mean amplitude") +
@@ -143,7 +147,20 @@ ggplot(df.amp.cyto, aes(x=Condition,y=amplitude, fill= TimeGroup)) +
   ylab("Mean amplitude") +
   max.theme
 
+#stats
+# Likelihood-ratio test amplitude
 
+# only LCK, no stim
+amp.GC.resp.null = lmer(amplitude ~ (1|Spot) + (1|Spot_ROI), astro.peaks[(astro.peaks$Channel=="LckGCaMP" & astro.peaks$Condition=="nostim"),],REML=FALSE)
+amp.GC.resp.model2 = lmer(amplitude ~ TimeGroup + (1|Spot) + (1|Spot_ROI), astro.peaks[(astro.peaks$Channel=="LckGCaMP" & astro.peaks$Condition=="nostim"),],REML=FALSE)
+amp.GC.resp.anova <- anova(amp.GC.resp.null,amp.GC.resp.model2)
+print(amp.GC.resp.anova)
+
+# p values
+amp.GC.resp <- lsmeans(amp.GC.resp.model2, pairwise ~ TimeGroup, glhargs=list())
+summary(amp.GC.resp)
+
+# time points
 df.amp.lck2<-summarySE(astro.peaks[astro.peaks$Channel=="LckGCaMP",], measurevar = "amplitude", groupvars = c("Condition", "TimePoint"))
 df.amp.cyto2<-summarySE(astro.peaks[astro.peaks$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("Condition", "TimePoint"))
 
@@ -159,8 +176,31 @@ ggplot(df.amp.cyto2, aes(x=Condition,y=amplitude, fill= TimePoint)) +
   ylab("Mean amplitude") +
   max.theme
 
+##########
+# only responding peaks
 
-#means
+astro.peaks.resp<-subset(astro.peaks, peakTime<20 & Condition=="WPstim")
+
+#means of stim peaks
+
+# time groups
+df.amp.lck3<-summarySE(astro.peaks.resp[astro.peaks.resp$Channel=="LckGCaMP",], measurevar = "amplitude", groupvars = c("TimeGroup"))
+df.amp.cyto3<-summarySE(astro.peaks.resp[astro.peaks.resp$Channel=="GCaMP",], measurevar = "amplitude", groupvars = c("TimeGroup"))
+
+ggplot(df.amp.lck3, aes(x=TimeGroup,y=amplitude, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean amplitude") +
+  max.theme
+
+ggplot(df.amp.cyto3, aes(x=TimeGroup,y=amplitude, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean amplitude") +
+  max.theme
+
+#####
+#means duration
 
 df.dur.lck<-summarySE(astro.peaks[astro.peaks$Channel=="LckGCaMP",], measurevar = "Duration", groupvars = c("Condition", "TimeGroup"))
 df.dur.cyto<-summarySE(astro.peaks[astro.peaks$Channel=="GCaMP",], measurevar = "Duration", groupvars = c("Condition", "TimeGroup"))
@@ -198,9 +238,57 @@ ggplot(df.dur.cyto2, aes(x=Condition,y=Duration, fill= TimePoint)) +
 #######
 # signals per field of view
 
+# count the number of peaks per field of view for each spot at each time point
 
+Signals.trial.spot<- ddply(astro.peaks, c("Animal", "Spot","Channel", "TimePoint", "TimeGroup", "Condition","Trial","Spot_trial_TP"), summarise, 
+                          nPeaks = length(amplitude))
 
+Signals.spot<-ddply(Signals.trial.spot, c("Animal", "Spot", "Channel", "TimePoint", "TimeGroup", "Condition"), summarise, 
+                    meanPeaks = mean(nPeaks))
 
+# mean signals
+df.lck.sig.spot<-summarySE(Signals.spot[Signals.spot$Channel=="LckGCaMP",], measurevar = "meanPeaks", groupvars = c("Condition", "TimeGroup"))
+
+ggplot(df.lck.sig.spot, aes(x=Condition,y=meanPeaks, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanPeaks-se, ymax=meanPeaks+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peaks per FOV") +
+  max.theme
+
+######
+# number of ROIs in each trial for each field of view (across the whole trial)
+
+ROInum.trial.spot<- ddply(astro.peaks, c("Animal", "Spot","Channel", "TimePoint", "TimeGroup", "Condition","Trial","Spot_trial_TP"), summarise, 
+                           nROIs = length(unique(roiName)))
+
+ROInum.spot<-ddply(ROInum.trial.spot, c("Animal", "Spot", "Channel", "TimePoint", "TimeGroup", "Condition"), summarise, 
+                    meanROIs = mean(nROIs))
+
+# mean
+df.lck.ROInum1<-summarySE(ROInum.spot[ROInum.spot$Channel=="LckGCaMP",], measurevar = "meanROIs", groupvars = c("Condition","TimeGroup"))
+df.lck.ROInum2<-summarySE(ROInum.spot[ROInum.spot$Channel=="LckGCaMP",], measurevar = "meanROIs", groupvars = c("Condition","TimePoint"))
+
+ggplot(df.lck.ROInum1, aes(x=Condition,y=meanROIs, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanROIs-se, ymax=meanROIs+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIs/FOV") +
+  max.theme
+
+ggplot(df.lck.ROInum1[df.lck.ROInum1$Condition=="WPstim",], aes(x=Condition,y=meanROIs, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanROIs-se, ymax=meanROIs+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIs/FOV") +
+  max.theme
+
+# only LCK, WP stim
+ROInum.GC.null = lmer(meanROIs ~ (1|Spot), ROInum.spot[(ROInum.spot$Channel=="LckGCaMP" & ROInum.spot$Condition=="WPstim"),],REML=FALSE)
+ROInum.GC.model2 = lmer(meanROIs ~ TimeGroup + (1|Spot), ROInum.spot[(ROInum.spot$Channel=="LckGCaMP" & ROInum.spot$Condition=="WPstim"),],REML=FALSE)
+ROInum.GC.anova <- anova(ROInum.GC.null,ROInum.GC.model2)
+print(ROInum.GC.anova)
+
+# p values
+ROInum.GC.pv <- lsmeans(ROInum.GC.model2, pairwise ~ TimeGroup, glhargs=list())
+summary(ROInum.GC.pv)
 
 ###############
 #RCaMP
@@ -229,13 +317,11 @@ RCaMP$ROIType<- as.factor(RCaMP$ROIType)
 
 #Time Point Type
 RCaMP$TimeGroup[grepl("B",RCaMP$TimePoint)]="before"
-RCaMP$TimeGroup[grepl("TM1",RCaMP$TimePoint)]="1month"
-RCaMP$TimeGroup[grepl("TM2",RCaMP$TimePoint)]="1month"
-RCaMP$TimeGroup[grepl("TM4",RCaMP$TimePoint)]="2months"
-RCaMP$TimeGroup[grepl("TM8",RCaMP$TimePoint)]="2months"
+RCaMP$TimeGroup[grepl("T",RCaMP$TimePoint)]="after"
+
 
 RCaMP$TimeGroup<- as.factor(RCaMP$TimeGroup)
-RCaMP$TimeGroup<- factor(RCaMP$TimeGroup, levels = c("before","1month","2months"))
+RCaMP$TimeGroup<- factor(RCaMP$TimeGroup, levels = c("before","after"))
 
 
 # adjust peak time and duration
@@ -309,7 +395,7 @@ RCaMP.respROIs$Freq<-RCaMP.respROIs$nPeaks/RCaMP.respROIs$nTrials
 
 # responding ROIs
 
-
+###########
 #distributions
 
 # amplitude
@@ -340,10 +426,13 @@ ggplot(RCaMP.respROIs, aes(x=Condition,y=Freq, fill= TimePoint)) +
   ggtitle("notched")+
   max.theme
 
+###########
 #means
 
 df.amp1.RC<-summarySE(RCaMP.respROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimeGroup"))
 df.amp2.RC<-summarySE(RCaMP.respROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimePoint"))
+df.amp3.RC<-summarySE(RCaMP.ROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimeGroup"))
+df.amp4.RC<-summarySE(RCaMP.ROIs, measurevar = "meanAmp", groupvars = c("Condition", "TimePoint"))
 
 ggplot(df.amp1.RC, aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -357,10 +446,23 @@ ggplot(df.amp2.RC, aes(x=Condition,y=meanAmp, fill= TimePoint)) +
   ylab("Mean ROI amplitude") +
   max.theme
 
+ggplot(df.amp3.RC, aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanAmp-se, ymax=meanAmp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean ROI amplitude") +
+  max.theme
+
+ggplot(df.amp3.RC[df.amp3.RC$Condition=="WPstim",], aes(x=Condition,y=meanAmp, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanAmp-se, ymax=meanAmp+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean ROI amplitude") +
+  max.theme
+
 #means
 
-df.freq1.RC<-summarySE(RCaMP.ROIs, measurevar = "Freq", groupvars = c("Condition", "TimeGroup"))
-df.freq2.RC<-summarySE(RCaMP.ROIs, measurevar = "Freq", groupvars = c("Condition", "TimePoint"))
+df.freq1.RC<-summarySE(RCaMP.respROIs, measurevar = "Freq", groupvars = c("Condition", "TimeGroup"))
+df.freq2.RC<-summarySE(RCaMP.respROIs, measurevar = "Freq", groupvars = c("Condition", "TimePoint"))
+df.freq3.RC<-summarySE(RCaMP.ROIs, measurevar = "Freq", groupvars = c("Condition", "TimeGroup"))
 
 ggplot(df.freq1.RC, aes(x=Condition,y=Freq, fill= TimeGroup)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -374,7 +476,11 @@ ggplot(df.freq2.RC, aes(x=Condition,y=Freq, fill= TimePoint)) +
   ylab("Mean signals/trial") +
   max.theme
 
-
+ggplot(df.freq3.RC, aes(x=Condition,y=Freq, fill= TimeGroup)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Freq-se, ymax=Freq+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Mean signals/trial") +
+  max.theme
 
 #############
 #stats
@@ -418,8 +524,14 @@ fraction.response<- ddply(RCaMP, c("Animal", "Spot", "TimePoint", "TimeGroup", "
 fraction.response$frac.resp <- fraction.response$nActive/fraction.response$NTrials
 
 #histogram of responses
-ggplot(fraction.response, aes(x=frac.resp, fill=Condition)) + geom_histogram(aes(y=..count../sum(..count..)), binwidth=0.2,position="dodge")+
-  ggtitle("Distribution of percentage of trials with a response from sig ROIs")
+ggplot(fraction.response[fraction.response$TimeGroup=="before",], aes(x=frac.resp, fill=Condition)) + geom_histogram(aes(y=..count../sum(..count..)), binwidth=0.2,position="dodge")+
+  ggtitle("Fraction of active trials before")
+
+ggplot(fraction.response[fraction.response$TimeGroup=="1month",], aes(x=frac.resp, fill=Condition)) + geom_histogram(aes(y=..count../sum(..count..)), binwidth=0.2,position="dodge")+
+  ggtitle("Fraction of active trials 1 month after TAM")
+
+ggplot(fraction.response[fraction.response$TimeGroup=="2months",], aes(x=frac.resp, fill=Condition)) + geom_histogram(aes(y=..count../sum(..count..)), binwidth=0.2,position="dodge")+
+  ggtitle("Fraction of active trials 2 months after TAM")
 
 # mean percent response- i.e. the fraction of trials where a peak is detected in the first 30 sec
 df.fracResp1.RC <- summarySE(fraction.response, measurevar="frac.resp", groupvars=c("Condition", "TimeGroup"))
