@@ -33,8 +33,8 @@ max.theme <- theme_classic() +
 # peak data
 
 # load files
-ret_t <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_wt.csv", header=TRUE, sep = ",")
-ret_ret <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_ret.csv", header=TRUE, sep = ",")
+#ret_t <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_wt.csv", header=TRUE, sep = ",")
+#ret_ret <- read.csv("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/O2/Extracted values + Results/Jill-Extracted-values+ret_ret.csv", header=TRUE, sep = ",")
 
 ret_t <- read.csv("D:/Data/Pericytes/Results/Jill-Extracted-values+ret_wt.csv", header=TRUE, sep = ",")
 ret_ret <- read.csv("D:/Data/Pericytes/Results/Jill-Extracted-values+ret_ret.csv", header=TRUE, sep = ",")
@@ -76,10 +76,10 @@ allData$BranchName[allData$BranchName=="Prr2_2015_10_27_V3-V4"]="Prr2_2015_10_27
 
 
 # outlier test
-source("http://goo.gl/UUyEzD")
-outlierKD(allData, pO2)
-y
-allData<-allData[complete.cases(allData$pO2),]
+#source("http://goo.gl/UUyEzD")
+#outlierKD(allData, pO2)
+#y
+#allData<-allData[complete.cases(allData$pO2),]
 
 
 ##############

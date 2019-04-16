@@ -35,6 +35,10 @@ max.theme <- theme_classic() +
 baseline1 <- read.delim("E:/Data/Pericyte_project/Two-photon-data/Ret_ret_Mice/Baseline_BloodFlow/Results/Diam_velocity_27_10_2017.csv", header=TRUE, sep = "\t")
 baseline1 <- read.delim("D:/Data/Pericytes/Results/Diam_velocity_27_10_2017.csv", header=TRUE, sep = "\t")
 
+meanfMRI <- read.delim("H:/Data/ret-ret/fMRI/Ret_fMRI analysis_2017_means.csv", header=TRUE, sep = ",")
+
+res.aov2 <- aov(MCx ~ Genotype + Time, data = meanfMRI)
+summary(res.aov2)
 
 #########
 # unique animal and spot name
@@ -55,17 +59,18 @@ eGFPneg<-subset(baseline1, eGFP==0)
 
 #eGFPpos$BranchGroup[eGFPpos$BranchOrder<=0]<-"arteriole"
 eGFPpos$BranchGroup[eGFPpos$BranchOrder<=4]<-"ensheathing_PC"
-eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC_A"
-eGFPneg$BranchGroup[eGFPneg$BranchOrder>3]<-"capillary_PC_V"
-eGFPneg$BranchGroup[eGFPneg$BranchOrder<=3]<-"venule_PC"
+eGFPpos$BranchGroup[eGFPpos$BranchOrder>4]<-"capillary_PC"
+eGFPneg$BranchGroup[eGFPneg$BranchOrder>4]<-"capillary_PC"
+eGFPneg$BranchGroup[eGFPneg$BranchOrder<=4]<-"venule_PC"
 
 baseline<-rbind(eGFPpos,eGFPneg)
 #baseline<-eGFPpos
 
 baseline$BranchGroup<- as.factor(baseline$BranchGroup)
-baseline$BranchGroup<- factor(baseline$BranchGroup,levels = c("ensheathing_PC", "capillary_PC_A",
-                                                              "capillary_PC_V","venule_PC"))
-
+#baseline$BranchGroup<- factor(baseline$BranchGroup,levels = c("ensheathing_PC", "capillary_PC_A",
+ #                                                             "capillary_PC_V","venule_PC"))
+baseline$BranchGroup<- factor(baseline$BranchGroup,levels = c("ensheathing_PC", "capillary_PC",
+                                                              "venule_PC"))
 
 # only consider data from vessels were we have all the info (flux, etc.)
 #baseline<-baseline[complete.cases(baseline$Flux),]
@@ -185,22 +190,6 @@ ggplot(baseline, aes(x = interaction(Genotype,BranchGroup), y = Diameter, fill =
     guide=FALSE) + 
   max.theme
 
-# categorical scatterplots
-ggplot(baseline, aes(x=BranchOrder, y=Diameter, colour=Genotype))+
-  geom_jitter() +
-  geom_crossbar(data=df1B,aes(x=BranchOrder,ymin=Diameter, ymax=Diameter,y=Diameter,group=BranchOrder), width = 0.5) +
-  scale_colour_manual(
-    values=c("black", "red"), 
-    guide=FALSE) + 
-  max.theme
-
-ggplot(baseline, aes(x=BranchGroup, y=Diameter, colour=Genotype))+
-  geom_jitter() +
-  geom_crossbar(data=df1C,aes(x=BranchGroup,ymin=Diameter, ymax=Diameter,y=Diameter,group=BranchGroup), width = 0.5) +
-  scale_colour_manual(
-    values=c("black", "red"), 
-    guide=FALSE) + 
-  max.theme
 
 ######
 #Stats
@@ -1082,6 +1071,25 @@ ggplot(data=df4C, aes(x=BranchGroup, y=linearDensity, fill=Genotype)) +
     values=c("black", "red"))+
   max.theme
 
+
+########
+#bar graphs with scatter
+
+# categorical scatterplots
+ggplot() +
+  geom_bar(data=df1C, aes(x=BranchGroup, y=Diameter, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Diameter, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                           dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df1C, aes(x=BranchGroup, ymin=Diameter-se, ymax=Diameter+se), size=2,width=0.2, colour="black") +
+  ggtitle("Diameter")+
+  scale_colour_manual(
+    values=c("blue", "red"),guide=FALSE)+
+  max.theme
+
+
+
+
+
 ##########################
 # vessel data with NO FLOW
 baseline$flow<-"yes"
@@ -1120,3 +1128,7 @@ total_Ret_Ret=sum(noFlow$nVessels[noFlow$Genotype=="RetRet"])
 
 percent_Ret_plus=(noFlow.retplus$nVessels[noFlow.retplus$flow=="no"]/total_Ret_plus)*100
 percent_Ret_Ret=(noFlow.retret$nVessels[noFlow.retret$flow=="no"]/total_Ret_Ret)*100
+
+
+
+
