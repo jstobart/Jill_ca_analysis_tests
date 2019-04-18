@@ -12,7 +12,7 @@ Settings.FileNames = {  % folder names where images and roiSet.zip is found
 channel = struct('<blank>',1,'Ca_Neuron',2);  % can change 'blank' to any channel as this doesn't matter
 
 % Load calibration file
-calibration ='E:\matlab\CalibrationFiles\calibration_25x_approx.mat';
+calibration ='C:\JillsFiles\matlab\CalibrationFiles\calibration_25x_approx.mat';
 CalFile = CalibrationPixelSize.load(calibration);
 
 for iFile= 1:length(Settings.FileNames)
