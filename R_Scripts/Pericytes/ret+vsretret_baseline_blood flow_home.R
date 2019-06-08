@@ -46,7 +46,7 @@ baseline1$Vesselname <-paste(baseline1$AnimalName, baseline1$Spot,sep= "_")
 baseline1$Branchname <-paste(baseline1$AnimalName, baseline1$Branch,sep= "_")
 
 baseline1$Genotype<- factor(baseline1$Genotype,levels = c("Ret+", "RetRet"))
-#baseline$BranchOrder<- as.factor(baseline$BranchOrder)
+baseline$BranchOrder<- as.factor(baseline$BranchOrder)
 
 #remove data from penetrating arterioles, ascending venules or surface vessels
 baseline1<-baseline1[!baseline1$BranchOrder<=0,]
@@ -75,7 +75,10 @@ baseline$BranchGroup<- factor(baseline$BranchGroup,levels = c("ensheathing_PC", 
 # only consider data from vessels were we have all the info (flux, etc.)
 #baseline<-baseline[complete.cases(baseline$Flux),]
 
+baseline$speed<-"slow"
+baseline$speed[baseline$Velocity>1]<-"fast"
 
+baseline$speed<-as.factor(baseline$speed)
 
 # CONSIDER each Branch
 
@@ -221,6 +224,24 @@ plot(diam.model1)
 plot(diam.model2)
 plot(diam.model3)
 
+
+## Diameter and genotype or branch order
+diam1.null = lmer(Diameter ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam1.model1 = lmer(Diameter~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam1.model2 = lmer(Diameter~ BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam1.model3 = lmer(Diameter~ Genotype + BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam1.model4 = lmer(Diameter~ Genotype * BranchGroup + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam1.anova <- anova(diam1.null, diam1.model1,diam1.model2,diam1.model3,diam1.model4)
+print(diam1.anova)
+
+# p values
+diam1.Genotype <- lsmeans(diam1.model1, pairwise ~ Genotype, glhargs=list())
+summary(diam1.Genotype)
+
+diam.Genotype_BG <- lsmeans(diam1.model4, pairwise ~ Genotype*BranchGroup, glhargs=list())
+summary(diam.Genotype_BG)
+
+
 # diameter, genotype and depth
 diam.nullB = lmer(Diameter ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
 diam.model1B = lmer(Diameter~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
@@ -233,6 +254,18 @@ print(diam.anovaB)
 
 # NOTE: an effect of depth and genotype on diameter!
 
+
+# diameter, genotype and vessel speed
+diam.nullC = lmer(Diameter ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam.model1C = lmer(Diameter~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam.model2C = lmer(Diameter~ speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam.model3C = lmer(Diameter~ Genotype + speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam.model4C = lmer(Diameter~ Genotype * speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+diam.anovaC <- anova(diam.nullC, diam.model1C,diam.model2C,diam.model3C,diam.model4C)
+print(diam.anovaC)
+
+diam.Genotype_speed <- lsmeans(diam.model4C, pairwise ~ Genotype*speed, glhargs=list())
+summary(diam.Genotype_speed)
 
 ##############
 # depth 
@@ -583,6 +616,19 @@ flux.anovaB <- anova(flux.nullB, flux.model1B,flux.model2B,flux.model3B,flux.mod
 print(flux.anovaB)
 
 
+# diameter, genotype and vessel speed
+flux.nullC = lmer(Flux ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model1C = lmer(Flux~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model2C = lmer(Flux~ speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model3C = lmer(Flux~ Genotype + speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.model4C = lmer(Flux~ Genotype * speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+flux.anovaC <- anova(flux.nullC, flux.model1C,flux.model2C,flux.model3C,flux.model4C)
+print(flux.anovaC)
+
+flux.Genotype_speed <- lsmeans(flux.model4C, pairwise ~ Genotype*speed, glhargs=list())
+summary(flux.Genotype_speed)
+
+
 #########
 # linearDensity
 
@@ -734,6 +780,19 @@ linearDensity.model4B = lmer(linearDensity~ Genotype * Depth + (1|AnimalName) + 
 linearDensity.anovaB <- anova(linearDensity.nullB, linearDensity.model1B,linearDensity.model2B,linearDensity.model3B,linearDensity.model4B)
 print(linearDensity.anovaB)
 
+
+# diameter, genotype and vessel speed
+linearDensity.nullC = lmer(linearDensity ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model1C = lmer(linearDensity~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model2C = lmer(linearDensity~ speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model3C = lmer(linearDensity~ Genotype + speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.model4C = lmer(linearDensity~ Genotype * speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+linearDensity.anovaC <- anova(linearDensity.nullC, linearDensity.model1C, linearDensity.model2C,linearDensity.model3C,linearDensity.model4C)
+print(linearDensity.anovaC)
+
+linearDensity.Genotype_speed <- lsmeans(linearDensity.model4C, pairwise ~ Genotype*speed, glhargs=list())
+summary(linearDensity.Genotype_speed)
+
 #########
 # Hematocrit
 
@@ -883,6 +942,17 @@ Hematocrit.model4B = lmer(Hematocrit~ Genotype * Depth + (1|AnimalName) + (1|Spo
 Hematocrit.anovaB <- anova(Hematocrit.nullB, Hematocrit.model1B,Hematocrit.model2B,Hematocrit.model3B,Hematocrit.model4B)
 print(Hematocrit.anovaB)
 
+# diameter, genotype and vessel speed
+Hematocrit.nullC = lmer(Hematocrit ~ (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model1C = lmer(Hematocrit~ Genotype + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model2C = lmer(Hematocrit~ speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model3C = lmer(Hematocrit~ Genotype + speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.model4C = lmer(Hematocrit~ Genotype * speed + (1|AnimalName) + (1|Spot), baseline,REML=FALSE)
+Hematocrit.anovaC <- anova(Hematocrit.nullC, Hematocrit.model1C, Hematocrit.model2C,Hematocrit.model3C,Hematocrit.model4C)
+print(Hematocrit.anovaC)
+
+Hematocrit.Genotype_speed <- lsmeans(Hematocrit.model4C, pairwise ~ Genotype*speed, glhargs=list())
+summary(Hematocrit.Genotype_speed)
 
 ######################
 # Pulsatility Index
@@ -1076,17 +1146,195 @@ ggplot(data=df4C, aes(x=BranchGroup, y=linearDensity, fill=Genotype)) +
 #bar graphs with scatter
 
 # categorical scatterplots
+#diameter
 ggplot() +
   geom_bar(data=df1C, aes(x=BranchGroup, y=Diameter, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
   geom_jitter(data=baseline, aes(y=Diameter, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
                                                                                                            dodge.width = 0.9), size=4)+
-  geom_errorbar(data=df1C, aes(x=BranchGroup, ymin=Diameter-se, ymax=Diameter+se), size=2,width=0.2, colour="black") +
+  geom_errorbar(data=df1C, aes(x=BranchGroup, ymin=Diameter-se, ymax=Diameter+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
   ggtitle("Diameter")+
   scale_colour_manual(
-    values=c("blue", "red"),guide=FALSE)+
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+#velocity
+ggplot() +
+  geom_bar(data=df2C, aes(x=BranchGroup, y=Velocity, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Velocity, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                           dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df2C, aes(x=BranchGroup, ymin=Velocity-se, ymax=Velocity+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Velocity")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
   max.theme
 
 
+ggplot() +
+  geom_bar(data=df2A, aes(x=Genotype, y=Velocity, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Velocity, x=Genotype, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                           dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df2A, aes(x=Genotype, ymin=Velocity-se, ymax=Velocity+se), colour="black", size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Velocity")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+#Flux
+ggplot() +
+  geom_bar(data=df3C, aes(x=BranchGroup, y=Flux, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Flux, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                           dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df3C, aes(x=BranchGroup, ymin=Flux-se, ymax=Flux+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Flux")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df3A, aes(x=Genotype, y=Flux, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Flux, x=Genotype, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                       dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df3A, aes(x=Genotype, ymin=Flux-se, ymax=Flux+se),colour="black", size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Flux")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+
+#linear density
+ggplot() +
+  geom_bar(data=df4C, aes(x=BranchGroup, y=linearDensity, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=linearDensity, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                       dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df4C, aes(x=BranchGroup, ymin=linearDensity-se, ymax=linearDensity+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("linearDensity")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+#linear density
+ggplot() +
+  geom_bar(data=df4A, aes(x=Genotype, y=linearDensity, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=linearDensity, x=Genotype, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                                dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df4A, aes(x=Genotype, ymin=linearDensity-se, ymax=linearDensity+se),colour="black", size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("linearDensity")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+#hematocrit
+ggplot() +
+  geom_bar(data=df5C, aes(x=BranchGroup, y=Hematocrit, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Hematocrit, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                                dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df5C, aes(x=BranchGroup, ymin=Hematocrit-se, ymax=Hematocrit+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Hematocrit")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+ggplot() +
+  geom_bar(data=df5A, aes(x=Genotype, y=Hematocrit, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Hematocrit, x=Genotype, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                             dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df5A, aes(x=Genotype, ymin=Hematocrit-se, ymax=Hematocrit+se),colour="black", size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Hematocrit")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+#Pulsatility
+ggplot() +
+  geom_bar(data=df6C, aes(x=BranchGroup, y=PulsatilityIndex, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=BranchGroup, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                           dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df6C, aes(x=BranchGroup, ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("PulsatilityIndex")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+
+#Pulsatility
+ggplot() +
+  geom_bar(data=df6A, aes(x=Genotype, y=PulsatilityIndex, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=Genotype, colour=Genotype),position=position_jitterdodge(jitter.width = 0.4, jitter.height = 0,
+                                                                                                                   dodge.width = 0.9), size=3)+
+  geom_errorbar(data=df6A, aes(x=Genotype, ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se),colour="black", size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("PulsatilityIndex")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+##########
+# fast vs. slow vessels
+
+
+df6D<- summarySE(baseline, measurevar="PulsatilityIndex", groupvars=c("Genotype","speed"), na.rm=TRUE)
+df1D<- summarySE(baseline, measurevar="Diameter", groupvars=c("Genotype","speed"), na.rm=TRUE)
+df3D<- summarySE(baseline, measurevar="Flux", groupvars=c("Genotype","speed"), na.rm=TRUE)
+df4D<- summarySE(baseline, measurevar="linearDensity", groupvars=c("Genotype","speed"), na.rm=TRUE)
+df5D<- summarySE(baseline, measurevar="Hematocrit", groupvars=c("Genotype","speed"), na.rm=TRUE)
+
+#pulsatility
+ggplot() +
+  geom_bar(data=df6D, aes(x=speed, y=PulsatilityIndex, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=PulsatilityIndex, x=speed, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                                dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df6D, aes(x=speed, ymin=PulsatilityIndex-se, ymax=PulsatilityIndex+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("PulsatilityIndex")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+
+#Diameter
+ggplot() +
+  geom_bar(data=df1D, aes(x=speed, y=Diameter, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Diameter, x=speed, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                             dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df1D, aes(x=speed, ymin=Diameter-se, ymax=Diameter+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Diameter")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+
+#flux
+ggplot() +
+  geom_bar(data=df3D, aes(x=speed, y=Flux, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Flux, x=speed, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                             dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df3D, aes(x=speed, ymin=Flux-se, ymax=Flux+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Flux")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+
+#linear density
+ggplot() +
+  geom_bar(data=df4D, aes(x=speed, y=linearDensity, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=linearDensity, x=speed, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                 dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df4D, aes(x=speed, ymin=linearDensity-se, ymax=linearDensity+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("linearDensity")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
+
+
+#linear density
+ggplot() +
+  geom_bar(data=df5D, aes(x=speed, y=Hematocrit, colour=Genotype), fill="white", stat="identity",position=position_dodge()) +
+  geom_jitter(data=baseline, aes(y=Hematocrit, x=speed, colour=Genotype),position=position_jitterdodge(jitter.width = 0.15, jitter.height = 0,
+                                                                                                          dodge.width = 0.9), size=4)+
+  geom_errorbar(data=df5D, aes(x=speed, ymin=Hematocrit-se, ymax=Hematocrit+se, colour=Genotype), size=3,width=0.2, position=position_dodge(0.9)) +
+  ggtitle("Hematocrit")+
+  scale_colour_manual(
+    values=c("#009e73", "#cc79a7"),guide=FALSE)+
+  max.theme
 
 
 
