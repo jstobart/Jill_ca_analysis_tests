@@ -114,7 +114,7 @@ end
 %% Read in the data from the XML File
 
 % Load the XML file
-5xmlStruct = xml2struct(fnXML);
+xmlStruct = xml2struct(fnXML);
 
 % Check the file looks like we expect
 try
