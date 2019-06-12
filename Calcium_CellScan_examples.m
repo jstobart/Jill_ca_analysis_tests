@@ -66,6 +66,25 @@ Alice1= Alice1.motion_correct('refImg',refImg, 'ch',2,'maxShift', 10,'minCorr', 
            
 Alice1.plot();
 
+%% Weird data collected with "40x Objective"
+% % 2019.06.07 and 2019.06.10
+% Alice2 = BioFormats();  
+% 
+% Data= Alice2;
+% 
+% if Data.metadata.pixelSize < 0.01
+%     % Adjust the metadata to the correct lineTime
+% acq = Data.metadata.get_acq();
+% acq.pixelSize = acq.pixelSize*40;;
+% 
+% % Create the new RawImgDummy object!
+% rid = RawImgDummy(Data.name, Data.rawdata,... 
+%     Data.metadata.channels, Data.metadata.calibration, acq);
+% 
+% end
+% 
+% Alice2=Data;
+
 
 %% Example- basic CellScan
 
