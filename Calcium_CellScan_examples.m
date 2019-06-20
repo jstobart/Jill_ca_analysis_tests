@@ -1,6 +1,12 @@
 %% ASTROCYTE-NEURON CALCIUM,  RCaMP T-SERIES for CALCIUM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% look at unmixing (maybe from high res pic)
+% look at motion correction
+% look at what to do with calibration pixel size to change size
+
+
+
 %% Overview of CHIPS processing
 
 % You will need CHIPS folder, Bfmatlab folder, load_prairie_line script, xml2struct script on your path
@@ -51,18 +57,18 @@ Alice1.plot();
 % an unmixing matrix must be created for each combination of sensors
 % (GCaMP/RCaMP, RCaMP/FITC Dextran, GCaMP/Texas Red Dextran)
 
-Alice1= Alice1.unmix_chs();
-Alice1.plot();
+Alice1b= Alice1.unmix_chs();
+Alice1b.plot();
 
 % motion correction in XY
 
 % open or create a reference image
 
 refImg = BioFormats(); % load high resolution image (but it must be the same zoom factor!)
-refImg = mean(Alice1.rawdata(:,:,2,1:10),4);  % make a reference image by taking the average of the first 10 frames from the T-series
+refImg = mean(Alice1b.rawdata(:,:,1,:),4);  % make a reference image by taking the average of the first 10 frames from the T-series
 
 
-Alice1= Alice1.motion_correct('refImg',refImg, 'ch',2,'maxShift', 10,'minCorr', 0.4);%,'doPlot',true);
+Alice1c= Alice1.motion_correct('refImg',refImg, 'ch',1,'doPlot',true);
            
 Alice1.plot();
 
@@ -72,18 +78,18 @@ Alice1.plot();
 % 
 % Data= Alice2;
 % 
-% if Data.metadata.pixelSize < 0.01
-%     % Adjust the metadata to the correct lineTime
-% acq = Data.metadata.get_acq();
-% acq.pixelSize = acq.pixelSize*40;;
-% 
-% % Create the new RawImgDummy object!
-% rid = RawImgDummy(Data.name, Data.rawdata,... 
-%     Data.metadata.channels, Data.metadata.calibration, acq);
-% 
-% end
-% 
-% Alice2=Data;
+if Data.metadata.pixelSize < 0.01
+    % Adjust the metadata to the correct lineTime
+acq = Data.metadata.get_acq();
+acq.pixelSize = Data.metadata.pixelSize*40;
+
+% Create the new RawImgDummy object!
+rid = RawImgDummy([], Data.rawdata,... 
+    Data.metadata.channels, Data.metadata.calibration, acq);
+
+end
+
+Alice2=Data;
 
 
 %% Example- basic CellScan
@@ -148,7 +154,7 @@ BL_frames= 20;  %number of frames before stimulation
 
 % For membrane GCaMP- 128x128 pixels, 12Hz
 
-findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_memb_astro', 'baselineFrames',...
+findConf{1} = ConfigFindROIsFLIKA_2D.from_preset('ca_memb_astro', 'baselineFrames',...
     BL_frames,'freqPassBand',1,'sigmaXY', 2,...
     'sigmaT', 0.1,'thresholdPuff', 3, 'threshold2D', 0.2,...
     'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
@@ -167,14 +173,15 @@ detectConf{1} = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...'normMethod
              
 
 % put all the configuration parameters together
-configCS{1,1} = ConfigCellScan(findConf{1,1}, measureConf,detectConf{1,1}); 
+configCS{1,1} = ConfigCellScan(findConf{1}, measureConf,detectConf{1,1}); 
 
 % the variable above can also be saved and loaded each time (instead of
 % writing out the above settings)
 
 %% CellScan with predefined parameters
 
-cs004 = CellScan([], [], configCS{1,1}, 1);  % last parameter is the channel to use (change to 2 if astrocytes are the second channel)
+
+% last parameter is the channel to use (change to 2 if astrocytes are the second channel)
 
 
 %channel = struct('Ca_Cyto_Astro',1,'blood_plasma',2);
