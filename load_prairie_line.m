@@ -149,8 +149,8 @@ acq.lineTime = lineTime;
 acq.pixelTime = lineTime/size(riBF.rawdata, 2);
 
 % Create the new RawImgDummy object!
-rid = RawImgDummy(riBF.name, riBF.rawdata, acq, ...
-    riBF.metadata.channels, riBF.metadata.calibration);
+rid = RawImgDummy(riBF.name, riBF.rawdata,...
+    riBF.metadata.channels, riBF.metadata.calibration, acq);
 
 end
 
