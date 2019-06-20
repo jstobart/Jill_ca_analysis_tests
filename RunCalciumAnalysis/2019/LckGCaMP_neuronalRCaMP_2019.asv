@@ -2,7 +2,7 @@ close all; clear all;
 
 %% Information about your images
 
-% folder where data should be saved for each animal
+% folder where data should be saved
 Settings.ResultsFolder = 'E:\Data\Two_Photon_Data\GCaMP_RCaMP\Lck_GCaMP6f\Results';
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
@@ -82,27 +82,20 @@ for iFile= 1:length(Settings.FileNames)
     
     
     %% Create CellScan objects
-    astrocytes = CellScan(fnList, ImgArray, AC_configCS, 2); % peaks from automated ROIs
-    neurons = CellScan(fnList, ImgArray, N_configCS, 1); % peaks from hand clicked ROIs
+    astrocytes = CellScan(fnList, ImgArray, configCS, 2); % peaks from automated ROIs
+    neurons = CellScan(fnList, ImgArray, configCS, 2); % peaks from hand clicked ROIs
     
     % Process the images
-    astrocytes =astrocytes.process();
     neurons =neurons.process();
     
     % Make the debugging plots
-    astrocytes.plot();
     neurons.plot();
-    
-    %astrocytes.opt_config()
     %neurons.opt_config()
     
     
     %% Output data
-    OutputFile1=fullfile(Settings.ResultsFolder, strcat('Astrocytes_FieldofView',num2str(iFile)));
-    OutputFile2=fullfile(Settings.ResultsFolder, strcat('Neurons_FieldofView',num2str(iFile)));
-    
-    astrocytes.output_data(OutputFile1)
-    neurons.output_data(OutputFile2)
+    OutputFile=fullfile(Settings.ResultsFolder, strcat('FieldofView',num2str(iFile)));
+    neurons.output_data(OutputFile)
     
 end
 
