@@ -11,6 +11,7 @@ Settings.FileNames = {  % folder names where images and roiSet.zip is found
     };
 
 Settings.Baseline = 2; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
+Settings.Animal = 'Alice';
 
 channel = struct('Ca_Neuron',1,'Ca_Memb_Astro',2);  % can change 'blank' to any channel as this doesn't matter
 
@@ -26,6 +27,7 @@ SaveFiles{1,4}= fullfile(Settings.MainDir, 'Results','FilesforR','OnsetTimes_pha
 for iSpot= 1:length(Settings.FileNames)
     
     SpotRoot= Settings.FileNames{iSpot};
+    SpotId=SpotRoot(last-15:end);
     
     % Get a list of all files and folders in this folder.
     % different stimulation conditions
@@ -61,7 +63,10 @@ for iSpot= 1:length(Settings.FileNames)
             ImgArray =  BioFormats(fnList, channel);
             
             %% Motion Correction
+            if iTrial==1 && iCondition==1
             refImg=mean(ImgArray.rawdata(:,:,1,1:3),4);
+            end
+            
             ImgArray = ImgArray.motion_correct('refImg',refImg, 'ch',1,'maxShift', 10,'minCorr', 0.4);%,'doPlot',true);
             
             
@@ -143,7 +148,7 @@ for iSpot= 1:length(Settings.FileNames)
             % output peaks
             % csv and matlab files.....
             
-            % get fraction of active MD area in each field of view
+            % get fraction of active astrocyte MD area in each field of view
             
             % first create a mask of where the neurons are
             neuroMask = neurons.calcFindROIs.data.roiMask;
@@ -159,134 +164,99 @@ for iSpot= 1:length(Settings.FileNames)
             % output the peak data
             
             % peak output
-            tempAC=astrocytes.calcDetectSigs.data;
-            tempN= neurons.calcDetectSigs.data;
+            peakstempAC=astrocytes.calcDetectSigs.data;
+            peakstempN= neurons.calcDetectSigs.data;
             
-            temp2.trialname ={};
-            temp2.animalname = {};
-            temp2.Spot = {};
-            temp2.Cond = {};
-            temp2.area = {};
-            temp2.pixelsize = {};
-            temp2.nFluoPix = {};
-            temp2.nActivePix = {};
+            peaks.trialname ={};
+            peaks.channel={};
+            peaks.animalname = {};
+            peaks.Spot = {};
+            peaks.Cond = {};
+            peaks.area = {};
+            peaks.pixelsize = {};
+            peaks.nFluoPix = {};
+            peaks.nActivePix = {};
             
             % extract fields from Class
             for jField = 1:numel(listFields)
-                isFirst = (itrial == 1 && iScan == 1);
+                isFirst = (iTrial == 1);
                 if isFirst
-                    data.(listFields{jField}) = {};
+                    peakdata.(listFields{jField}) = {};
                 end
-                data.(listFields{jField}) = [data.(listFields{jField}); ...
-                    temp.(listFields{jField})];
+                peakdata.(listFields{jField}) = [peakdata.(listFields{jField}); ...
+                    tempAC.(listFields{jField})];
             end
             
             % create fields for trial, animal, spot, condition, etc.
-            for iPeak = 1:length(temp.amplitude)
-                temp2.trialname{iPeak,1}=strcat('trial', num2str(itrial,'%02d'));
-                if iScan==1 || iScan==2
-                    temp2.channel{iPeak,1}= 'GCaMP';
-                else
-                    temp2.channel{iPeak,1}= 'RCaMP';
-                end
-                temp2.Spot{iPeak,1}= spotId;
-                temp2.animalname{iPeak,1}= CurrentAnimal;
-                temp2.drug{iPeak,1}=drugId;
-                temp2.Cond{iPeak,1} = CurrentCondition;
-                temp2.pixelsize{iPeak,1} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
-                temp2.nFluoPix{iPeak,1} = nFluoPix;
-                temp2.nActivePix{iPeak,1} = nActivePix;
+            for iPeak = 1:length(tempAC.amplitude)
+                peaks.trialname{iPeak,1}=strcat('trial', num2str(iTrial,'%02d'));
+                peaks.channel='GCaMP';
+                peaks.Spot{iPeak,1}= SpotId;
+                peaks.animalname{iPeak,1}= Settings.Animal;
+                peaks.Cond{iPeak,1} = subDirsNames(iCondition);
+                peaks.pixelsize{iPeak,1} = astrocytes.rawImg.metadata.pixelSize;
+                peaks.nFluoPix{iPeak,1} = nFluoPix;
+                peaks.nActivePix{iPeak,1} = nActivePix;
                 
-                % get the indices  and area for a particular ROI
-                if iScan==1 || iScan==3
-                    jROIname = temp.roiName{iPeak};
-                    ROIindex= strcmp(CellScans(iScan,itrial).calcFindROIs.data.roiNames,jROIname);
-                    temp2.area{iPeak,1} = CellScans(iScan,itrial).calcFindROIs.data.area(ROIindex);
+                % get the area for a particular ROI
+                
+                    jROIname = tempAC.roiName{iPeak};
+                    ROIindex= strcmp(astrocytes.calcFindROIs.data.roiNames,jROIname);
+                    peaks.area{iPeak,1} = astrocytes.calcFindROIs.data.area(ROIindex);
                     
-                    jx = CellScans(iScan,itrial).calcFindROIs.data.centroidX(ROIindex,1);
-                    jy = CellScans(iScan,itrial).calcFindROIs.data.centroidY(ROIindex,1);
-                    xclose = round(x_pix*0.03); % 3 percent of pixels
-                    yclose = round(y_pix*0.03); % 3 percent of pixels
-             
                 
-            end
-            
-            
+            end       
             
             %%
-            isFirst = (itrial == 1 && iScan == 1);
+            isFirst = (iTrial == 1);
             if isFirst
-                data.Trial = {};
-                data.Animal = {};
-                data.Channel = {};
-                data.Spot = {};
-                data.Drug={};
-                data.Condition = {};
-                data.Depth = {};
-                data.area = {};
-                data.overlap = {};
-                data.pixelsize={};
-                data.nFluoPix = {};
-                data.nActivePix = {};
+                peakdata.Trial = {};
+                peakdata.Animal = {};
+                peakdata.Channel = {};
+                peakdata.Spot = {};
+                peakdata.Condition = {};
+                peakdata.area = {};
+                peakdata.pixelsize={};
+                peakdata.nFluoPix = {};
+                peakdata.nActivePix = {};
             end
-            data.Trial= [data.Trial; temp2.trialname];
-            data.Animal= [data.Animal; temp2.animalname];
-            data.Channel= [data.Channel; temp2.channel];
-            data.Spot= [data.Spot; temp2.Spot];
-            data.Drug= [data.Drug; temp2.drug];
-            data.Condition= [data.Condition; temp2.Cond];
-            data.Depth= [data.Depth; temp2.depth];
-            data.area= [data.area; temp2.area];
-            data.overlap= [data.overlap; temp2.overlap];
-            data.pixelsize= [data.pixelsize; temp2.pixelsize];
-            data.nFluoPix = [data.nFluoPix; temp2.nFluoPix];
-            data.nActivePix = [data.nActivePix; temp2.nActivePix];
+            peakdata.Trial= [peakdata.Trial; peaks.trialname];
+            peakdata.Animal= [peakdata.Animal; peaks.animalname];
+            peakdata.Channel= [peakdata.Channel; peaks.channel];
+            peakdata.Spot= [peakdata.Spot; peaks.Spot];
+            peakdata.Condition= [peakdata.Condition; peaks.Cond];
+            peakdata.area= [peakdata.area; peaks.area];
+            peakdata.pixelsize= [peakdata.pixelsize; peaks.pixelsize];
+            peakdata.nFluoPix = [peakdata.nFluoPix; peaks.nFluoPix];
+            peakdata.nActivePix = [peakdata.nActivePix; peaks.nActivePix];
             
-            clearvars temp temp2
+            clearvars tempAC peaks
             
             
             % make a table of trace info
             
             %traces output processes
-            if strcmp(CellScans(iScan,itrial).calcFindROIs.data.roiNames{1,1}, 'none')
+            if astrocytes.calcFindROIs.data.roiNames{1,1}, 'none')
                 continue
             else
-                traces= CellScans(iScan,itrial).calcMeasureROIs.data.tracesNorm;
+                traces= astrocytes.calcMeasureROIs.data.tracesNorm;
                 %preallocate
                 Trace_data=cell(size(traces,2),10);
                 for iROI = 1:size(traces,2)
                     Trace_data{iROI,1}= CellScans(iScan,itrial).calcFindROIs.data.roiNames{iROI,1};
-                    Trace_data{iROI,2}= strcat('trial', num2str(itrial,'%02d'));
-                    if iScan==1 || iScan==2
-                        Trace_data{iROI,3}= 'GCaMP';
-                    else
-                        Trace_data{iROI,3}= 'RCaMP';
-                    end
-                    
-                    
-                    Trace_data{iROI,4}= spotId;
-                    Trace_data{iROI,5}= CurrentAnimal;
-                    Trace_data{iROI,6}= CurrentCondition;
-                    Trace_data{iROI,7}= drugId;
-                    Trace_data{iROI,8} = CurrentDepth(1,1);
-                    Trace_data{iROI,9} = CurrentBaseline(1,1);
+                    Trace_data{iROI,2}= strcat('trial', num2str(iTrial,'%02d'));
+                    Trace_data{iROI,3}= 'GCaMP';                  
+                    Trace_data{iROI,4}= SpotId;
+                    Trace_data{iROI,5}= Settings.tAnimal;
+                    Trace_data{iROI,6}= subDirsNames(iCondition);
+                    Trace_data{iROI,9} = Settings.Baseline;
                     Trace_data{iROI,10} = traces(:,iROI);
-                    if iScan==1 || iScan==3
-                        Trace_data{iROI,11} = CellScans(iScan,itrial).calcFindROIs.data.roiIdxs{iROI,1};
-                        Trace_data{iROI,12} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
-                    else
-                        
-                        Trace_data{iROI,11} = CellScans(iScan,itrial).calcFindROIs.data.roiMask(:,:,iROI);
-                        Trace_data{iROI,12} = CellScans(iScan,itrial).rawImg.metadata.pixelSize;
+                    Trace_data{iROI,11} = astrocytes.calcFindROIs.data.roiIdxs{iROI,1};
+                    Trace_data{iROI,12} = astrocytes.rawImg.metadata.pixelSize;
+                                          
                     end
                     
-                    % get the indices  and area for a particular ROI
-                    if iScan==1 || iScan==3
-                        jx = CellScans(iScan,itrial).calcFindROIs.data.centroidX(iROI,1);
-                        jy = CellScans(iScan,itrial).calcFindROIs.data.centroidY(iROI,1);
-                        xclose = round(x_pix*0.03); % 3 percent of pixels
-                        yclose = round(y_pix*0.03); % 3 percent of pixels
-                        
+                                    
                         
                     FrameRate= CellScans(1, 1).rawImg.metadata.frameRate;
                     Trace_data{iROI,14} = FrameRate; % frameRate
@@ -316,14 +286,16 @@ for iSpot= 1:length(Settings.FileNames)
                 end
             end
             
+                    Trace_data{iROI,11} = neurons.calcFindROIs.data.roiMask(:,:,iROI);
+                    
             All_traces=vertcat(All_traces, Trace_data);
             clearvars Trace_data
         end
     end
     
     
-    dataNames=fieldnames(data);
-    data2= struct2cell(data);
+    dataNames=fieldnames(peakdata);
+    data2= struct2cell(peakdata);
     data3= [data2{:}];
     
     AllData=vertcat(AllData, data3);
