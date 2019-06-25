@@ -232,7 +232,7 @@ for iAnimal = 1:numAnimals
                 % CSArray_Ch1_FLIKA.opt_config();
                 %% Output data
                 
-           `'kffduc     % make a giant data table
+                % make a giant data table
                 listFields = {'amplitude', 'fullWidth', 'halfWidth', ...
                     'numPeaks', 'peakTime', 'peakStart', 'peakStartHalf', ...
                     'peakType', 'prominence', 'roiName', 'peakAUC'};
