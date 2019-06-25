@@ -210,11 +210,12 @@ for iSpot= 1:length(Settings.FileNames)
                     temp2.nActivePix{iPeak,1} = nActivePix;
                     
                     % get the indices  and area for a particular ROI
-                            if iScan==3
+                            if iScan==3 || iScan==1
                                 jROIname = temp.roiName{iPeak};
                                 ROIindex= strcmp(CellScans(iScan,1).calcFindROIs.data.roiNames,jROIname);
                                 temp2.area{iPeak,1} = CellScans(iScan,1).calcFindROIs.data.area(ROIindex);
                                 
+                                if iScan==3
                                 jx = CellScans(iScan,1).calcFindROIs.data.centroidX(ROIindex,1);
                                 jy = CellScans(iScan,1).calcFindROIs.data.centroidY(ROIindex,1);
                                 xclose = round(x_pix*0.03); % 3 percent of pixels
@@ -246,9 +247,12 @@ for iSpot= 1:length(Settings.FileNames)
                                     
                                     clear spatialcorr
                                 end
+                                else
+                                    temp2.overlap{iPeak,1} = 0;
+                                end
                             else
                                 temp2.area{iPeak,1} = 0;
-                                temp2.overlap{iPeak,1} = 0;
+                                
                             end
                     
                 end
@@ -338,7 +342,7 @@ for iSpot= 1:length(Settings.FileNames)
                     x2=round(FrameRate*(BL_time+8)); 
                     Trace_data{iROI,13}=trapz(traces(BL_frames:x2,iROI));
                     
-                      % get the indices  and area for a particular ROI
+                      % look for overlap of neuronal ROIs
                                 if iScan==3
                                     jx = CellScans(iScan,1).calcFindROIs.data.centroidX(iROI,1);
                                     jy = CellScans(iScan,1).calcFindROIs.data.centroidY(iROI,1);
@@ -374,11 +378,10 @@ for iSpot= 1:length(Settings.FileNames)
                                     Trace_data{iROI,14} = 0;
                                 end
                     end
-                                        
+                  All_traces=vertcat(All_traces, Trace_data);
+                clearvars Trace_data                      
                 end
-                
-                All_traces=vertcat(All_traces, Trace_data);
-                clearvars Trace_data
+                                
             end
             
             
@@ -389,7 +392,7 @@ for iSpot= 1:length(Settings.FileNames)
             AllData=vertcat(AllData, data3);
             
             
-            clearvars data data3
+            clearvars data data3 data2
         end
     end
 end
@@ -400,7 +403,7 @@ AllData2= [dataNames';AllData];
 
 %onsetTimeTable
 names={'ROI','Trial','Channel','Spot','Animal', 'Condition','baseline',...
-    'trace','ROIIdx','PixelSize','FrameRate','OnsetTime','TraceAUC1','TraceAUC10'};
+    'trace','ROIIdx','PixelSize','FrameRate','OnsetTime','TraceAUC8','overlap'};
 All_traces2=vertcat(names, All_traces);
 All_traces2(:,8)=[];
 All_traces2(:,8)=[];
