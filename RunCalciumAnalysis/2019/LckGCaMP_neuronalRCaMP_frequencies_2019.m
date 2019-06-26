@@ -7,10 +7,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\test';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforR', 'Crazy8_peaks_longtrials_07_2019.csv');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'Crazy8_peaks_longtrials_07_2019.mat');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'Crazy8_peaks_longtrials_07_2019.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR', 'Crazy8_peaks_longtrials_07_2019.csv');
 SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','Crazy8_traces_longtrials_07_2019.mat');
 SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','Crazy_onset_time_longtrials_07_2019.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','Crazy8_Lck_field_longtrials_07_2019.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','Crazy_Lck_field_longtrials_07_2019.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'J:\Jill_Stobart\In_vivo_2P_Data\66678_Crazy8\2019_06_14\spot1',...
@@ -144,9 +146,9 @@ for iSpot= 1:length(Settings.FileNames)
             neurons2 =neurons2.process();
             
             % Make the debugging plots
-            astrocytes.plot();
-            neurons1.plot();
-            neurons2.plot();
+%             astrocytes.plot();
+%             neurons1.plot();
+%             neurons2.plot();
             
             %astrocytes.opt_config()
             %neurons2.opt_config()
@@ -381,8 +383,8 @@ for iSpot= 1:length(Settings.FileNames)
                     Lck.Spot{iTrial,1}= SpotId;
                     Lck.animalname{iTrial,1}= Settings.Animal;
                     Lck.Cond{iTrial,1} = subDirsNames(iCondition);
-                    Lck.pixelsize{iTrial,1} = CellScans(iScan).rawImg.metadata.pixelSize;                  
-                                                           
+                    Lck.pixelsize{iTrial,1} = CellScans(iScan).rawImg.metadata.pixelSize;
+                    
                     % get fraction of active MD area
                     neuroMask = CellScans(2).calcFindROIs.data.roiMask;
                     if ndims(neuroMask) == 3
@@ -398,26 +400,28 @@ for iSpot= 1:length(Settings.FileNames)
                     Lck.Trial_ROIMask{iTrial,1} = mask;
                     
                     % all astrocyte ROI masks together
-            trialmasks(:,:,iTrial) = mask;
-
+                    trialmasks(:,:,iTrial) = mask;
+                    
                     
                 end
                 
             end
             
             
-            dataNames=fieldnames(data);
-            data2= struct2cell(data);
-            data3= [data2{:}];
             
-            AllData=vertcat(AllData, data3);
-            
-                       
-            clearvars data data2 data3
         end
         
-                   
+        % append peak data
+        dataNames=fieldnames(data);
+        data2= struct2cell(data);
+        data3= [data2{:}];
+        
+        AllData=vertcat(AllData, data3);
+        
+        clearvars data data2 data3
+        
         % Mask of Active Pixels (proportional to number of trials)
+        sumImg =sum(trialmasks,3);
         fracImg = sum(trialmasks,3)./numel(TrialNames);
         
         % calculate the score for responses (normalized to the "threshold"
@@ -427,54 +431,43 @@ for iSpot= 1:length(Settings.FileNames)
         fracImg(fracImg <= thresh) = NaN;
         score = nansum(nansum(fracImg)) / activePx;
         
-% save the mask of active pixels
-f = figure('visible', 'off');
-imagesc(fracImg);
-axis square
-caxis([0 1])
-colormap('jet')
-colorbar
-saveas(gcf,fullfile(FolderName,'Active_Pixel_Mask.tiff'))
-close(f)
-        
-        %% store Lck field of view information
-%                     isFirst = (iCondition == 1);
-%                     if isFirst
-%                         Lckdata.Trial = {};
-%                         Lckdata.Animal = {};
-%                         Lckdata.Spot = {};
-%                         Lckdata.Condition = {};
-%                         Lckdata.pixelsize={};
-%                         Lckdata.nFluoPix={};
-%                         Lckdata.nActivePix={}; 
-%                         Lckdata.Trial_ROIMask= {};
-%                         Lckdata.Total_ROIMask={};
-%                         Lckdata.Response_Score={};
-%                     end
-%                     Lckdata.Trial= [Lckdata.Trial; Lck.trialname];
-%                     Lckdata.Animal= [Lckdata.Animal; Lck.animalname];
-%                     Lckdata.Channel= [Lckdata.Channel; Lck.channel];
-%                     Lckdata.Spot= [Lckdata.Spot; Lck.Spot];
-%                     Lckdata.Condition= [Lckdata.Condition; Lck.Cond];
-%                     Lckdata.pixelsize= [Lckdata.pixelsize; Lck.pixelsize];
-%                     Lckdata.nFluoPix = [Lckdata.nFluoPix; Lck.nFluoPix];
-%                     Lckdata.nActivePix = [Lckdata.nActivePix; Lck.nActivePix];
-%                     Lckdata.Trial_ROIMask= [Lckdata.nActivePix; Lck.Trial_ROIMask];
-                    
-                    for iLck= 1:length(TrialNames)
-                        Lck.Total_ROIMask{iLck,1} = fracImg;
-                          Lck.Response_Score{iLck,1}=score; 
-                    end
-%                     Lckdata.Total_ROIMask = [Lckdata.Total_ROIMask; Lck.Total_ROIMask];
-%                     Lckdata.Response_Score = [Lckdata.Response_Score; Lck.Response_Score];
+        % save the mask of active pixels
+FigFileName1 = fullfile(FolderName,'Sum_Pixel_Mask.tif');
+FigFileName2 = fullfile(FolderName,'FracActive_Pixel_Mask.tif');
 
-            LckNames=fieldnames(Lck);
-            Lckdata2= struct2cell(Lck);
-            Lckdata3= [Lckdata2{:}];
-            
-            LckData=vertcat(LckData, Lckdata3);
-            
-            clearvars Lck Lckdata2 Lckdata3
+        f = figure('visible', 'off');
+        imagesc(sumImg);
+        axis square
+        caxis([0 1])
+        colormap('jet')
+        colorbar
+        saveas(gcf,FigFileName1{1,1})
+        close(f)
+        
+        
+        f = figure('visible', 'off');
+        imagesc(fracImg);
+        axis square
+        caxis([0 1])
+        colormap('jet')
+        colorbar
+        saveas(gcf,FigFileName2{1,1})
+        close(f)
+        
+        % store Lck field of view information
+               
+        for iLck= 1:length(TrialNames)
+            Lck.Total_ROIMask{iLck,1} = fracImg;
+            Lck.Response_Score{iLck,1}=score;
+        end
+        
+        LckNames=fieldnames(Lck);
+        Lckdata2= struct2cell(Lck);
+        Lckdata3= [Lckdata2{:}];
+        
+        LckData=vertcat(LckData, Lckdata3);
+        
+        clearvars Lck Lckdata2 Lckdata3
     end
 end
 
@@ -485,6 +478,8 @@ AllData2= [dataNames';AllData];
 
 %Field of View data
 LckFieldData= [LckNames';LckData];
+LckFieldData2=LckFieldData;
+LckFieldData(:,8:9)=[];
 
 %onsetTimeTable (ROI table)
 names={'ROI','Trial','Channel','Spot','Animal', 'Condition','baseline',...
@@ -495,10 +490,13 @@ All_traces2(:,8:9)=[];
 
 
 cd(fullfile(Settings.ResultsFolder));
+
 % write date to created file
-cell2csv(SaveFiles{1,1}, AllData2);
+save(SaveFiles{1,1}, 'AllData2','-v7.3');
+cell2csv(SaveFiles{1,2}, AllData2);
 save(SaveFiles{1,3}, 'All_traces','-v7.3');
-save(SaveFiles{1,2}, 'AllData2','-v7.3');
 cell2csv(SaveFiles{1,4}, All_traces2);
+save(SaveFiles{1,5}, 'LckFieldData2','-v7.3');
+cell2csv(SaveFiles{1,6}, LckFieldData);
 
 
