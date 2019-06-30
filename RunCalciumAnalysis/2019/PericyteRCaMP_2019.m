@@ -1,5 +1,9 @@
 close all; clear all;
 
+
+% LOOK AT CHAIMS GCAMP ANALYSIS FOR INSPIRATION
+
+
 All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[];
 %% Information about your images
 
@@ -13,15 +17,15 @@ SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','MJ_traces_07_2
 
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
-    'Z:\Jill_Stobart\In_vivo_2P_Data\RCaMP 59721 R- MJ\2019_06_11 - KX\spot1',...
-    'Z:\Jill_Stobart\In_vivo_2P_Data\RCaMP 59721 R- MJ\2019_06_11 - KX\spot2',...
+    'C:\JillsFiles\Data\MJ\2019_06_11 - KX\spot1',...
+    'C:\JillsFiles\Data\MJ\2019_06_11 - KX\spot2',...
     % etc.
     };
 
 Settings.Baseline = 2; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
 Settings.Animal = 'MJ';
 
-channel = struct('Ca_Neuron',1,'Ca_Memb_Astro',2);  % can change 'blank' to any channel as this doesn't matter
+channel = struct('Ca_Cyto_Astro',1,'Ca_Memb_Astro',2);  % can change 'blank' to any channel as this doesn't matter
 
 
 %% Loop through each file and make Cell Scans for LckGCaMP and RCaMP
@@ -55,14 +59,14 @@ for iSpot= 1:length(Settings.FileNames)
             refImg=mean(ImgArray.rawdata(:,:,1,1:3),4);
         end
         
-        ImgArray = ImgArray.motion_correct('refImg',refImg, 'ch',1,'maxShift', 10,'minCorr', 0.4);%,'doPlot',true);
+        ImgArray = ImgArray.motion_correct('refImg',refImg, 'ch',1,'maxShift', 10,'minCorr', 0.4, 'inpaintIters', 10);%,'doPlot',true);
         
         
-        BL_frames= Settings.Baseline*ImgArray.metadata.frameRate; % number of baseline frames
+        BL_frames= round(Settings.Baseline*ImgArray.metadata.frameRate); % number of baseline frames
         
         
         %% Configs for RCaMP Cell Scan
-        % NEURONS
+        % RCaMP
         % hand selected- peaks from cellular structures
         x_pix= size(ImgArray(1,1).rawdata,2); y_pix= size(ImgArray(1,1).rawdata,1);
         scaleF = 1;
@@ -74,13 +78,15 @@ for iSpot= 1:length(Settings.FileNames)
         % load image J ROIs for mask
         findConf{1} = ConfigFindROIsDummy.from_ImageJ(zipPath{1,1}, x_pix, y_pix, scaleF);
         
-        % 2D FLIKA selected for peaks from "dendrites"
-        findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_neuron', 'baselineFrames',...
-            BL_frames,'freqPassBand',1,'sigmaXY', 2,...
-            'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
-            'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-            'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
-            'discardBorderROIs',false);
+        % 2D FLIKA selected for peaks
+         findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_cyto_astro', 'baselineFrames',...
+            BL_frames);
+%         findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_neuron', 'baselineFrames',...
+%             BL_frames,'freqPassBand',1,'sigmaXY', 2,...
+%             'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
+%             'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
+%             'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+%             'discardBorderROIs',false);
         
         % measure ROIs (extract the traces)
         measureConf = ConfigMeasureROIsDummy();
@@ -97,7 +103,7 @@ for iSpot= 1:length(Settings.FileNames)
         
         
         %% Create CellScan objects
-        RCaMP1 = CellScan(fnList, ImgArray, N_configCS_ImageJ, 1); % peaks from hand clicked ROIs
+        RCaMP1 = CellScan(fnList, ImgArray, configCS_ImageJ, 1); % peaks from hand clicked ROIs
         RCaMP2 = CellScan(fnList, ImgArray, configCS_FLIKA, 1); % peaks from automated ROIs
         
         % Process the images
@@ -218,7 +224,7 @@ for iSpot= 1:length(Settings.FileNames)
                     Trace_data{iROI,10} = FrameRate; % frameRate
                     
                     % trace AUC in the 8 s follow stimulation
-                    x2=round(FrameRate*(BL_time+20));
+                    x2=round(FrameRate*(Settings.Baseline+20));
                     Trace_data{iROI,13}=trapz(traces(BL_frames:x2,iROI));
                     
                 end
