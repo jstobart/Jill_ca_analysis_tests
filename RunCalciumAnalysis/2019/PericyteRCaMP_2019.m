@@ -1,14 +1,26 @@
 close all; clear all;
 
+% do ensheathing pericytes have vasomotion?
+% is this affected by drugs?
+% are there changes in velocity after drugs?
+% change in frequency of vasomotion?
+
+% in vitro expts- what happens to the same ROIs over time??
 
 % LOOK AT CHAIMS GCAMP ANALYSIS FOR INSPIRATION
+
+% list of possible things to analyze
+% line scan calcium to correlate with diameter line scans- to measure
+% vasomotion
+% diameter and velocity
+
 
 
 All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[];
 %% Information about your images
 
 % folder where data should be saved for each animal
-Settings.ResultsFolder = 'D:\Data\test';
+Settings.ResultsFolder = 'D:\Data\Pericytes\Results\tests';
 
 % File names for saving
 SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforR', 'MJ_peaks_07_2019.csv');
@@ -17,15 +29,15 @@ SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','MJ_traces_07_2
 
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
-    'C:\JillsFiles\Data\MJ\2019_06_11 - KX\spot1',...
-    'C:\JillsFiles\Data\MJ\2019_06_11 - KX\spot2',...
+    'D:\Data\Pericytes\Calcium\MJ\spot2',...
+    'D:\Data\Pericytes\Calcium\MJ\spot1',...
     % etc.
     };
 
 Settings.Baseline = 2; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
 Settings.Animal = 'MJ';
 
-channel = struct('Ca_Cyto_Astro',1,'Ca_Memb_Astro',2);  % can change 'blank' to any channel as this doesn't matter
+channel = struct('Ca_Cyto_Astro',1,'blood_plasma',2);  % can change 'blank' to any channel as this doesn't matter
 
 
 %% Loop through each file and make Cell Scans for LckGCaMP and RCaMP
@@ -79,40 +91,38 @@ for iSpot= 1:length(Settings.FileNames)
         findConf{1} = ConfigFindROIsDummy.from_ImageJ(zipPath{1,1}, x_pix, y_pix, scaleF);
         
         % 2D FLIKA selected for peaks
-         findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_cyto_astro', 'baselineFrames',...
-            BL_frames);
-%         findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_neuron', 'baselineFrames',...
-%             BL_frames,'freqPassBand',1,'sigmaXY', 2,...
-%             'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
-%             'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-%             'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+%          findConf{2} = ConfigFindROIsFLIKA_2D.from_preset('ca_cyto_astro', 'baselineFrames',...
+%             BL_frames, 'freqPassBand',0.05,'sigmaXY', 1,...
+%             'sigmaT', 1,'thresholdPuff', 3, 'threshold2D', 0,...
+%             'minRiseTime',0.15, 'maxRiseTime', 1,'minROIArea', 10,...
+%             'dilateXY', 10, 'dilateT', 2,'erodeXY', 5, 'erodeT', 1,...
 %             'discardBorderROIs',false);
         
         % measure ROIs (extract the traces)
-        measureConf = ConfigMeasureROIsDummy();
+        measureConf = ConfigMeasureROIsDummy('baselineFrames', BL_frames);
         
         % filter the traces to detect the peaks and get info about them
         detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
-            'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-            'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+            'propagateNaNs', true,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
+            'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 5,'thresholdSP', 4);
         
         
         % Combine the configs into a CellScan config for neuronal RCaMP
         configCS_ImageJ= ConfigCellScan(findConf{1}, measureConf, detectConf); %
-        configCS_FLIKA= ConfigCellScan(findConf{2}, measureConf, detectConf); %
+        %configCS_FLIKA= ConfigCellScan(findConf{2}, measureConf, detectConf); %
         
         
         %% Create CellScan objects
         RCaMP1 = CellScan(fnList, ImgArray, configCS_ImageJ, 1); % peaks from hand clicked ROIs
-        RCaMP2 = CellScan(fnList, ImgArray, configCS_FLIKA, 1); % peaks from automated ROIs
+        %RCaMP2 = CellScan(fnList, ImgArray, configCS_FLIKA, 1); % peaks from automated ROIs
         
         % Process the images
         RCaMP1 =RCaMP1.process();
-        RCaMP2 =RCaMP2.process();
+        %RCaMP2 =RCaMP2.process();
         
         % Make the debugging plots
         RCaMP1.plot();
-        RCaMP2.plot();
+        %RCaMP2.plot();
         
         %RCaMP1.opt_config()
         %RCaMP2.opt_config()
@@ -126,8 +136,8 @@ for iSpot= 1:length(Settings.FileNames)
             'numPeaks', 'peakTime', 'peakStart', 'peakStartHalf', ...
             'peakType', 'prominence', 'roiName', 'peakAUC'};
         
-        CellScans=vertcat(RCaMP1, RCaMP2);
-        
+        %CellScans=vertcat(RCaMP1, RCaMP2);
+        CellScans=RCaMP1;
         
         % loop through cellscans
         for iScan=1:size(CellScans,1)
@@ -223,9 +233,8 @@ for iSpot= 1:length(Settings.FileNames)
                     FrameRate= CellScans(1).rawImg.metadata.frameRate;
                     Trace_data{iROI,10} = FrameRate; % frameRate
                     
-                    % trace AUC in the 8 s follow stimulation
-                    x2=round(FrameRate*(Settings.Baseline+20));
-                    Trace_data{iROI,13}=trapz(traces(BL_frames:x2,iROI));
+                    % trace AUC 
+                    Trace_data{iROI,11}=trapz(traces(:,iROI));
                     
                 end
                 All_traces=vertcat(All_traces, Trace_data);
@@ -250,9 +259,9 @@ end
 % %% Save all data for R analysis
 AllData2= [dataNames';AllData];
 
-%onsetTimeTable
+%Traces Table
 names={'ROI','Trial','Channel','Spot','Animal', 'baseline',...
-    'trace','ROIIdx','PixelSize','FrameRate','OnsetTime','TraceAUC20'};
+    'trace','ROIIdx','PixelSize','FrameRate','TraceAUC'};
 
 cd(fullfile(Settings.ResultsFolder));
 % write date to created file
