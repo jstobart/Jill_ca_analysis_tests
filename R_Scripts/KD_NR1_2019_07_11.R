@@ -38,6 +38,7 @@ cbbPalette <- c("#000000","#D55E00","#009E73","#E69F00","#56B4E9","#CC79A7","#F0
 ########################
 # load data
 
+# Jill's home files
 # peak data
 long.peaks.74<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/74_peaks_longtrials.csv",  header=TRUE, sep = ",")
 long.peaks.92<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/92_peaks_longtrials.csv",  header=TRUE, sep = ",")
@@ -64,6 +65,35 @@ long.field.95<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/95_Lck_f
 long.field.96<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/96_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
 long.field.Alice<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/Alice_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
 #long.field.crazy8<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/crazy8_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+
+#################
+#Jill's work files
+long.peaks.74<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/74_peaks_longtrials.csv",  header=TRUE, sep = ",")
+long.peaks.92<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/92_peaks_longtrials.csv",  header=TRUE, sep = ",")
+long.peaks.94<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/94_peaks_longtrials.csv",  header=TRUE, sep = ",")
+long.peaks.95<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/95_peaks_longtrials.csv",  header=TRUE, sep = ",")
+long.peaks.96<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/96_peaks_longtrials.csv",  header=TRUE, sep = ",")
+long.peaks.Alice<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/Alice_peaks_longtrials.csv",  header=TRUE, sep = ",")
+long.peaks.crazy8<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/crazy8_peaks_longtrials.csv",  header=TRUE, sep = ",")
+
+# OT data
+long.OT.74<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/74_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+long.OT.92<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/92_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+long.OT.94<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/94_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+long.OT.95<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/95_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+long.OT.96<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/96_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+long.OT.Alice<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/Alice_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+long.OT.crazy8<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/crazy8_onset_time_longtrials.csv",  header=TRUE, sep = ",")
+
+#field data
+long.field.74<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/74_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+long.field.92<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/92_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+long.field.94<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/94_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+long.field.95<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/95_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+long.field.96<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/96_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+long.field.Alice<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/Alice_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+long.field.crazy8<-read.table("G:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/crazy8_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
+
 ##########
 
 lsm.options(pbkrtest.limit = 100000)
@@ -125,11 +155,50 @@ all.OT$shRNA2<-as.factor(all.OT$shRNA2)
 all.field$shRNA1<-as.factor(all.field$shRNA1)
 all.field$shRNA2<-as.factor(all.field$shRNA2)
 
+######
+# days post injection
+all.OT$DaysPostInjection="47"
+
+all.OT$DaysPostInjection[grepl("06_22",all.OT$Spot)]="35"
+all.OT$DaysPostInjection[grepl("06_28",all.OT$Spot)]="42"
+all.OT$DaysPostInjection[grepl("07_02",all.OT$Spot)]="46"
+
+#peaks
+all.peaks$DaysPostInjection="47"
+
+all.peaks$DaysPostInjection[grepl("06_22",all.peaks$Spot)]="35"
+all.peaks$DaysPostInjection[grepl("06_28",all.peaks$Spot)]="42"
+all.peaks$DaysPostInjection[grepl("07_02",all.peaks$Spot)]="46"
+
+#field
+all.field$DaysPostInjection="47"
+
+all.field$DaysPostInjection[grepl("06_22",all.field$Spot)]="35"
+all.field$DaysPostInjection[grepl("06_28",all.field$Spot)]="42"
+all.field$DaysPostInjection[grepl("07_02",all.field$Spot)]="46"
+
+# set these new variables as factors so we can do stats on them
+all.peaks$shRNA1<-as.factor(all.peaks$shRNA1)
+all.peaks$shRNA2<-as.factor(all.peaks$shRNA2)
+all.peaks$DaysPostInjeciton<-as.factor(all.peaks$DaysPostInjection)
+
+all.OT$shRNA1<-as.factor(all.OT$shRNA1)
+all.OT$shRNA2<-as.factor(all.OT$shRNA2)
+all.OT$DaysPostInjeciton<-as.factor(all.OT$DaysPostInjection)
+
+all.field$shRNA1<-as.factor(all.field$shRNA1)
+all.field$shRNA2<-as.factor(all.field$shRNA2)
+all.field$DaysPostInjeciton<-as.factor(all.field$DaysPostInjection)
+
+
 # set the order of groups for plots
 all.OT$shRNA1<-factor(all.OT$shRNA1,levels=c("Control","KD"))
 all.OT$shRNA2<-factor(all.OT$shRNA2,levels=c("Control","NS", "KD"))
+
 all.peaks$shRNA1<-factor(all.peaks$shRNA1,levels=c("Control","KD"))
 all.peaks$shRNA2<-factor(all.peaks$shRNA2,levels=c("Control","NS", "KD"))
+
+
 all.field$shRNA1<-factor(all.field$shRNA1,levels=c("Control","KD"))
 all.field$shRNA2<-factor(all.field$shRNA2,levels=c("Control","NS", "KD"))
 
@@ -140,7 +209,8 @@ all.OT$ROIs_trial_Cond<-paste(all.OT$ROIs_trial, all.OT$Condition, sep= "_")
 all.peaks$ROIs_trial<-paste(all.peaks$Animal, all.peaks$Spot, all.peaks$Trial,all.peaks$roiName, sep= "_")
 all.peaks$ROIs_trial_Cond<-paste(all.peaks$ROIs_trial, all.peaks$Condition, sep= "_")
 
-all.field$Spot_trial<-paste(all.field$animalname, all.field$Spot, all.field$Trial, sep= "_")
+
+all.field$Spot_trial<-paste(all.field$animalname, all.field$Spot, all.field$trialname, sep= "_")
 all.field$Spot_trial_Cond<-paste(all.field$Spot_trial, all.field$Cond, sep= "_")
 
 
