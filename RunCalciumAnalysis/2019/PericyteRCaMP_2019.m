@@ -1,21 +1,5 @@
 close all; clear all;
 
-% do ensheathing pericytes have vasomotion?
-% is this affected by drugs?
-% are there changes in velocity after drugs?
-% change in frequency of vasomotion?
-
-% in vitro expts- what happens to the same ROIs over time??
-
-% LOOK AT CHAIMS GCAMP ANALYSIS FOR INSPIRATION
-
-% list of possible things to analyze
-% line scan calcium to correlate with diameter line scans- to measure
-% vasomotion
-% diameter and velocity
-
-
-
 All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[];
 %% Information about your images
 
@@ -23,9 +7,9 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[];
 Settings.ResultsFolder = 'D:\Data\Pericytes\Results\tests';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforR', 'MJ_peaks_07_2019.csv');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'MJ_peaks_07_2019.mat');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','MJ_traces_07_2019.mat');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'MJ_peaks_07_2019.csv');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'MJ_peaks_07_2019.mat');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'MJ_traces_07_2019.mat');
 
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
