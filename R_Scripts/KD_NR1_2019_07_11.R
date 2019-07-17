@@ -233,13 +233,268 @@ Spot.ntrials$Ani_Spot_Cond<-paste(Spot.ntrials$Animal, Spot.ntrials$Spot, Spot.n
 Overlap= all.peaks$overlap!=0
 all.peaks<-all.peaks[!Overlap,]
 
+
+##########################
+# FIELD DATA
+
+######
+# fraction of active pixels from all the astrocyte pixels
+# with peaks near stimulus
+all.field<-subset(all.field, pixelsize!="NaN")
+all.field$nFluoPix[all.field$nFluoPix==0]<-128*128  #adjust spots where no pixels were above the threshold
+
+
+all.field$FracActive=all.field$nActivePix/all.field$nFluoPix
+
+all.field.spot<-ddply(all.field, c("Spot","animalname", "Cond", "shRNA1", "shRNA2", "DaysPostInjection", "Response_Score"), summarise, 
+                      meanFracActive=mean(FracActive))
+
+df.FracActive<- summarySE(all.field.spot, measurevar = "meanFracActive", groupvars = c("Cond","shRNA1"))
+df.FracActive.day<-summarySE(all.field.spot, measurevar = "meanFracActive", groupvars = c("Cond","shRNA1", "DaysPostInjection" ))
+
+df.ResponseScore<- summarySE(all.field.spot, measurevar = "Response_Score", groupvars = c("Cond","shRNA1"))
+df.ResponseScore.day<- summarySE(all.field.spot, measurevar = "Response_Score", groupvars = c("Cond","shRNA1","DaysPostInjection"))
+
+ggplot(data=df.FracActive, aes(x=shRNA1, y= meanFracActive, fill=Cond)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanFracActive-se, ymax=meanFracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActive") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.FracActive.day, aes(x=interaction(DaysPostInjection, shRNA1), y= meanFracActive, fill=Cond)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=meanFracActive-se, ymax=meanFracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("FracActive") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.ResponseScore, aes(x=shRNA1, y= Response_Score, fill=Cond)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Response_Score-se, ymax=Response_Score+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ResponseScore") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.ResponseScore.day, aes(x=interaction(DaysPostInjection,shRNA1), y= Response_Score, fill=Cond)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Response_Score-se, ymax=Response_Score+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ResponseScore") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+#################################
+# PEAK DATA
+
+#####
+
+# consider all peaks from the whole trial, regardless of stimulation time
+
+#remove entries with no peaks
+all.peaks<-subset(all.peaks, peakTime!="NaN")
+
+
+all.peaks.RC<- subset(all.peaks, Channel=="RCaMP")
+
+all.peaks.GC<- subset(all.peaks, Channel=="GCaMP")
+
+#mean amplitude of signals for each ROI
+df.amp1.RC<- summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("Condition","shRNA1"))
+df.amp2.RC<- summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("Condition","shRNA2"))
+df.amp.day.RC<-summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("Condition","shRNA1", "DaysPostInjection" ))
+
+df.amp1.GC<- summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("Condition","shRNA1"))
+df.amp2.GC<- summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("Condition","shRNA2"))
+df.amp.day.GC<-summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("Condition","shRNA1", "DaysPostInjection" ))
+
+ggplot(data=df.amp1.RC, aes(x=shRNA1, y= amplitude, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.amp1.GC, aes(x=shRNA1, y= amplitude, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.amp2.RC, aes(x=shRNA2, y= amplitude, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.amp2.GC, aes(x=shRNA2, y= amplitude, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.amp.day.RC, aes(x=interaction(shRNA1, DaysPostInjection), y= amplitude, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette) + 
+  ggtitle("RCaMP") +
+  max.theme
+
+ggplot(data=df.amp.day.GC, aes(x=interaction(shRNA1, DaysPostInjection), y= amplitude, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette) + 
+  ggtitle("GCaMP")+
+  max.theme
+
+## STATS
+
+shRNA1_peaks.RC= interaction(all.peaks.RC$Condition,all.peaks.RC$shRNA1)
+shRNA1_day_peaks.RC= interaction(all.peaks.RC$Condition,all.peaks.RC$shRNA1, 
+                                 all.peaks.RC$DaysPostInjection)
+
+shRNA1_peaks.GC= interaction(all.peaks.GC$Condition,all.peaks.GC$shRNA1)
+shRNA1_day_peaks.GC= interaction(all.peaks.GC$Condition,all.peaks.GC$shRNA1, 
+                                 all.peaks.GC$DaysPostInjection)
+
+#RCaMP
+amp.RC.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+amp.RC.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+amp.RC.model2 = lmer(amplitude ~ shRNA1_peaks.RC + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+amp.RC.model3 = lmer(amplitude ~ shRNA1_day_peaks.RC+ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+amp.RC.anova <- anova(amp.RC.null, amp.RC.model1, amp.RC.model2, amp.RC.model3)
+print(amp.RC.anova)
+
+amp.RC.shRNA1<- glht(amp.RC.model2, mcp(shRNA1_peaks.RC= "Tukey"))
+summary(amp.RC.shRNA1)
+
+amp.RC.shRNA1_day<- glht(amp.RC.model3, mcp(shRNA1_day_peaks.RC= "Tukey"))
+summary(amp.RC.shRNA1_day)
+
+#GCaMP
+amp.GC.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+amp.GC.model1 = lmer(amplitude ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+amp.GC.model2 = lmer(amplitude ~ shRNA1_peaks.GC + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+amp.GC.model3 = lmer(amplitude ~ shRNA1_day_peaks.GC+ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+amp.GC.anova <- anova(amp.GC.null, amp.GC.model1, amp.GC.model2, amp.GC.model3)
+print(amp.GC.anova)
+
+amp.GC.shRNA1<- glht(amp.GC.model2, mcp(shRNA1_peaks.GC= "Tukey"))
+summary(amp.GC.shRNA1)
+
+amp.GC.shRNA1_day<- glht(amp.GC.model3, mcp(shRNA1_day_peaks.GC= "Tukey"))
+summary(amp.GC.shRNA1_day)
+
+
+
+#mean Duration
+df.dur1.RC<- summarySE(all.peaks.RC, measurevar = "Duration", groupvars = c("Condition","shRNA1"))
+df.dur2.RC<- summarySE(all.peaks.RC, measurevar = "Duration", groupvars = c("Condition","shRNA2"))
+df.dur.day.RC<-summarySE(all.peaks.RC, measurevar = "Duration", groupvars = c("Condition","shRNA1", "DaysPostInjection" ))
+
+df.dur1.GC<- summarySE(all.peaks.GC, measurevar = "Duration", groupvars = c("Condition","shRNA1"))
+df.dur2.GC<- summarySE(all.peaks.GC, measurevar = "Duration", groupvars = c("Condition","shRNA2"))
+df.dur.day.GC<-summarySE(all.peaks.GC, measurevar = "Duration", groupvars = c("Condition","shRNA1", "DaysPostInjection" ))
+
+ggplot(data=df.dur1.RC, aes(x=shRNA1, y= Duration, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  ggtitle("RCdur") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.dur1.GC, aes(x=shRNA1, y= Duration, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  ggtitle("GCdur") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.dur2.RC, aes(x=shRNA2, y= Duration, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  ggtitle("RCdur") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.dur2.GC, aes(x=shRNA2, y= Duration, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  ggtitle("GCdur") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.dur.day.RC, aes(x=interaction(shRNA1, DaysPostInjection), y= Duration, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette) + 
+  ggtitle("RCdur") +
+  max.theme
+
+ggplot(data=df.dur.day.GC, aes(x=interaction(shRNA1, DaysPostInjection), y= Duration, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette) + 
+  ggtitle("GCdur")+
+  max.theme
+
+## STATS
+
+
+#RCaMP
+dur.RC.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+dur.RC.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+dur.RC.model2 = lmer(Duration ~ shRNA1_peaks.RC + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+dur.RC.model3 = lmer(Duration ~ shRNA1_day_peaks.RC+ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC,REML=FALSE)
+dur.RC.anova <- anova(dur.RC.null, dur.RC.model1, dur.RC.model2, dur.RC.model3)
+print(dur.RC.anova)
+
+dur.RC.shRNA1<- glht(dur.RC.model2, mcp(shRNA1_peaks.RC= "Tukey"))
+summary(dur.RC.shRNA1)
+
+dur.RC.shRNA1_day<- glht(dur.RC.model3, mcp(shRNA1_day_peaks.RC= "Tukey"))
+summary(dur.RC.shRNA1_day)
+
+#GCaMP
+dur.GC.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+dur.GC.model1 = lmer(Duration ~ Condition + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+dur.GC.model2 = lmer(Duration ~ shRNA1_peaks.GC + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+dur.GC.model3 = lmer(Duration ~ shRNA1_day_peaks.GC+ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+dur.GC.anova <- anova(dur.GC.null, dur.GC.model1, dur.GC.model2, dur.GC.model3)
+print(dur.GC.anova)
+
+dur.GC.shRNA1<- glht(dur.GC.model2, mcp(shRNA1_peaks.GC= "Tukey"))
+summary(dur.GC.shRNA1)
+
+dur.GC.shRNA1_day<- glht(dur.GC.model3, mcp(shRNA1_day_peaks.GC= "Tukey"))
+summary(dur.GC.shRNA1_day)
+
+
+##############
+# which fields have neurons that respond to stimulation??
+
+
 ########################
 # ONSET TIME
 #remove entries with no onset time
 
 all.OT<-subset(all.OT, OnsetTime!="NaN")
-#all.OT.astrocyte<- subset(all.OT, Channel=="GCaMP")
-#all.OT.neuron<- subset(all.OT, Channel=="RCaMP")
+
 
 ###
 # neuronal responses to stimulation
@@ -341,35 +596,6 @@ ggplot(all.peaks[(all.peaks$Channel=="RCaMP"& all.peaks$Condition=="stim"),],aes
 # is there a change in spontaneous activity in neurons or astrocytes in the no stim trials
 
 # calculate the frequency (# of signals per trial)
-
-######
-# fraction of active pixels from all the astrocyte pixels
-# with peaks near stimulus
-all.field<-subset(all.field, pixelsize!="NaN")
-all.field$nFluoPix[all.field$nFluoPix==0]<-128*128  #adjust spots where no pixels were above the threshold
-
-
-all.field$FracActive=all.field$nActivePix/all.field$nFluoPix
-
-all.field.spot<-ddply(all.field, c("Spot","animalname", "Cond", "shRNA1", "shRNA2", "DaysPostInjection", "Response_Score"), summarise, 
-                              meanFracActive=mean(FracActive))
-
-df.FracActive<- summarySE(all.field.spot, measurevar = "meanFracActive", groupvars = c("Cond","shRNA1"))
-df.ResponseScore<- summarySE(all.field.spot, measurevar = "Response_Score", groupvars = c("Cond","shRNA1"))
-
-ggplot(data=df.FracActive, aes(x=shRNA1, y= meanFracActive, fill=Cond)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=meanFracActive-se, ymax=meanFracActive+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("FracActive") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.ResponseScore, aes(x=shRNA1, y= Response_Score, fill=Cond)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Response_Score-se, ymax=Response_Score+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("ResponseScore") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 
 #########
@@ -690,8 +916,8 @@ print(nROI.GC.group.anova)
 nROI.GC.shRNA1_Group<- glht(nROI.GC.group.model3, mcp(shRNA1_Group_GC= "Tukey"))
 summary(nROI.GC.shRNA1_Group)
 
-#nROI.GC.shRNA1_Group.day<- glht(nROI.GC.group.model4, mcp(shRNA1_Group_day_GC= "Tukey"))
-#summary(nROI.GC.shRNA1_Group.day)
+nROI.GC.shRNA1_Group.day<- glht(nROI.GC.group.model4, mcp(shRNA1_Group_day_GC= "Tukey"))
+summary(nROI.GC.shRNA1_Group.day)
 
 
 # fast GCaMP only
@@ -710,17 +936,5 @@ nROI.GC.shRNA1_day<- glht(nROI.fast.day.model2, mcp(shRNA1_day= "Tukey"))
 summary(nROI.GC.shRNA1_day)
 
 
-########
-#amplitude
-df.amp1<-summarySE(all.peaks, measurevar = "amplitude", groupvars = c("Channel","Condition", "shRNA1"))
-df.amp2<-summarySE(lck.peaks.window, measurevar = "amplitude", groupvars = c("Channel", "ROIType","Condition", "shRNA"))
-
-
-
-ggplot(df.amp1, aes(x=interaction(Channel,shRNA1),y=amplitude, fill= Condition)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("amplitude") +
-  max.theme
 
 
