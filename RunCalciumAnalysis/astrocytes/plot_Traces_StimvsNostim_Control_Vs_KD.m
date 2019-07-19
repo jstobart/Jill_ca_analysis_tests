@@ -81,52 +81,52 @@ end
 KD_stim = KD_stim(nonOverlapIdx2',:);
 
 
-%%
-% Calculate the first peak onset time after stim
+% %%
+% % Calculate the first peak onset time after stim
+% 
+% % % peak onsets and AUC in the first second after stim for each ROI
+% % for iROI= 1:length(NS_stim)
+% %     
+% %     trace=NS_stim{iROI,8};
+% %     FrameRate=NS_stim{iROI,11};
+% %     nframes=length(trace);
+% %     TimeX(1:nframes) = (1:nframes)/FrameRate;
+% %     BL_time=4.92;
+% %     baselineCorrectedTime=TimeX-BL_time;
+% %     
+% %     
+% %     % onset time
+% %     Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:end),2.5,2);
+% %     if isempty(Onsets)
+% %         Onsets=nan(1,1);
+% %     end
+% %     NS_stim{iROI, 17}= Onsets;
+% %     
+% % end
+% 
+% 
+% % peak onsets and AUC in the first second after stim for each ROI
+% for iROI= 1:length(KD_stim)
+%     
+%     trace=KD_stim{iROI,8};
+%     FrameRate=KD_stim{iROI,11};
+%     nframes=length(trace);
+%     TimeX(1:nframes) = (1:nframes)/FrameRate;
+%     BL_time=4.92;
+%     baselineCorrectedTime=TimeX-BL_time;
+%     
+%     
+%     % onset time
+%     Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:end),2.5,2);
+%     if isempty(Onsets)
+%         Onsets=nan(1,1);
+%     end
+%     KD_stim{iROI, 17}= Onsets;
+%     
+% end
 
-% peak onsets and AUC in the first second after stim for each ROI
-for iROI= 1:length(NS_stim)
-    
-    trace=NS_stim{iROI,8};
-    FrameRate=NS_stim{iROI,11};
-    nframes=length(trace);
-    TimeX(1:nframes) = (1:nframes)/FrameRate;
-    BL_time=4.92;
-    baselineCorrectedTime=TimeX-BL_time;
-    
-    
-    % onset time
-    Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:end),2.5,2);
-    if isempty(Onsets)
-        Onsets=nan(1,1);
-    end
-    NS_stim{iROI, 17}= Onsets;
-    
-end
 
-
-% peak onsets and AUC in the first second after stim for each ROI
-for iROI= 1:length(KD_stim)
-    
-    trace=KD_stim{iROI,8};
-    FrameRate=KD_stim{iROI,11};
-    nframes=length(trace);
-    TimeX(1:nframes) = (1:nframes)/FrameRate;
-    BL_time=4.92;
-    baselineCorrectedTime=TimeX-BL_time;
-    
-    
-    % onset time
-    Onsets=find_first_onset_time(baselineCorrectedTime(10:end), trace(10:end),2.5,2);
-    if isempty(Onsets)
-        Onsets=nan(1,1);
-    end
-    KD_stim{iROI, 17}= Onsets;
-    
-end
-
-
-%% Mean Traces- Lck Control Data
+%% Mean Traces- Non-silencing Data
 
 % ROI with a response to stimulation from non-silencing
 
@@ -140,9 +140,10 @@ end
 RCaMP_NS=NS_stim(rc_str',:);
 GCaMP_NS=NS_stim(gc_str',:);
 
+% pull out neuronal traces that start with stimulation
 OT_RCaMP_traces=[];
 for iROI=1:length(RCaMP_NS)
-    respOTIdx1(iROI)=~isempty(find((RCaMP_NS{iROI,17}>0 && RCaMP_NS{iROI,17}<=Fast_OnsetWindow),1));
+    respOTIdx1(iROI)=~isempty(find((RCaMP_NS{iROI,12}>0 && RCaMP_NS{iROI,12}<=Fast_OnsetWindow),1));
     tempY= RCaMP_NS{iROI,8};
     BL_time=4.92;
     
@@ -151,13 +152,15 @@ for iROI=1:length(RCaMP_NS)
     end
 end
 RrespOT=RCaMP_NS(respOTIdx1',:); % responding neurons
-OT_RCaMP_mean= nanmean(OT_RCaMP_traces,2);
 
+OT_RCaMP_mean= nanmean(OT_RCaMP_traces,2); % mean of responding neuronal traces
+
+% pull out responding astrocytes (fast and delayed)
 fastAC_traces=[];
 slowAC_traces=[];
 for iROI=1:length(GCaMP_NS)
-    fast_respOTIdx2(iROI)=~isempty(find((GCaMP_NS{iROI,17}>0 && GCaMP_NS{iROI,17}<=Fast_OnsetWindow),1));
-    delayed_respOTIdx2(iROI)=~isempty(find((GCaMP_NS{iROI,17}>Fast_OnsetWindow && GCaMP_NS{iROI,17}<=AOnsetWindow),1));
+    fast_respOTIdx2(iROI)=~isempty(find((GCaMP_NS{iROI,12}>0 && GCaMP_NS{iROI,12}<=Fast_OnsetWindow),1));
+    delayed_respOTIdx2(iROI)=~isempty(find((GCaMP_NS{iROI,12}>Fast_OnsetWindow && GCaMP_NS{iROI,12}<=AOnsetWindow),1));
     tempY= GCaMP_NS{iROI,8};
     BL_time=4.92;
     if fast_respOTIdx2(iROI)
@@ -222,9 +225,10 @@ end
 RCaMP_KD=KD_stim(rc_str2',:);
 GCaMP_KD=KD_stim(gc_str2',:);
 
+% pull out responding neuron traces based on onset time
 OT_RCaMP_traces=[];
 for iROI=1:length(RCaMP_KD)
-    respOTIdx2(iROI)=~isempty(find((RCaMP_KD{iROI,17}>0 && RCaMP_KD{iROI,17}<=Fast_OnsetWindow),1));
+    respOTIdx2(iROI)=~isempty(find((RCaMP_KD{iROI,12}>0 && RCaMP_KD{iROI,12}<=Fast_OnsetWindow),1));
     tempY= RCaMP_KD{iROI,8};
     BL_time=4.92;
     
@@ -235,6 +239,7 @@ end
 RrespOT2=RCaMP_KD(respOTIdx2',:); % responding neurons
 OT_RCaMP_mean2= nanmean(OT_RCaMP_traces,2);
 
+% pull out responding neurons
 fastAC_traces=[];
 slowAC_traces=[];
 for iROI=1:length(GCaMP_KD)
