@@ -1522,12 +1522,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'G:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'crazy8_peaks_longtrials_2019_07_02_B.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','crazy8_peaks_longtrials_2019_07_02_B.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_traces_longtrials_2019_07_02_B.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_onset_time_longtrials_2019_07_02_B.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_Lck_field_longtrials_2019_07_02_B.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_Lck_field_longtrials_2019_07_02_B.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'crazy8_peaks_longtrials_2019_07_18.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','crazy8_peaks_longtrials_2019_07_18.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_traces_longtrials_2019_07_18.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_onset_time_longtrials_2019_07_18.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_Lck_field_longtrials_2019_07_18.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_Lck_field_longtrials_2019_07_18.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
 %     'C:\Users\CARRIONS\Desktop\In_vivo_2P_Data\66678_Crazy8\2019_06_22\spot1',...
@@ -1541,7 +1541,7 @@ Settings.FileNames = {  % folder names where images and roiSet.zip is found
     %etc.
     };
 
-Settings.Baseline = 5; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
+Settings.Baseline = 4.92; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
 Settings.Animal = 'crazy8';
 
 channel = struct('Ca_Neuron',1,'Ca_Memb_Astro',2);  % what's on each channel
@@ -1665,9 +1665,9 @@ for iSpot= 1:length(Settings.FileNames)
             neurons2 =neurons2.process();
             
             % Make the debugging plots
-            %             astrocytes.plot();
-            %             neurons1.plot();
-            %             neurons2.plot();
+                        astrocytes.plot();
+                        neurons1.plot();
+                        neurons2.plot();
             
             %astrocytes.opt_config()
             %neurons2.opt_config()
@@ -1914,6 +1914,7 @@ for iSpot= 1:length(Settings.FileNames)
                         neuroMask);
                     Lck.nFluoPix{iTrial,1} = nFluoPix;
                     Lck.nActivePix{iTrial,1} = nActivePix;
+                    Lck.nTotalPix{iTrial,1} = nTotalPix;
                     
                     % ROI masks output
                     Lck.Trial_ROIMask{iTrial,1} = mask;
