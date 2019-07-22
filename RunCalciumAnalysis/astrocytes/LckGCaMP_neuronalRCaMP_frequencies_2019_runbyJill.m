@@ -103,7 +103,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             AC_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 1.5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 3,'thresholdSP', 5);
+                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 3,'thresholdSP', 6);
             
             % Combine the configs into a CellScan config for membrane tagged GCaMP
             AC_configCS= ConfigCellScan(AC_findConf, AC_measureConf, AC_detectConf); %
