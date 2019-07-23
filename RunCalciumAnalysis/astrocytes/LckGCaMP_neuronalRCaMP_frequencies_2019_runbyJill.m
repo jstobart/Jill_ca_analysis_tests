@@ -10,12 +10,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '74_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','74_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','74_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','74_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','74_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','74_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '74_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','74_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','74_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','74_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','74_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','74_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     %'D:\Data\GCaMP_RCaMP\NR1_KD\74\2019_06_21\spot1',...
@@ -95,7 +95,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -103,7 +103,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             AC_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false, 'excludeNaNs', false, 'lpWindowTime', 1.5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 3,'thresholdSP', 5);
+                'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 5,'thresholdSP', 6;
             
             % Combine the configs into a CellScan config for membrane tagged GCaMP
             AC_configCS= ConfigCellScan(AC_findConf, AC_measureConf, AC_detectConf); %
@@ -126,7 +126,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -134,7 +134,7 @@ for iSpot= 1:length(Settings.FileNames)
             
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
-                'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
+                'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 2, 'spFilterOrder', 2,...
                 'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6,'thresholdSP', 5);
             
             
@@ -517,12 +517,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '92_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','92_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','92_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','92_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','92_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','92_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '92_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','92_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','92_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','92_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','92_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','92_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'D:\Data\GCaMP_RCaMP\NR1_KD\92\2019_06_21\spot1',...
@@ -602,7 +602,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -633,7 +633,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -642,7 +642,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6, 'thresholdSP', 5);
             
             
             % Combine the configs into a CellScan config for neuronal RCaMP
@@ -1022,12 +1022,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'Alice_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','Alice_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','Alice_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','Alice_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','Alice_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','Alice_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'Alice_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','Alice_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','Alice_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','Alice_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','Alice_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','Alice_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'D:\Data\GCaMP_RCaMP\NR1_KD\Alice\2019_06_22\spot1',...
@@ -1102,7 +1102,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -1133,7 +1133,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -1142,7 +1142,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6, 'thresholdSP', 5);
             
             
             % Combine the configs into a CellScan config for neuronal RCaMP
@@ -1521,12 +1521,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'crazy8_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','crazy8_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', 'crazy8_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','crazy8_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','crazy8_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','crazy8_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'D:\Data\GCaMP_RCaMP\NR1_KD\Crazy8\2019_06_22\spot1',...
@@ -1602,7 +1602,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -1633,7 +1633,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -1642,7 +1642,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6, 'thresholdSP', 5);
             
             
             % Combine the configs into a CellScan config for neuronal RCaMP
@@ -2023,12 +2023,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '94_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','94_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','94_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','94_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','94_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','94_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '94_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','94_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','94_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','94_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','94_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','94_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'D:\Data\GCaMP_RCaMP\NR1_KD\94\2019_06_15\spot1',...
@@ -2109,7 +2109,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -2140,7 +2140,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -2149,7 +2149,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6, 'thresholdSP', 5);
             
             
             % Combine the configs into a CellScan config for neuronal RCaMP
@@ -2528,12 +2528,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '95_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','95_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','95_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','95_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','95_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','95_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '95_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','95_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','95_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','95_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','95_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','95_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'D:\Data\GCaMP_RCaMP\NR1_KD\95\2019_06_15\spot1',...
@@ -2614,7 +2614,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -2645,7 +2645,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -2654,7 +2654,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6, 'thresholdSP', 5);
             
             
             % Combine the configs into a CellScan config for neuronal RCaMP
@@ -3033,12 +3033,12 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[]; LckData=[]; LckFieldData
 Settings.ResultsFolder = 'D:\Data\GCaMP_RCaMP\NR1_KD\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '96_peaks_longtrials2.mat');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','96_peaks_longtrials2.csv');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','96_traces_longtrials2.mat');
-SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','96_onset_time_longtrials2.csv');
-SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','96_Lck_field_longtrials2.mat');
-SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','96_Lck_field_longtrials2.csv');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'FilesforMatlab', '96_peaks_longtrials3.mat');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'FilesforR','96_peaks_longtrials3.csv');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'FilesforMatlab','96_traces_longtrials3.mat');
+SaveFiles{1,4}= fullfile(Settings.ResultsFolder,'FilesforR','96_onset_time_longtrials3.csv');
+SaveFiles{1,5}= fullfile(Settings.ResultsFolder,'FilesforMatlab','96_Lck_field_longtrials3.mat');
+SaveFiles{1,6}= fullfile(Settings.ResultsFolder,'FilesforR','96_Lck_field_longtrials3.csv');
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'D:\Data\GCaMP_RCaMP\NR1_KD\96\2019_06_15\spot1',...
@@ -3117,7 +3117,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',0.5,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.14, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
+                'dilateXY', 5, 'dilateT', 0.3,'erodeXY', 1, 'erodeT', 0.1);
             
             % measure ROIs (extract the traces)
             AC_measureConf = ConfigMeasureROIsDummy();
@@ -3148,7 +3148,7 @@ for iSpot= 1:length(Settings.FileNames)
                 BL_frames,'freqPassBand',1,'sigmaXY', 2,...
                 'sigmaT', 0.14,'thresholdPuff', 7, 'threshold2D', 0.1,...
                 'minRiseTime',0.07, 'maxRiseTime', 1,'minROIArea', 10,...
-                'dilateXY', 4, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
+                'dilateXY', 5, 'dilateT', 0.2,'erodeXY', 1, 'erodeT', 0.1,...
                 'discardBorderROIs',false);
             
             % measure ROIs (extract the traces)
@@ -3157,7 +3157,7 @@ for iSpot= 1:length(Settings.FileNames)
             % filter the traces to detect the peaks and get info about them
             N_detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
                 'propagateNaNs', false,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 5,'thresholdSP', 4);
+                'spPassBandMin',0.1, 'spPassBandMax', 1, 'thresholdLP', 6, 'thresholdSP', 5);
             
             
             % Combine the configs into a CellScan config for neuronal RCaMP
