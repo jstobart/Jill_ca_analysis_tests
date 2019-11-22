@@ -15,22 +15,29 @@ stimwindow=20; % 5 s baseline, 15 s imaging
 
 %% load trace data
 
-load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FileforMatlab\old_data\74_traces_longtrials.mat');
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\74_traces_longtrials_clean.mat');
 mouse74=All_traces;
 
-load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FileforMatlab\old_data\92_traces_longtrials.mat');
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\92_traces_longtrials_clean.mat');
 mouse92=All_traces;
 
-load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FileforMatlab\old_data\94_traces_longtrials.mat');
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\94_traces_longtrials_clean.mat');
 mouse94=All_traces;
 
-load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FileforMatlab\old_data\95_traces_longtrials.mat');
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\95_traces_longtrials_clean.mat');
 mouse95=All_traces;
 
-load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FileforMatlab\old_data\96_traces_longtrials.mat');
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\96_traces_longtrials_clean.mat');
 mouse96=All_traces;
 
-NS=vertcat(mouse74, mouse92); % non-silencing
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\alice_traces_longtrials_clean.mat');
+mouseAlice=All_traces;
+
+load('D:\Data\GCaMP_RCaMP\NR1_KD\Results\FilesforMatlab\clean_data\crazy8_traces_longtrials_clean.mat');
+mouseCrazy8=All_traces;
+
+%NS=vertcat(mouse74, mouse92, mouseAlice, mouseCrazy8); % non-silencing
+NS=vertcat(mouse74, mouse92, mouseAlice, mouseCrazy8,mouse94,mouse95,mouse96);
 KD=vertcat(mouse94, mouse95, mouse96); % knock down
 
 
@@ -41,9 +48,9 @@ end
 NS_stim=NS(~NostimIdx',:);
 
 for xROI=1:size(KD,1)
-    NostimIdx(xROI)= strcmp(KD{xROI,6},'nostim');
+    NostimIdx2(xROI)= strcmp(KD{xROI,6},'nostim');
 end
-KD_stim=KD(~NostimIdx',:);
+KD_stim=KD(~NostimIdx2',:);
 
 
 for iROI=1:length(NS_stim)
@@ -87,12 +94,12 @@ KD_stim = KD_stim(nonOverlapIdx2',:);
 % % % peak onsets and AUC in the first second after stim for each ROI
 % % for iROI= 1:length(NS_stim)
 % %     
-% %     trace=NS_stim{iROI,8};
-% %     FrameRate=NS_stim{iROI,11};
-% %     nframes=length(trace);
-% %     TimeX(1:nframes) = (1:nframes)/FrameRate;
-% %     BL_time=4.92;
-% %     baselineCorrectedTime=TimeX-BL_time;
+    trace=NS_stim{1,8};
+    FrameRate=NS_stim{1,11};
+    nframes=length(trace);
+    TimeX(1:nframes) = (1:nframes)/FrameRate;
+    BL_time=4.92;
+    baselineCorrectedTime=TimeX-BL_time;
 % %     
 % %     
 % %     % onset time
@@ -179,7 +186,10 @@ GrespOT =vertcat(fastAC,delayedAC);
 fastAC_mean= nanmean(fastAC_traces,2);
 slowAC_mean= nanmean(slowAC_traces,2);
 
-
+allAC_traces=horzcat(slowAC_traces,fastAC_traces);
+allAC_mean=nanmean(allAC_traces,2);
+allAC_SDTrace = nanstd(allAC_traces');
+allAC_SEM=allAC_SDTrace/sqrt(size(allAC_traces,2));
 
 %% shaded error bar with
 green=[(27/255) (120/255) (55/255)];
@@ -216,6 +226,38 @@ mseb(TimeX,(OT_RCaMP_mean'+2),RC_SEM,lineProps)
 rectangle('Position', [5 -0.3 8 4])
 plot([-0.1 -0.1],[0 1], 'k','LineWidth', 1)
 
+
+figure('name', 'astrocyte ROIs means- plus SEM')
+hold on
+axis off
+xlim([-1 25]);
+lineProps.width = 1;
+lineProps.edgestyle = ':';
+
+%ylim([-0.2 3]);
+lineProps.col = {green};
+mseb(TimeX(5:end),smooth(allAC_mean(5:end),7),smooth(allAC_SEM(5:end),7)',lineProps)
+
+
+rectangle('Position', [5 -0.1 8 0.8])
+plot([-1 -1],[0 0.5], 'k','LineWidth', 2)
+
+
+figure('name', 'neuron ROIs means- plus SEM')
+hold on
+axis off
+xlim([-1 25]);
+lineProps.width = 1;
+lineProps.edgestyle = ':';
+
+%ylim([-0.2 3]);
+lineProps.col = {purple};
+mseb(TimeX(5:end),(smooth(OT_RCaMP_mean(5:end),7)),smooth(RC_SEM(5:end),7)',lineProps)
+
+
+rectangle('Position', [5 -0.1 8 2])
+plot([-1 -1],[0 0.5], 'k','LineWidth', 2)
+
 %% mean traces for knockdown
 for iROI=1:length(KD_stim)
     rc_str2(iROI)= ~isempty(strfind(KD_stim{iROI,3},'RCaMP'));
@@ -243,8 +285,8 @@ OT_RCaMP_mean2= nanmean(OT_RCaMP_traces,2);
 fastAC_traces=[];
 slowAC_traces=[];
 for iROI=1:length(GCaMP_KD)
-    fast_respOTIdx3(iROI)=~isempty(find((GCaMP_KD{iROI,17}>0 && GCaMP_KD{iROI,17}<=Fast_OnsetWindow),1));
-    delayed_respOTIdx3(iROI)=~isempty(find((GCaMP_KD{iROI,17}>Fast_OnsetWindow && GCaMP_KD{iROI,17}<=AOnsetWindow),1));
+    fast_respOTIdx3(iROI)=~isempty(find((GCaMP_KD{iROI,12}>0 && GCaMP_KD{iROI,12}<=Fast_OnsetWindow),1));
+    delayed_respOTIdx3(iROI)=~isempty(find((GCaMP_KD{iROI,12}>Fast_OnsetWindow && GCaMP_KD{iROI,12}<=AOnsetWindow),1));
     tempY= GCaMP_KD{iROI,8};
     BL_time=4.92;
     if fast_respOTIdx3(iROI)

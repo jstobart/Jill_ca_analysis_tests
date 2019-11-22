@@ -11,15 +11,15 @@ MJ= load_prairie_line();
 
 %% Line Scan Velocity
 
-lsv001 = LineScanVel([],MJ);
-lsv001.process()
-lsv001.plot()
-lsv001.opt_config()
+lsv002 = LineScanVel([],MJ);
+lsv002.process()
+lsv002.plot()
+lsv002.opt_config()
 
 
 %% Line Scan Diameter
 
-lsd001 = LineScanDiam([], MJ_diam);
+lsd001 = LineScanDiam([], MJ);
 lsd001.process()
 lsd001.plot()
 lsd001.opt_config()

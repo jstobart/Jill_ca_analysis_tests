@@ -298,8 +298,7 @@ Spot.ntrials$Ani_Spot_Cond<-paste(Spot.ntrials$Animal, Spot.ntrials$Spot, Spot.n
 Overlap= all.peaks$overlap!=0
 all.peaks<-all.peaks[!Overlap,]
 
-#consider onsly positive amplitude and accurate time scale
-all.peaks.window<-subset(all.peaks, peakTime>0 & peakTime<12 & amplitude>0 & Duration<20)
+
 
 ##########################
 # FIELD DATA
@@ -423,7 +422,9 @@ ggplot(data=df.FracActive2, aes(x=shRNA2, y= meanFracActive, fill=Cond)) +
 #################################
 # PEAK DATA
 
-#####
+
+#consider onsly positive amplitude and accurate time scale
+all.peaks.window<-subset(all.peaks, peakTime>0 & peakTime<12 & amplitude>0 & Duration<20)
 
 # RCaMP peaks (nostim and stim) near stimulation time
 all.peaks.RC<- subset(all.peaks.window, Channel=="RCaMP")
@@ -500,6 +501,7 @@ ggplot(all.peaks.GC[(all.peaks.GC$Condition=="stim"),],aes(x=Duration,y=..densit
 df.amp1.RC<- summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("Condition","shRNA1"))
 df.amp2.RC<- summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("Condition","shRNA2"))
 df.amp.TP.RC<-summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("Condition","shRNA1", "Timepoint" ))
+df.amp3.RC<-summarySE(all.peaks.RC, measurevar = "amplitude", groupvars = c("shRNA1"))
 
 # RCaMP spontaneous only
 df.amp1.RC.nostim<- summarySE(nostim.peaks.RC, measurevar = "amplitude", groupvars = c("shRNA1"))
@@ -518,6 +520,14 @@ ggplot(data=df.amp1.RC, aes(x=shRNA1, y= amplitude, fill=Condition)) +
   geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("amplitude") +
   ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.amp3.RC, aes(x=shRNA1, y= amplitude, fill=shRNA1)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("RCaMP- all peaks- nostim and stim together") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
@@ -611,6 +621,7 @@ ggplot(data=df.amp.TP.RC.stim, aes(x=Timepoint, y= amplitude, fill=shRNA1)) +
 df.amp1.GC<- summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("Condition","shRNA1"))
 df.amp2.GC<- summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("Condition","shRNA2"))
 df.amp.TP.GC<-summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("Condition","shRNA1", "Timepoint" ))
+df.amp3.GC<-summarySE(all.peaks.GC, measurevar = "amplitude", groupvars = c("shRNA1"))
 
 # GCaMP spontaneous only
 df.amp1.GC.nostim<- summarySE(nostim.peaks.GC, measurevar = "amplitude", groupvars = c("shRNA1"))
@@ -631,6 +642,13 @@ ggplot(data=df.amp1.GC, aes(x=shRNA1, y= amplitude, fill=Condition)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
+ggplot(data=df.amp3.GC, aes(x=shRNA1, y= amplitude, fill=shRNA1)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("GCaMP- all peaks (stim and nostim together") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 ggplot(data=df.amp2.GC, aes(x=shRNA2, y= amplitude, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -756,6 +774,14 @@ summary(amp.RC.S.shRNA1)
 amp.RC.S.shRNA2<- glht(amp.RC.S.model2, mcp(shRNA2= "Tukey"))
 summary(amp.RC.S.shRNA2)
 
+# GCaMP all peaks together
+amp.GC.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+amp.GC.model1 = lmer(amplitude ~ shRNA1 + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
+amp.GC.anova <- anova(amp.GC.null, amp.GC.model1)
+print(amp.GC.anova)
+
+amp.GC.shRNA1<- glht(amp.GC.model1, mcp(shRNA1= "Tukey"))
+summary(amp.GC.shRNA1)
 
 #GCaMP nostim
 amp.GC.NS.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
@@ -1109,6 +1135,7 @@ Neuron95Onset<-quantile(NeuronalStim$OnsetTime, prob = seq(0, 1, length = 21), t
 NeuronPT50<-Neuron95Onset[[11]]
 print(NeuronPT50)
 
+
 # time thresold to consider an astrocyte to be fast:
 fastTh<-NeuronPT50
 
@@ -1311,6 +1338,10 @@ ROInum.8strial.group$ROIsPerTrial<-ROInum.8strial.group$nROIs/ROInum.8strial.gro
 ROInum.8strial.stim<-subset(ROInum.8strial, Condition=="stim")
 ROInum.8strial.nostim<-subset(ROInum.8strial, Condition=="nostim")
 
+#group together early and mid time points
+
+ROInum.8strial.stim$Timepoint[ROInum.8strial.stim$Timepoint=="mid"]<-"early"
+
 # means
 df.ROInum.8strial.NS.RC1<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA1"))
 df.ROInum.8strial.NS.RC2<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA2"))
@@ -1322,6 +1353,8 @@ df.ROInum.8strial.RC.S.TP<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Cha
 df.ROInum.8strial.GC1<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","shRNA1"))
 df.ROInum.8strial.GC2<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","shRNA2"))
 df.ROInum.8strial.GC.TP<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","shRNA1","Timepoint"))
+df.ROInum.8strial.NS.GC1<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA1"))
+df.ROInum.8strial.S.TP.GC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA1","Timepoint"))
 
 # plots
 # RCaMP
@@ -1385,7 +1418,30 @@ ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], aes(x=shRNA2,
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
+ggplot(data=df.ROInum.8strial.NS.GC1, aes(x=shRNA1, y= ROIsPerTrial, fill=shRNA1)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("nostim GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
+ggplot(data=df.ROInum.8strial.S.TP.GC1, aes(x=Timepoint, y= ROIsPerTrial, fill=shRNA1)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("stim GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+ggplot(data=df.ROInum.8strial.S.RC1, aes(x=shRNA1, y= ROIsPerTrial, fill=shRNA1)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("stim RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 ###############
 # stats for active ROI number per trials per FOV
@@ -1429,11 +1485,13 @@ summary(ROInum.GC.NS.shRNA1)
 ROInum.GC.NS.shRNA2<- glht(ROInum.GC.NS.model2, mcp(shRNA2= "Tukey"))
 summary(ROInum.GC.NS.shRNA2)
 
+ROInum.8strial.stim$shRNA_Timepoint=interaction(ROInum.8strial.stim$shRNA1,ROInum.8strial.stim$Timepoint)
 # GCaMP stim
-ROInum.GC.S.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.8strial.nostim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
-ROInum.GC.S.model1 = lmer(ROIsPerTrial ~ shRNA1 + (1|Animal), ROInum.8strial.nostim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
-ROInum.GC.S.model2 = lmer(ROIsPerTrial ~ shRNA2 + (1|Animal), ROInum.8strial.nostim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
-ROInum.GC.S.anova <- anova(ROInum.GC.S.null, ROInum.GC.S.model1, ROInum.GC.S.model2)
+ROInum.GC.S.null = lmer(ROIsPerTrial ~ (1|Animal), ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
+ROInum.GC.S.model1 = lmer(ROIsPerTrial ~ shRNA1 + (1|Animal), ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
+ROInum.GC.S.model2 = lmer(ROIsPerTrial ~ shRNA2 + (1|Animal), ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
+ROInum.GC.S.model3 = lmer(ROIsPerTrial ~ shRNA_Timepoint + (1|Animal), ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",],REML=FALSE)
+ROInum.GC.S.anova <- anova(ROInum.GC.S.null, ROInum.GC.S.model1, ROInum.GC.S.model2,ROInum.GC.S.model3)
 print(ROInum.GC.S.anova)
 
 ROInum.GC.S.shRNA1<- glht(ROInum.GC.S.model1, mcp(shRNA1= "Tukey"))
@@ -1442,7 +1500,8 @@ summary(ROInum.GC.S.shRNA1)
 ROInum.GC.S.shRNA2<- glht(ROInum.GC.S.model2, mcp(shRNA2= "Tukey"))
 summary(ROInum.GC.S.shRNA2)
 
-
+ROInum.GC.S.TP<- glht(ROInum.GC.S.model3, mcp(shRNA_Timepoint= "Tukey"))
+summary(ROInum.GC.S.TP)
 
 
 
@@ -1583,5 +1642,61 @@ wilcox.test(fastROInum$ROIsPerTrial[fastROInum$shRNA2=="Control"],
             fastROInum$ROIsPerTrial[fastROInum$shRNA2=="KD"])
 
 
+#fast vs delayed properties
+
+df.fast.amp1<-summarySE(stim.peaks.GC, measurevar = "amplitude", groupvars = c("shRNA1","Group"))
+df.fast.dur1<-summarySE(stim.peaks.GC, measurevar = "Duration", groupvars = c("shRNA1","Group"))
+
+
+ggplot(stim.peaks.GC, aes(x=Group, y=amplitude, fill= shRNA1)) +
+  geom_boxplot()+
+  ylab("amplitude") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(df.fast.amp1, aes(x=Group,y=amplitude, fill=shRNA1)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=amplitude-se, ymax=amplitude+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("amplitude") +
+  ggtitle("GcaMP signals") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(stim.peaks.GC, aes(x=Group, y=Duration, fill= shRNA1)) +
+  geom_boxplot()+
+  ylab("Duration") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(df.fast.dur1, aes(x=Group,y=Duration, fill=shRNA1)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Duration") +
+  ggtitle("GcaMP signals") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+shRNA1_group<-interaction(stim.peaks.GC$Group, stim.peaks.GC$shRNA1)
+#GCaMP stim
+amp2.GC.S.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+amp2.GC.S.model1 = lmer(amplitude ~ shRNA1 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+amp2.GC.S.model2 = lmer(amplitude ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+amp2.GC.S.model3 = lmer(amplitude ~ shRNA1_group + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+amp2.GC.S.anova <- anova(amp2.GC.S.null, amp2.GC.S.model1, amp2.GC.S.model2, amp2.GC.S.model3)
+print(amp2.GC.S.anova)
+
+amp2.GC.S.fast <- glht(amp2.GC.S.model3 , mcp(shRNA1_group= "Tukey"))
+summary(amp2.GC.S.fast)
+
+
+dur2.GC.S.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+dur2.GC.S.model1 = lmer(Duration ~ shRNA1 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+dur2.GC.S.model2 = lmer(Duration ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+dur2.GC.S.model3 = lmer(Duration ~ shRNA1_group + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+dur2.GC.S.anova <- anova(dur2.GC.S.null, dur2.GC.S.model1, dur2.GC.S.model2, dur2.GC.S.model3)
+print(dur2.GC.S.anova)
+
+dur2.GC.S.fast <- glht(dur2.GC.S.model3 , mcp(shRNA1_group= "Tukey"))
+summary(dur2.GC.S.fast)
 
 

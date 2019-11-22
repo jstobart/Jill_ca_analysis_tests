@@ -3,8 +3,6 @@
 
 % look at unmixing (maybe from high res pic)
 % look at motion correction
-% look at what to do with calibration pixel size to change size
-
 
 
 %% Overview of CHIPS processing
@@ -71,25 +69,6 @@ refImg = mean(Alice1b.rawdata(:,:,1,:),4);  % make a reference image by taking t
 Alice1c= Alice1.motion_correct('refImg',refImg, 'ch',1,'doPlot',true);
            
 Alice1.plot();
-
-%% Weird data collected with "40x Objective"
-% % 2019.06.07 and 2019.06.10
-% Alice2 = BioFormats();  
-% 
-% Data= Alice2;
-% 
-if Data.metadata.pixelSize < 0.01
-    % Adjust the metadata to the correct lineTime
-acq = Data.metadata.get_acq();
-acq.pixelSize = Data.metadata.pixelSize*40;
-
-% Create the new RawImgDummy object!
-rid = RawImgDummy([], Data.rawdata,... 
-    Data.metadata.channels, Data.metadata.calibration, acq);
-
-end
-
-Alice2=Data;
 
 
 %% Example- basic CellScan
