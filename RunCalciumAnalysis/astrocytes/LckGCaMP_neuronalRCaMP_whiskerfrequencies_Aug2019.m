@@ -1,5 +1,5 @@
-% new params for extracitng data 
-% shorter baseline (slightly) to account for changes in fluor and 
+% new params for extracitng data
+% shorter baseline (slightly) to account for changes in fluor and
 
 close all; clear variables;
 
@@ -27,7 +27,7 @@ Settings.FileNames = {  % folder names where images and roiSet.zip is found
     'G:\Data\GCaMP_RCaMP\WhiskerFrequencies\Alice\2019_07_03_frequencies\spot2',...
     };
 
-Settings.Baseline = 2; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
+Settings.Baseline = 1.5; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
 Settings.Animal = 'Alice';
 
 channel = struct('Ca_Neuron',1,'Ca_Memb_Astro',2);  % what's on each channel
@@ -39,8 +39,9 @@ for iSpot= 1:length(Settings.FileNames)
     
     % loop through each spot
     SpotRoot= Settings.FileNames{iSpot};
-    SpotId=SpotRoot(end-15:end);
-    SpotId(11)='_';
+    SpotId1=SpotRoot(end-27:end-17);
+    SpotId2=SpotRoot(end-4:end);
+    SpotId=strcat(SpotId1,SpotId2);
     
     % Get a list of all files and folders in this folder.
     % different stimulation conditions
@@ -152,18 +153,18 @@ for iSpot= 1:length(Settings.FileNames)
             neurons2 =neurons2.process();
             
             % Make the debugging plots
-%             astrocytes.plot();
-%             neurons1.plot();
-%             neurons2.plot();
+            %             astrocytes.plot();
+            %             neurons1.plot();
+            %             neurons2.plot();
             
             %astrocytes.opt_config()
             %neurons2.opt_config()
             %neurons2.plot('signals');
             
             %% Extract/Calculate data we want and create table to output data
-%             if bad
-%                 continue
-%             else
+            %             if bad
+            %                 continue
+            %             else
             % make a giant data table for the signal peaks
             listFields = {'amplitude', 'fullWidth', 'halfWidth', ...
                 'numPeaks', 'peakTime', 'peakStart', 'peakStartHalf', ...
@@ -414,7 +415,7 @@ for iSpot= 1:length(Settings.FileNames)
                 end
             end
             
-%             end
+            %             end
         end
         
         % append peak data
@@ -474,8 +475,8 @@ for iSpot= 1:length(Settings.FileNames)
         LckData=vertcat(LckData, Lckdata3);
         
         clearvars Lck Lckdata2 Lckdata3
-        end
-
+    end
+    
 end
 
 
