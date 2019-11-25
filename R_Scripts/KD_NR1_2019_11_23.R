@@ -306,6 +306,31 @@ stim.peaks.GC<-subset(all.peaks.GC, Condition=="Stim")
 ######
 
 # peakTime histograms
+# all the peaks in the trial
+ggplot(all.peaks[all.peaks$Condition=="Stim" & all.peaks$Channel=="RCaMP",],aes(x=peakTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("all RCaMP stim peak times")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(all.peaks[all.peaks$Condition=="Nostim" & all.peaks$Channel=="RCaMP",],aes(x=peakTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("all RCaMP no stim peak times")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(all.peaks[all.peaks$Condition=="Stim" & all.peaks$Channel=="GCaMP",],aes(x=peakTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("all GCaMP stim peak times")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(all.peaks[all.peaks$Condition=="Nostim" & all.peaks$Channel=="GCaMP",],aes(x=peakTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("all GCaMP no stim peak times")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
 ggplot(stim.peaks.RC,aes(x=peakTime,y=..density..,fill=Type)) +
   geom_histogram(binwidth=0.2, position="dodge") +
   ggtitle("RCaMP stim peak times")+
@@ -418,13 +443,6 @@ ggplot(nostim.peaks.RC, aes(x=Type,y=amplitude, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(nostim.peaks.RC, aes(x=shRNA2,y=amplitude, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("amplitude") +
-  ggtitle("RCaMP no stim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 
 # stim
 ggplot(data=df.amp1.RC.stim, aes(x=Type, y= amplitude, fill=Type)) + 
@@ -517,8 +535,7 @@ print(amp.RC.NS.anova)
 amp.RC.NS.Type<- glht(amp.RC.NS.model1, mcp(Type= "Tukey"))
 summary(amp.RC.NS.Type)
 
-amp.RC.NS.shRNA2<- glht(amp.RC.NS.model2, mcp(shRNA2= "Tukey"))
-summary(amp.RC.NS.shRNA2)
+
 
 #RCaMP stim
 amp.RC.S.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.RC,REML=FALSE)
@@ -529,8 +546,6 @@ print(amp.RC.S.anova)
 amp.RC.S.Type<- glht(amp.RC.S.model1, mcp(Type= "Tukey"))
 summary(amp.RC.S.Type)
 
-amp.RC.S.shRNA2<- glht(amp.RC.S.model2, mcp(shRNA2= "Tukey"))
-summary(amp.RC.S.shRNA2)
 
 # GCaMP all peaks together
 amp.GC.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.GC,REML=FALSE)
@@ -544,52 +559,35 @@ summary(amp.GC.Type)
 #GCaMP nostim
 amp.GC.NS.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
 amp.GC.NS.model1 = lmer(amplitude ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
-amp.GC.NS.model2 = lmer(amplitude ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
-amp.GC.NS.model3 = lmer(amplitude ~ peaks.GC.nostim.Type_TP + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
-amp.GC.NS.anova <- anova(amp.GC.NS.null, amp.GC.NS.model1, amp.GC.NS.model2, amp.GC.NS.model3)
+amp.GC.NS.anova <- anova(amp.GC.NS.null, amp.GC.NS.model1)
 print(amp.GC.NS.anova)
 
 amp.GC.NS.Type<- glht(amp.GC.NS.model1, mcp(Type= "Tukey"))
 summary(amp.GC.NS.Type)
 
-amp.GC.NS.shRNA2<- glht(amp.GC.NS.model2, mcp(shRNA2= "Tukey"))
-summary(amp.GC.NS.shRNA2)
 
 #GCaMP stim
 amp.GC.S.null = lmer(amplitude ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
 amp.GC.S.model1 = lmer(amplitude ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
-amp.GC.S.model2 = lmer(amplitude ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
-amp.GC.S.model3 = lmer(amplitude ~ peaks.GC.stim.Type_TP + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
-amp.GC.S.anova <- anova(amp.GC.S.null, amp.GC.S.model1, amp.GC.S.model2, amp.GC.S.model3)
+amp.GC.S.anova <- anova(amp.GC.S.null, amp.GC.S.model1)
 print(amp.GC.S.anova)
 
 amp.GC.S.Type<- glht(amp.GC.S.model1, mcp(Type= "Tukey"))
 summary(amp.GC.S.Type)
 
-amp.GC.S.shRNA2<- glht(amp.GC.S.model2, mcp(shRNA2= "Tukey"))
-summary(amp.GC.S.shRNA2)
 
-amp.GC.S.Type.TP<- glht(amp.GC.S.model3, mcp(peaks.GC.stim.Type_TP = "Tukey"))
-summary(amp.GC.S.Type.TP)
 
 #########
 #mean Duration of signals for each ROI
 
 #RCaMP
 df.dur1.RC<- summarySE(all.peaks.RC, measurevar = "Duration", groupvars = c("Condition","Type"))
-df.dur2.RC<- summarySE(all.peaks.RC, measurevar = "Duration", groupvars = c("Condition","shRNA2"))
-df.dur.TP.RC<-summarySE(all.peaks.RC, measurevar = "Duration", groupvars = c("Condition","Type", "Timepoint" ))
 
 # RCdur spontaneous only
 df.dur1.RC.nostim<- summarySE(nostim.peaks.RC, measurevar = "Duration", groupvars = c("Type"))
-df.dur2.RC.nostim<- summarySE(nostim.peaks.RC, measurevar = "Duration", groupvars = c("shRNA2"))
-df.dur.TP.RC.nostim<-summarySE(nostim.peaks.RC, measurevar = "Duration", groupvars = c("Type", "Timepoint" ))
 
 # RCaMP stim only
 df.dur1.RC.stim<- summarySE(stim.peaks.RC, measurevar = "Duration", groupvars = c("Type"))
-df.dur2.RC.stim<- summarySE(stim.peaks.RC, measurevar = "Duration", groupvars = c("shRNA2"))
-df.dur.TP.RC.stim<-summarySE(stim.peaks.RC, measurevar = "Duration", groupvars = c("Type", "Timepoint" ))
-
 
 # RCaMP graphs
 ggplot(data=df.dur1.RC, aes(x=Type, y= Duration, fill=Condition)) + 
@@ -600,13 +598,7 @@ ggplot(data=df.dur1.RC, aes(x=Type, y= Duration, fill=Condition)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.dur2.RC, aes(x=shRNA2, y= Duration, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
+
 
 # no stim
 ggplot(data=df.dur1.RC.nostim, aes(x=Type, y= Duration, fill=Type)) + 
@@ -617,34 +609,8 @@ ggplot(data=df.dur1.RC.nostim, aes(x=Type, y= Duration, fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(nostim.peaks.RC, aes(x=Type,y=Duration, fill= Type)) +
-  geom_boxplot()+
-  ylab("no stim RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
-ggplot(data=df.dur2.RC.nostim, aes(x=shRNA2, y= Duration, fill=shRNA2)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("no stim RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
-ggplot(nostim.peaks.RC, aes(x=shRNA2,y=Duration, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Duration") +
-  ggtitle("no stim RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.dur.TP.RC.nostim, aes(x=Timepoint, y= Duration, fill=Type)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("no stim Duration") +
-  ggtitle("RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 # stim
 ggplot(data=df.dur1.RC.stim, aes(x=Type, y= Duration, fill=Type)) + 
@@ -661,44 +627,15 @@ ggplot(stim.peaks.RC, aes(x=Type,y=Duration, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.dur2.RC.stim, aes(x=shRNA2, y= Duration, fill=shRNA2)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("stim RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(stim.peaks.RC, aes(x=shRNA2,y=Duration, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Duration") +
-  ggtitle("stim RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(data=df.dur.TP.RC.stim, aes(x=Timepoint, y= Duration, fill=Type)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("stim Duration") +
-  ggtitle("RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 
 # GCaMP Duration
 df.dur1.GC<- summarySE(all.peaks.GC, measurevar = "Duration", groupvars = c("Condition","Type"))
-df.dur2.GC<- summarySE(all.peaks.GC, measurevar = "Duration", groupvars = c("Condition","shRNA2"))
-df.dur.TP.GC<-summarySE(all.peaks.GC, measurevar = "Duration", groupvars = c("Condition","Type", "Timepoint" ))
 
 # GCaMP spontaneous only
 df.dur1.GC.nostim<- summarySE(nostim.peaks.GC, measurevar = "Duration", groupvars = c("Type"))
-df.dur2.GC.nostim<- summarySE(nostim.peaks.GC, measurevar = "Duration", groupvars = c("shRNA2"))
-df.dur.TP.GC.nostim<-summarySE(nostim.peaks.GC, measurevar = "Duration", groupvars = c("Type", "Timepoint" ))
 
 # GCaMP stim only
 df.dur1.GC.stim<- summarySE(stim.peaks.GC, measurevar = "Duration", groupvars = c("Type"))
-df.dur2.GC.stim<- summarySE(stim.peaks.GC, measurevar = "Duration", groupvars = c("shRNA2"))
-df.dur.TP.GC.stim<-summarySE(stim.peaks.GC, measurevar = "Duration", groupvars = c("Type", "Timepoint" ))
 
 
 ggplot(data=df.dur1.GC, aes(x=Type, y= Duration, fill=Condition)) + 
@@ -710,29 +647,6 @@ ggplot(data=df.dur1.GC, aes(x=Type, y= Duration, fill=Condition)) +
   max.theme
 
 
-ggplot(data=df.dur2.GC, aes(x=shRNA2, y= Duration, fill=Condition)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-#no stim
-ggplot(data=df.dur2.GC.nostim, aes(x=shRNA2, y= Duration, fill=shRNA2)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("no stim GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(nostim.peaks.GC, aes(x=shRNA2,y=Duration, fill= shRNA2)) +
-  geom_boxplot()+
-  ggtitle("no stim GCaMP") +
-  ylab("Duration") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 ggplot(nostim.peaks.GC, aes(x=Type,y=Duration, fill= Type)) +
   geom_boxplot()+
@@ -748,22 +662,6 @@ ggplot(data=df.dur1.GC.nostim, aes(x=Type, y= Duration, fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.dur.TP.GC.nostim, aes(x=Timepoint, y= Duration, fill=Type)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("no stim GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-# stim
-ggplot(data=df.dur2.GC.stim, aes(x=shRNA2, y= Duration, fill=shRNA2)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("stim GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 ggplot(data=df.dur1.GC.stim, aes(x=Type, y= Duration, fill=Type)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
@@ -773,12 +671,7 @@ ggplot(data=df.dur1.GC.stim, aes(x=Type, y= Duration, fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.peaks.GC, aes(x=shRNA2,y=Duration, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Duration") +
-  ggtitle("stim GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
+
 
 ggplot(stim.peaks.GC, aes(x=Type,y=Duration, fill= Type)) +
   geom_boxplot()+
@@ -786,13 +679,7 @@ ggplot(stim.peaks.GC, aes(x=Type,y=Duration, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.dur.TP.GC.stim, aes(x=Timepoint, y= Duration, fill=Type)) + 
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=Duration-se, ymax=Duration+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("Duration") +
-  ggtitle("stim GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
+
 
 #####################
 ## STATS
@@ -800,62 +687,42 @@ ggplot(data=df.dur.TP.GC.stim, aes(x=Timepoint, y= Duration, fill=Type)) +
 #RCaMP nostim
 dur.RC.NS.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.RC,REML=FALSE)
 dur.RC.NS.model1 = lmer(Duration ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.RC,REML=FALSE)
-dur.RC.NS.model2 = lmer(Duration ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.RC,REML=FALSE)
-dur.RC.NS.model3 = lmer(Duration ~ peaks.RC.nostim.Type_TP + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.RC,REML=FALSE)
-dur.RC.NS.anova <- anova(dur.RC.NS.null, dur.RC.NS.model1, dur.RC.NS.model2, dur.RC.NS.model3)
+dur.RC.NS.anova <- anova(dur.RC.NS.null, dur.RC.NS.model1)
 print(dur.RC.NS.anova)
 
 dur.RC.NS.Type<- glht(dur.RC.NS.model1, mcp(Type= "Tukey"))
 summary(dur.RC.NS.Type)
 
-dur.RC.NS.shRNA2<- glht(dur.RC.NS.model2, mcp(shRNA2= "Tukey"))
-summary(dur.RC.NS.shRNA2)
 
 #RCaMP stim
 dur.RC.S.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.RC,REML=FALSE)
 dur.RC.S.model1 = lmer(Duration ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.RC,REML=FALSE)
-dur.RC.S.model2 = lmer(Duration ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.RC,REML=FALSE)
-dur.RC.S.model3 = lmer(Duration ~ peaks.RC.stim.Type_TP + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.RC,REML=FALSE)
-dur.RC.S.anova <- anova(dur.RC.S.null, dur.RC.S.model1, dur.RC.S.model2, dur.RC.S.model3)
+dur.RC.S.anova <- anova(dur.RC.S.null, dur.RC.S.model1)
 print(dur.RC.S.anova)
 
 dur.RC.S.Type<- glht(dur.RC.S.model1, mcp(Type= "Tukey"))
 summary(dur.RC.S.Type)
 
-dur.RC.S.shRNA2<- glht(dur.RC.S.model2, mcp(shRNA2= "Tukey"))
-summary(dur.RC.S.shRNA2)
 
 
 #GCaMP nostim
 dur.GC.NS.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
 dur.GC.NS.model1 = lmer(Duration ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
-dur.GC.NS.model2 = lmer(Duration ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
-dur.GC.NS.model3 = lmer(Duration ~ peaks.GC.nostim.Type_TP + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
-dur.GC.NS.anova <- anova(dur.GC.NS.null, dur.GC.NS.model1, dur.GC.NS.model2, dur.GC.NS.model3)
+dur.GC.NS.anova <- anova(dur.GC.NS.null, dur.GC.NS.model1)
 print(dur.GC.NS.anova)
 
 dur.GC.NS.Type<- glht(dur.GC.NS.model1, mcp(Type= "Tukey"))
 summary(dur.GC.NS.Type)
 
-dur.GC.NS.shRNA2<- glht(dur.GC.NS.model2, mcp(shRNA2= "Tukey"))
-summary(dur.GC.NS.shRNA2)
-
 #GCaMP stim
 dur.GC.S.null = lmer(Duration ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
 dur.GC.S.model1 = lmer(Duration ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
-dur.GC.S.model2 = lmer(Duration ~ shRNA2 + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
-dur.GC.S.model3 = lmer(Duration ~ peaks.GC.stim.Type_TP + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
-dur.GC.S.anova <- anova(dur.GC.S.null, dur.GC.S.model1, dur.GC.S.model2, dur.GC.S.model3)
+dur.GC.S.anova <- anova(dur.GC.S.null, dur.GC.S.model1)
 print(dur.GC.S.anova)
 
 dur.GC.S.Type<- glht(dur.GC.S.model1, mcp(Type= "Tukey"))
 summary(dur.GC.S.Type)
 
-dur.GC.S.shRNA2<- glht(dur.GC.S.model2, mcp(shRNA2= "Tukey"))
-summary(dur.GC.S.shRNA2)
-
-dur.GC.S.Type.TP<- glht(dur.GC.S.model3, mcp(peaks.GC.stim.Type_TP = "Tukey"))
-summary(dur.GC.S.Type.TP)
 
 
 
@@ -866,12 +733,12 @@ summary(dur.GC.S.Type.TP)
 
 all.OT<-subset(all.OT, OnsetTime!="NaN")
 
-stim.OT.GC<-subset(all.OT, Channel=="GCaMP" & Condition =="stim")
-stim.OT.RC<-subset(all.OT, Channel=="RCaMP" & Condition =="stim")
+stim.OT.GC<-subset(all.OT, Channel=="GCaMP" & Condition =="Stim")
+stim.OT.RC<-subset(all.OT, Channel=="RCaMP" & Condition =="Stim")
 
 ######
 # neuronal responses to stimulation
-NeuronalStim<-subset(all.OT, Channel=="RCaMP" & Condition=="stim" & OnsetTime<8)
+NeuronalStim<-subset(all.OT, Channel=="RCaMP" & Condition=="Stim" & OnsetTime<8)
 
 # should have an onset time in 8 s stimulus
 ggplot(NeuronalStim,aes(x=OnsetTime,y=..density..,fill=Type)) +
@@ -880,12 +747,6 @@ ggplot(NeuronalStim,aes(x=OnsetTime,y=..density..,fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-# should have an onset time in 8 s stimulus
-ggplot(NeuronalStim,aes(x=OnsetTime,y=..density..,fill=shRNA2)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 
 # all responding neurons
@@ -907,25 +768,7 @@ ggplot(stim.OT.GC,aes(x=OnsetTime,y=..density..,fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.OT.GC,aes(x=OnsetTime,y=..density..,fill=shRNA2)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("GCaMP onset times")+
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
-
-
-ggplot(stim.peaks.GC,aes(x=peakTime,y=..density..,fill=Type)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("GCaMP peak times")+
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(all.peaks[(all.peaks$Channel=="RCaMP"& all.peaks$Condition=="stim"),],aes(x=peakTime,y=..density..,fill=Type)) +
-  geom_histogram(binwidth=0.084, position="dodge") +
-  ggtitle("RCaMP peak times")+
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 #####
 # onset time boxplots
@@ -940,13 +783,6 @@ ggplot(stim.OT.GC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.OT.GC.window, aes(x=shRNA2,y=OnsetTime, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Onset Latency (s)") +
-  ggtitle("GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 ggplot(stim.OT.RC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
   geom_boxplot()+
   ylab("Onset Latency (s)") +
@@ -954,12 +790,6 @@ ggplot(stim.OT.RC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.OT.RC.window, aes(x=shRNA2,y=OnsetTime, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Onset Latency (s)") +
-  ggtitle("RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 # peak time
 ggplot(stim.peaks.GC, aes(x=Type,y=peakTime, fill= Type)) +
@@ -969,12 +799,6 @@ ggplot(stim.peaks.GC, aes(x=Type,y=peakTime, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.peaks.GC, aes(x=shRNA2,y=peakTime, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Latency to Peak Max (s)") +
-  ggtitle("GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 ggplot(stim.peaks.RC, aes(x=Type,y=peakTime, fill= Type)) +
   geom_boxplot()+
@@ -983,12 +807,6 @@ ggplot(stim.peaks.RC, aes(x=Type,y=peakTime, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.peaks.RC, aes(x=shRNA2,y=peakTime, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Latency to Peak Max (s)") +
-  ggtitle("RCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 ######
 ## STATS
