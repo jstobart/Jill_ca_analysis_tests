@@ -275,6 +275,23 @@ ggplot(data=df.nFluoPix.nostim1, aes(x=Type, y= meanFluoPix, fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
+## STATS
+
+cont_vs_kd_fracActive<-subset(all.field.spot, Type!="Evening")
+Cond_Type=interaction(cont_vs_kd_fracActive$Cond, cont_vs_kd_fracActive$Type)
+
+#FracActive
+fracAct.null = lmer(meanFracActive ~ (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+fracAct.model1 = lmer(meanFracActive ~ Cond + (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+fracAct.model2 = lmer(meanFracActive ~ Type + (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+fracAct.model3 = lmer(meanFracActive ~ Cond_Type + (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+
+fracAct.anova <- anova(fracAct.null, fracAct.model1, fracAct.model2, fracAct.model3)
+print(fracAct.anova)
+
+fracAct.Type<- glht(fracAct.model3, mcp(Cond_Type= "Tukey"))
+summary(fracAct.Type)
+
 #################################
 # PEAK DATA
 
@@ -741,22 +758,40 @@ stim.OT.RC<-subset(all.OT, Channel=="RCaMP" & Condition =="Stim")
 NeuronalStim<-subset(all.OT, Channel=="RCaMP" & Condition=="Stim" & OnsetTime<8)
 
 # should have an onset time in 8 s stimulus
-ggplot(NeuronalStim,aes(x=OnsetTime,y=..density..,fill=Type)) +
+ggplot(NeuronalStim[NeuronalStim$Type!="Evening",],aes(x=OnsetTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.07, position="dodge") +
+  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(NeuronalStim[NeuronalStim$Type=="KD",],aes(x=OnsetTime,y=..density..,fill=Type)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-
+ggplot(NeuronalStim[NeuronalStim$Type=="Control",],aes(x=OnsetTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 # all responding neurons
 Neuron95Onset<-quantile(NeuronalStim$OnsetTime, prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 NeuronPT50<-Neuron95Onset[[11]]
 print(NeuronPT50)
 
+Neuron95Onset.control<-quantile(NeuronalStim$OnsetTime[NeuronalStim$Type=="Control"], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+NeuronPT50.c<-Neuron95Onset.control[[11]]
+print(NeuronPT50.c)
+
+Neuron95Onset.KD<-quantile(NeuronalStim$OnsetTime[NeuronalStim$Type=="KD"], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+NeuronPT50.KD<-Neuron95Onset.KD[[11]]
+print(NeuronPT50.KD)
 
 # time thresold to consider an astrocyte to be fast:
-fastTh<-NeuronPT50
+fastTh.c<-NeuronPT50.c
+fastTh.KD<-NeuronPT50.KD
 
 #######
 #plot more distributions
@@ -773,7 +808,7 @@ ggplot(stim.OT.GC,aes(x=OnsetTime,y=..density..,fill=Type)) +
 #####
 # onset time boxplots
 
-stim.OT.GC.window<-subset(stim.OT.GC, OnsetTime<8)
+stim.OT.GC.window<-subset(stim.OT.GC, OnsetTime<12)
 stim.OT.RC.window<-subset(stim.OT.RC, OnsetTime<8)
 
 ggplot(stim.OT.GC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
@@ -783,10 +818,27 @@ ggplot(stim.OT.GC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.OT.RC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
+ggplot(stim.OT.RC.window[stim.OT.RC.window$Type!="Evening",], aes(x=Type,y=OnsetTime, fill= Type)) +
   geom_boxplot()+
   ylab("Onset Latency (s)") +
   ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+wilcox.test(stim.OT.RC.window$OnsetTime[stim.OT.RC.window$Type=="Control"], 
+            stim.OT.RC.window$OnsetTime[stim.OT.RC.window$Type=="KD"])
+
+
+df.RC.OT<-summarySE(stim.OT.RC.window[stim.OT.RC.window$Type!="Evening",], measurevar = "OnsetTime", groupvars = c("Type"))
+
+
+# plots
+
+ggplot(df.RC.OT, aes(x=Type,y=ROIsPerTrial, fill= Type)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Onset Latency (s)") +
+  ggtitle("RCaMP ROIs")+
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
@@ -871,9 +923,15 @@ summary(pT.GC.S.shRNA2)
 
 
 # identify "FAST" astrocytes
-stim.OT.GC$Group<-0
-stim.OT.GC$Group[stim.OT.GC$OnsetTime<fastTh]<-"fast"
-stim.OT.GC$Group[stim.OT.GC$OnsetTime>=fastTh]<-"delayed"
+stim.OT.GC.cont<-subset(stim.OT.GC, Type== "Control")
+stim.OT.GC.cont$Group<-0
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime<fastTh.c]<-"fast"
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime>=fastTh.c]<-"delayed"
+
+stim.OT.GC.cont<-subset(stim.OT.GC, Type== "Control")
+stim.OT.GC.cont$Group<-0
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime<fastTh.c]<-"fast"
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime>=fastTh.c]<-"delayed"
 
 
 # add onset time information to the peak data table
@@ -911,28 +969,26 @@ ROInum.8strial$ROIsPerTrial<-ROInum.8strial$nROIs/ROInum.8strial$nTrials
 ROInum.8strial.group<-merge(ROInum.8strial.group, Spot.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
 ROInum.8strial.group$ROIsPerTrial<-ROInum.8strial.group$nROIs/ROInum.8strial.group$nTrials
 
-ROInum.8strial.stim<-subset(ROInum.8strial, Condition=="stim")
-ROInum.8strial.nostim<-subset(ROInum.8strial, Condition=="nostim")
+ROInum.8strial.stim<-subset(ROInum.8strial, Condition=="Stim")
+ROInum.8strial.nostim<-subset(ROInum.8strial, Condition=="Nostim")
 
-#group together early and mid time points
-
-ROInum.8strial.stim$Timepoint[ROInum.8strial.stim$Timepoint=="mid"]<-"early"
-
+########
 # means
+df.ROInum.8strial.RC1<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","Type"))
+df.ROInum.8strial.RC2<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
+
 df.ROInum.8strial.NS.RC1<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
-df.ROInum.8strial.NS.RC2<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA2"))
-df.ROInum.8strial.RC.NS.TP<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type","Timepoint"))
 df.ROInum.8strial.S.RC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
-df.ROInum.8strial.S.RC2<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA2"))
-df.ROInum.8strial.RC.S.TP<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type","Timepoint"))
+
 
 df.ROInum.8strial.GC1<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","Type"))
-df.ROInum.8strial.GC2<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","shRNA2"))
-df.ROInum.8strial.GC.TP<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","Type","Timepoint"))
+
 df.ROInum.8strial.NS.GC1<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
-df.ROInum.8strial.S.TP.GC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type","Timepoint"))
+df.ROInum.8strial.S.GC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
 
 # plots
+
+# individual plots
 # RCaMP
 
 ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
@@ -942,12 +998,6 @@ ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], aes(x=Typ
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("RCaMP nostim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
   geom_boxplot()+
@@ -956,14 +1006,21 @@ ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], aes(x=Type,y=
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("RCaMP stim") +
+ggplot(data=df.ROInum.8strial.RC2[df.ROInum.8strial.RC2$Type!="Evening",], aes(x=Type, y= ROIsPerTrial, fill=Type)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("RCaMP- all ROIs together") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-
+ggplot(data=df.ROInum.8strial.RC1, aes(x=Type, y= ROIsPerTrial, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("RCaMP- all ROIs together") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 # GCaMP
 ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
@@ -973,21 +1030,7 @@ ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], aes(x=Typ
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("GCaMP nostim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("GCaMP stim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
   geom_boxplot()+
   ylab("num ROIs/trial per field of view") +
   ggtitle("GCaMP stim") +
@@ -1002,7 +1045,7 @@ ggplot(data=df.ROInum.8strial.NS.GC1, aes(x=Type, y= ROIsPerTrial, fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.ROInum.8strial.S.TP.GC1, aes(x=Timepoint, y= ROIsPerTrial, fill=Type)) + 
+ggplot(data=df.ROInum.8strial.S.GC1, aes(x=Type, y= ROIsPerTrial, fill=Type)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("ROIsPerTrial") +
@@ -1011,11 +1054,11 @@ ggplot(data=df.ROInum.8strial.S.TP.GC1, aes(x=Timepoint, y= ROIsPerTrial, fill=T
   max.theme
 
 
-ggplot(data=df.ROInum.8strial.S.RC1, aes(x=Type, y= ROIsPerTrial, fill=Type)) + 
+ggplot(data=df.ROInum.8strial.GC1, aes(x=Type, y= ROIsPerTrial, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("ROIsPerTrial") +
-  ggtitle("stim RCaMP") +
+  ggtitle("all GCaMP") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
@@ -1086,8 +1129,7 @@ summary(ROInum.GC.S.TP)
 # GCaMP fast vs delayed
 
 df.ROInum.8strial.group1<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Type","Group"))
-df.ROInum.8strial.group2<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("shRNA2","Group"))
-df.ROInum.8strial.group.TP<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Type","Group","Timepoint"))
+
 
 # plots
 
@@ -1100,23 +1142,8 @@ ggplot(df.ROInum.8strial.group1, aes(x=Group,y=ROIsPerTrial, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(df.ROInum.8strial.group2, aes(x=Group,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view during 8s stim") +
-  ggtitle("GCaMP ROIs")+
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 #boxplots
 ggplot(ROInum.8strial.group, aes(x=Group,y=ROIsPerTrial, fill= Type)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(ROInum.8strial.group, aes(x=Group,y=ROIsPerTrial, fill= shRNA2)) +
   geom_boxplot()+
   ylab("num ROIs/trial per field of view") +
   ggtitle("GCaMP") +
@@ -1135,31 +1162,11 @@ ggplot(fastROInum, aes(x=Type,y=ROIsPerTrial, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(fastROInum, aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Lck- fast ROIs per FOV") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(df.ROInum.8strial.group1[df.ROInum.8strial.group1$Group=="fast",], aes(x=Type,y=ROIsPerTrial, fill=Type)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view during 8s stim") +
-  ggtitle("fast GCaMP ROIs") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 # only delayed GcaMP
 
 delayedROInum<- subset(ROInum.8strial.group, Group=="delayed")
 
 ggplot(delayedROInum, aes(x=Type,y=ROIsPerTrial, fill= Type)) +
-  geom_boxplot()+
-  ylab("Lck- delayed ROIs per FOV") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(delayedROInum, aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
   geom_boxplot()+
   ylab("Lck- delayed ROIs per FOV") +
   scale_fill_manual(values=cbbPalette) + 
@@ -1180,32 +1187,22 @@ ggplot(df.ROInum.8strial.group1[df.ROInum.8strial.group1$Group=="delayed",], aes
 
 nROI.fast.day.null = lmer(ROIsPerTrial ~ (1|Animal), fastROInum,REML=FALSE)
 nROI.fast.day.model1 = lmer(ROIsPerTrial ~ Type + (1|Animal), fastROInum,REML=FALSE)
-nROI.fast.day.model2 = lmer(ROIsPerTrial ~ shRNA2 + (1|Animal), fastROInum,REML=FALSE)
-nROI.fast.day.anova <- anova(nROI.fast.day.null, nROI.fast.day.model1,
-                             nROI.fast.day.model2)
+nROI.fast.day.anova <- anova(nROI.fast.day.null, nROI.fast.day.model1)
 print(nROI.fast.day.anova)
 
 nROI.GC.Type.fast<- glht(nROI.fast.day.model1, mcp(Type= "Tukey"))
 summary(nROI.GC.Type.fast)
-
-nROI.GC.shRNA2.fast<- glht(nROI.fast.day.model2, mcp(shRNA2= "Tukey"))
-summary(nROI.GC.shRNA2.fast)
 
 
 # delayed GCaMP only
 
 nROI.delayed.day.null = lmer(ROIsPerTrial ~ (1|Animal), delayedROInum,REML=FALSE)
 nROI.delayed.day.model1 = lmer(ROIsPerTrial ~ Type + (1|Animal), delayedROInum,REML=FALSE)
-nROI.delayed.day.model2 = lmer(ROIsPerTrial ~ shRNA2 + (1|Animal), delayedROInum,REML=FALSE)
-nROI.delayed.day.anova <- anova(nROI.delayed.day.null, nROI.delayed.day.model1,
-                             nROI.delayed.day.model2)
+nROI.delayed.day.anova <- anova(nROI.delayed.day.null, nROI.delayed.day.model1)
 print(nROI.delayed.day.anova)
 
 nROI.GC.Type.delayed<- glht(nROI.delayed.day.model1, mcp(Type= "Tukey"))
 summary(nROI.GC.Type.delayed)
-
-nROI.GC.shRNA2.delayed<- glht(nROI.delayed.day.model2, mcp(shRNA2= "Tukey"))
-summary(nROI.GC.shRNA2.delayed)
 
 
 
