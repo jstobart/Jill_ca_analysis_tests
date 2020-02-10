@@ -4,32 +4,46 @@ All_traces=[]; AllData=[]; All_traces2=[]; AllData2=[];
 %% Information about your images
 
 % folder where data should be saved for each animal
-Settings.ResultsFolder = 'D:\Data\Pericytes\Results\tests';
+Settings.ResultsFolder = 'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Results';
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'MJ_peaks_07_2019.csv');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'MJ_peaks_07_2019.mat');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'MJ_traces_07_2019.mat');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'RCaMPSlice_peaks_02_02_2020_baselineNimodipine.csv');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'RCaMPSlice_peaks_02_02_2020_baselineNimodipine.mat');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'RCaMPSlice_traces_02_02_2020_baselineNimodipine.mat');
 
-%add 2.5D flika?  or 3D flika??
+Drug='Nimodipine';
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
-    'D:\Data\Pericytes\Calcium\MJ\spot2',...
-    'D:\Data\Pericytes\Calcium\MJ\spot1',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_06_21_pyr3\baseline',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_06_21_pyr3\Pyr3',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_06_24_pyr3\baseline',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_06_24_pyr3\Pyr3',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_06_25_pyr3\baseline',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_06_25_pyr3\Pyr3',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_07_09_pyr3\baseline',...
+    'E:\Jill\Data\Winnipeg\Pericytes\Brain Slice 2P Data\Acta2-RCaMP\2019_07_09_pyr3\Pyr3',...
     % etc.
     };
 
 Settings.Baseline = 2; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
-Settings.Animal = 'MJ';
 
-channel = struct('Ca_Cyto_Astro',1,'blood_plasma',2);  % can change 'blank' to any channel as this doesn't matter
+channel = struct('Ca_Cyto_Astro',1);  % can change 'blank' to any channel as this doesn't matter
 
 
-%% Loop through each file and make Cell Scans for LckGCaMP and RCaMP
+%% Loop through each file and make Cell Scans for LckRCaMP and RCaMP
 
 for iSpot= 1:length(Settings.FileNames)
     
     SpotRoot= Settings.FileNames{iSpot};
-    SpotId=SpotRoot(end-20:end);  % MAKE SURE FOLDERS ARE ALL NAMED THE SAME WAY
+    
+    %is this a baseline trial?
+    if ~isempty(strfind(SpotRoot,'baseline'))
+        Condition='baseline';
+    else
+        Condition=Drug;
+    end
+    
+    startId=strfind(SpotRoot,'2019');
+    SpotId=SpotRoot(65:74);  % MAKE SURE FOLDERS ARE ALL NAMED THE SAME WAY
     
     % Get a list of all files and folders in this folder.
     TrialFolders = dir(SpotRoot);  % look for folders
@@ -58,6 +72,18 @@ for iSpot= 1:length(Settings.FileNames)
         ImgArray = ImgArray.motion_correct('refImg',refImg, 'ch',1,'maxShift', 10,'minCorr', 0.4, 'inpaintIters', 10);%,'doPlot',true);
         
         
+        %frames1=round(35*ImgArray.metadata.frameRate);
+        %frames2=round(50*ImgArray.metadata.frameRate);
+        %frames3=round(100*ImgArray.metadata.frameRate);
+        %frames4=round(125*ImgArray.metadata.frameRate);
+        
+        %         ImgArray = ImgArray.exclude_frames([frames1:frames2]);
+        %
+        %[Img1, ~] = split1(ImgArray, 4, [frames1 size(ImgArray.rawdata,4)-frames1]);
+        %[~, Img2] = split1(ImgArray, 4, [frames2 size(ImgArray.rawdata,4)-frames2]);
+        
+       
+
         BL_frames= round(Settings.Baseline*ImgArray.metadata.frameRate); % number of baseline frames
         
         
@@ -87,9 +113,10 @@ for iSpot= 1:length(Settings.FileNames)
         
         % filter the traces to detect the peaks and get info about them
         detectConf = ConfigDetectSigsClsfy('baselineFrames', BL_frames,...
-            'propagateNaNs', true,'excludeNaNs', false, 'lpWindowTime', 5, 'spFilterOrder', 2,...
-            'spPassBandMin',0.05, 'spPassBandMax', 0.5, 'thresholdLP', 5,'thresholdSP', 4);
+            'propagateNaNs', true,'excludeNaNs', false, 'lpWindowTime', 5,...
+            'thresholdLP', 5,'thresholdSP', 5,'spPassBandMin', 0.02, 'spPassBandMax', 0.2);
         
+        % GCaMP parameters BandMin = 0.025, BandMax = 0.6
         
         % Combine the configs into a CellScan config for neuronal RCaMP
         configCS_ImageJ= ConfigCellScan(findConf{1}, measureConf, detectConf); %
@@ -98,6 +125,8 @@ for iSpot= 1:length(Settings.FileNames)
         
         %% Create CellScan objects
         RCaMP1 = CellScan(fnList, ImgArray, configCS_ImageJ, 1); % peaks from hand clicked ROIs
+        %RCaMP2 = CellScan(fnList, Img4, configCS_ImageJ, 1);
+      
         %RCaMP2 = CellScan(fnList, ImgArray, configCS_FLIKA, 1); % peaks from automated ROIs
         
         % Process the images
@@ -124,13 +153,13 @@ for iSpot= 1:length(Settings.FileNames)
         CellScans=RCaMP1;
         
         % loop through cellscans
-        for iScan=1:size(CellScans,1)
+         for iScan=1:size(CellScans,1)
             
             
             % peak output
             temp=CellScans(iScan).calcDetectSigs.data;
             temp2.trialname ={};
-            temp2.animalname = {};
+            temp2.Condition = {};
             temp2.channel = {};
             temp2.Spot = {};
             temp2.area = {};
@@ -138,7 +167,7 @@ for iSpot= 1:length(Settings.FileNames)
             
             % extract fields from Class
             for jField = 1:numel(listFields)
-                isFirst = (iTrial == 1 && iScan == 1);
+                isFirst = iScan ==1;
                 if isFirst
                     data.(listFields{jField}) = {};
                 end
@@ -151,7 +180,7 @@ for iSpot= 1:length(Settings.FileNames)
                 temp2.trialname{iPeak,1}=strcat('trial', num2str(iTrial,'%02d'));
                 temp2.channel{iPeak,1}= 'RCaMP';
                 temp2.Spot{iPeak,1}= SpotId;
-                temp2.animalname{iPeak,1}= Settings.Animal;
+                temp2.Condition{iPeak,1}= Condition;
                 temp2.pixelsize{iPeak,1} = CellScans(iScan).rawImg.metadata.pixelSize;
                 
                 % get the indices  and area for a particular ROI
@@ -169,17 +198,17 @@ for iSpot= 1:length(Settings.FileNames)
             
             
             %%
-            isFirst = (iTrial == 1 && iScan == 1);
+            isFirst = iScan == 1;
             if isFirst
                 data.Trial = {};
-                data.Animal = {};
+                data.Condition = {};
                 data.Channel = {};
                 data.Spot = {};
                 data.area = {};
                 data.pixelsize={};
             end
             data.Trial= [data.Trial; temp2.trialname];
-            data.Animal= [data.Animal; temp2.animalname];
+            data.Condition= [data.Condition; temp2.Condition];
             data.Channel= [data.Channel; temp2.channel];
             data.Spot= [data.Spot; temp2.Spot];
             data.area= [data.area; temp2.area];
@@ -203,7 +232,7 @@ for iSpot= 1:length(Settings.FileNames)
                     Trace_data{iROI,3}= 'RCaMP';
                     
                     Trace_data{iROI,4}= SpotId;
-                    Trace_data{iROI,5}= Settings.Animal;
+                    Trace_data{iROI,5}= Condition;
                     Trace_data{iROI,6} = Settings.Baseline;
                     Trace_data{iROI,7} = traces(:,iROI);
                     if iScan==2
@@ -244,7 +273,7 @@ end
 AllData2= [dataNames';AllData];
 
 %Traces Table
-names={'ROI','Trial','Channel','Spot','Animal', 'baseline',...
+names={'ROI','Trial','Channel','Spot','Condition', 'baseline',...
     'trace','ROIIdx','PixelSize','FrameRate','TraceAUC'};
 
 cd(fullfile(Settings.ResultsFolder));

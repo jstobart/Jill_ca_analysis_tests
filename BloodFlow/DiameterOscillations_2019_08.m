@@ -1,10 +1,12 @@
 Alldata=[]; Alldata2=[]; DataTable=[];
 Settings.Drug ='baseline';
-Settings.Animal ='MJ';
-Settings.SaveFile = {'Z:\Jill_Stobart\In_vivo_2P_Data\PericyteData\RCaMP 59721 R MJ\Data for comparison\DiameterOscillationsAnalysis_10months.csv'};
+Settings.Animal ='79355';
+Settings.SaveFile = {'J:\PericyteData\In vivo 2P\GCaMP Mice\Results\Bloodflow Results\GCaMP 79335\Diameter_Oscillations\DiameterOscillationsAnalysis_baseline.csv'};
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
-    'J:\Yewande Anozie\Fall 2019\MJ\MJ Blood Flow Results\Diam',...
+    'J:\PericyteData\In vivo 2P\GCaMP Mice\Results\Bloodflow Results\GCaMP 79335\Diameter\2019_12_06',...
+    'J:\PericyteData\In vivo 2P\GCaMP Mice\Results\Bloodflow Results\GCaMP 79335\Diameter\2019_12_06',...
+    'J:\PericyteData\In vivo 2P\GCaMP Mice\Results\Bloodflow Results\GCaMP 79335\Diameter\2019_12_06',...
     };
 
 
