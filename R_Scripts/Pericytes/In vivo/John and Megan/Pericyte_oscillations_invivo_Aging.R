@@ -33,22 +33,8 @@ max.theme <- theme_classic() +
 
 # load files
 #baseline
-RR_baseline1 <- read.table("C:/Users/rodrigmc-INS/Desktop/Analysis In Vivo/RR/Linescan - Diameter/Oscillations/Results/DiameterOscillationsAnalysis_baseline.csv", header=TRUE, sep = ",")
+MJ_baseline1 <- read.table("E:/Jill/Data/Winnipeg/Pericytes/In vivo 2P/RCaMP Mice/Results/Bloodflow Results/RCaMP 59721 MJ/Diameter_Oscillations/DiameterOscillationsAnalysis_baseline.csv", header=TRUE, sep = ",")
 
-MJ_baseline1 <- read.table("C:/Users/rodrigmc-INS/Desktop/Analysis In Vivo/MJ/Line Scan - Diameter/Oscillations/Results/DiameterOscillationsAnalysis_baseline.csv", header=TRUE, sep = ",")
-
-#nimodipine
-RR_nimodipine1 <- read.table("C:/Users/rodrigmc-INS/Desktop/Analysis In Vivo/RR/Linescan - Diameter/Oscillations/Results/DiameterOscillationsAnalysis_nimodipine.csv", header=TRUE, sep = ",")
-
-MJ_nimodipine1 <- read.table("C:/Users/rodrigmc-INS/Desktop/Analysis In Vivo/MJ/Line Scan - Diameter/Oscillations/Results/DiameterOscillationsAnalysis_nimodipine.csv", header=TRUE, sep = ",")
-
-#pyr3
-RR_pyr3_1 <- read.table("C:/Users/rodrigmc-INS/Desktop/Analysis In Vivo/RR/Linescan - Diameter/Oscillations/Results/DiameterOscillationsAnalysis_pyr3.csv", header=TRUE, sep = ",")
-
-MJ_pyr3_1 <- read.table("C:/Users/rodrigmc-INS/Desktop/Analysis In Vivo/MJ/Line Scan - Diameter/Oscillations/Results/DiameterOscillationsAnalysis_pyr3.csv", header=TRUE, sep = ",")
-
-
-# baseline
 
 # 7 months
 MJ_7month<- read.table("E:/Jill/Data/Winnipeg/Pericytes/In vivo 2P/RCaMP Mice/Results/Bloodflow Results/RCaMP 59721 MJ/Diameter_Oscillations/MJ_2019_08_19_7months.csv", header=TRUE, sep = ",")
@@ -60,9 +46,23 @@ MJ_9month<- read.table("E:/Jill/Data/Winnipeg/Pericytes/In vivo 2P/RCaMP Mice/Re
 MJ_11month<- read.table("E:/Jill/Data/Winnipeg/Pericytes/In vivo 2P/RCaMP Mice/Results/Bloodflow Results/RCaMP 59721 MJ/Diameter_Oscillations/MJ_2020_01_06_11months.csv", header=TRUE, sep = ",")
 
 
+spot3_v1=subset(MJ_11month, Vessel=="spot3_v1")
+spot3_v1$Vessel<-"SPOT3_v1"
+spot3_v3=subset(MJ_11month, Vessel=="spot3_v3")
+spot3_v3$Vessel<-"SPOT3_v3"
+spot6_v1=subset(MJ_11month, Vessel=="spot6_v1")
+spot6_v1$Vessel<-"SPOT6_v1"
+
+spot6_v1_9m=subset(MJ_9month, Vessel=="SPOT6_di")
+spot6_v1_9m$Vessel<-"SPOT6_v1"
+else_9m=subset(MJ_9month, Vessel!="SPOT6_di")
+
+MJ_11monthB<-rbind(spot3_v1, spot3_v3, spot6_v1)
+MJ_9monthB<-rbind(spot6_v1_9m,else_9m)
+
 #combine data together for each treatment
 
-AllData<-rbind(RR_baseline1,RR_nimodipine1,RR_pyr3_1,MJ_baseline1,MJ_nimodipine1,MJ_pyr3_1)
+AllData<-rbind(MJ_7month,MJ_9monthB,MJ_11monthB)
 AllData$Drug<-as.factor(AllData$Drug)
 
 #make a unqiue ROI name
@@ -72,6 +72,8 @@ AllData$peaksPerMin[AllData$peaksPerMin=="NaN"]=0
 AllData$peakProminence[AllData$peakProminence=="NaN"]=0
 AllData$peakWidth[AllData$peakWidth=="NaN"]=0
 AllData$CycleTime[AllData$CycleTime=="NaN"]=0
+
+Conditions<-subset(AllData, Vessel %in% MJ_11monthB$Vessel)
 
 ###############################
 #histograms
@@ -90,7 +92,7 @@ ggplot(AllData, aes(x=CycleTime, fill=Drug)) + geom_histogram(binwidth=1, positi
 ################
 #peaksPerMin
 df1A <- summarySE(AllData, measurevar="peaksPerMin", groupvars=c("Drug"))
-df1B <- summarySE(AllData, measurevar="peaksPerMin", groupvars=c("Drug","Animal"))
+df1B <- summarySE(Conditions, measurevar="peaksPerMin", groupvars=c("Drug"))
 
 ggplot(data=df1A, aes(x=Drug, y=peaksPerMin, fill=Drug)) +
   geom_errorbar(aes(ymin=peaksPerMin-se, ymax=peaksPerMin+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
@@ -100,7 +102,7 @@ ggplot(data=df1A, aes(x=Drug, y=peaksPerMin, fill=Drug)) +
     values=c("black", "red", "blue")) +
   max.theme
 
-ggplot(data=df1B, aes(x=Animal, y=peaksPerMin, fill=Drug)) +
+ggplot(data=df1B, aes(x=Drug, y=peaksPerMin, fill=Drug)) +
   geom_errorbar(aes(ymin=peaksPerMin-se, ymax=peaksPerMin+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("Signals/min") +
@@ -110,6 +112,7 @@ ggplot(data=df1B, aes(x=Animal, y=peaksPerMin, fill=Drug)) +
 
 #duration
 df2A <- summarySE(AllData, measurevar="peakWidth", groupvars=c("Drug"))
+df2B <- summarySE(Conditions, measurevar="peakWidth", groupvars=c("Drug"))
 
 ggplot(data=df2A, aes(x=Drug, y=peakWidth, fill=Drug)) +
   geom_errorbar(aes(ymin=peakWidth-se, ymax=peakWidth+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
@@ -121,8 +124,17 @@ ggplot(data=df2A, aes(x=Drug, y=peakWidth, fill=Drug)) +
 
 #amplitude
 df3A <- summarySE(AllData, measurevar="peakProminence", groupvars=c("Drug"))
+df3B <- summarySE(Conditions, measurevar="peakProminence", groupvars=c("Drug"))
 
 ggplot(data=df3A, aes(x=Drug, y=peakProminence, fill=Drug)) +
+  geom_errorbar(aes(ymin=peakProminence-se, ymax=peakProminence+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
+  ylab("amplitude (dF/F)") +
+  scale_fill_manual(
+    values=c("black", "red", "blue")) +
+  max.theme
+
+ggplot(data=df3B, aes(x=Drug, y=peakProminence, fill=Drug)) +
   geom_errorbar(aes(ymin=peakProminence-se, ymax=peakProminence+se), colour="black", width=.5, size= 1, position=position_dodge(0.9)) +
   geom_bar(stat="identity", position=position_dodge(), colour="black", width=1, size= 1) +
   ylab("amplitude (dF/F)") +

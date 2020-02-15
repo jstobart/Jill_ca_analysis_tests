@@ -9,16 +9,16 @@ Settings.ResultsFolder = 'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\
 channel = struct('Ca_Memb_Astro', 1,'blood_plasma',2);
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_11months_02_2020.csv');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_11months_02_2020.mat');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'RCaMP_59721_traces_11months_02_2020.mat');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_9months_02_2020.csv');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_9months_02_2020.mat');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'RCaMP_59721_traces_9months_02_2020.mat');
 
-Drug='11 months';
+Drug='9 months';
 Animal='59721';
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
-    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2020_01_06\spot3',...
-    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2020_01_06\spot6',...
+    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2019_11_07\spot3',...
+    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2019_11_07\spot6',...
     };
 
 Settings.Baseline = 0.5; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials
@@ -292,16 +292,16 @@ Settings.ResultsFolder = 'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\
 channel = struct('Ca_Memb_Astro', 1,'blood_plasma',2);
 
 % File names for saving
-SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_11months_02_2020.csv');
-SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_11months_02_2020.mat');
-SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'RCaMP_59721_traces_11months_02_2020.mat');
+SaveFiles{1,1} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_7months_02_2020.csv');
+SaveFiles{1,2} = fullfile(Settings.ResultsFolder,'RCaMP_59721_peaks_7months_02_2020.mat');
+SaveFiles{1,3}= fullfile(Settings.ResultsFolder,'RCaMP_59721_traces_7months_02_2020.mat');
 
-Drug='11 months_stim';
+Drug='7months';
 Animal='59721';
 
 Settings.FileNames = {  % folder names where images and roiSet.zip is found
-    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2020_01_06\spot3_stim',...
-    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2020_01_06\spot6_stim',...
+    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2019_08_19\spot3',...
+    'E:\Jill\Data\Winnipeg\Pericytes\In vivo 2P\RCaMP Mice\RCaMP 59721 R MJ\2019_08_19\spot6',...
     };
 
 Settings.Baseline = 0.5; % time (s) before the whisker stimulator starts,  2s for short trials (10s long), 5s for long trials

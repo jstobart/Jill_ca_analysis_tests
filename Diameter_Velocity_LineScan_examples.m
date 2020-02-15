@@ -5,17 +5,13 @@
 MJ2= load_prairie_line();
 
 
-% Unmixing is important
-%MJ= MJ.unmix_chs();
-
-
 %% Line Scan Velocity
 
-lsv002 = LineScanVel([],MJ);
+lsv002 = LineScanVel([],MJ2);
 lsv002.process()
 lsv002.plot()
 lsv002.opt_config()
-lsv002.output_data()
+%lsv002.output_data()
 
 %% Line Scan Diameter
 
