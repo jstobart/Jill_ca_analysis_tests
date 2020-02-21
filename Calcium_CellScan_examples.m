@@ -1,53 +1,26 @@
-%% ASTROCYTE-NEURON CALCIUM,  RCaMP T-SERIES for CALCIUM
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fangying
 
-% look at unmixing (maybe from high res pic)
-% look at motion correction
-
-
-%% Overview of CHIPS processing
-
-% You will need CHIPS folder, Bfmatlab folder, load_prairie_line script, xml2struct script on your path
-
-% - Create RawImg
-% - Do things to it (mix up, combine, calculate, motion correct)
-
-%   ch_calc         - Perform mathematical calculations on image channels
-%   ch_calc_ratio   - Calculate the ratio of two image channels
-%   ch_calc_sum2    - Calculate the sum of two image channels
-%   check_ch        - Check that the appropriate channels are present
-%   copy            - Copy MATLAB array of handle objects
-%   denoise         - Denoise the images
-%   downsample      - Downsample the images in space and/or time
-%   exclude_frames  - Excludes the specified frame(s) from the image
-%   get_ch_name     - Get channel names from channel numbers
-%   get_mc          - Get the motion correction information
-%   has_ch          - Determine if particular channels are present
-%   motion_correct  - Motion correct the images
-%   plot            - Plot a figure
-%   split1          - Split the image data along a given dimension
-%   to_long         - Convert the images to long format
-%   unmix_chs       - Unmix image channels
-%
-% RawImgDummy static methods:
-%   cat_data        - Concatenate the data from RawImgDummy objects
-%   from_files      - Create a RawImgDummy object from a list of files
+% load in the data from the confocal
+Images = RawImgDummy();  % make an artifical image stack
 
 
-% - Create Config
-% - Create ProcessedImg
-% - Process
-% - Plot
-% - Output and/or analyse results in more detail
+% fnRID003 = fullfile(utils.CHIPS_rootdir, 'tests', 'res', ...
+%     'ArtificialData_SNR_0.1_FOV_250.tif');
+%%
+% Specify the channels relevant for this raw image
+channels003 = struct('cellular_signal', 1);
+calibration='C:\JillsFiles\matlab\Jill_ca_analysis_tests\CalibrationFiles\calibration_dummy.mat';
+% Specify some data about the image acquisition
+nRows003 = 1024;
+nCols003 = 1024;
+acq003 = struct('isBiDi', false, 'lineTime', 300000/nRows003, 'zoom', 1, ...
+    'nLinesPerFrameOrig', nRows003, 'nPixelsPerLineOrig', nCols003, 'pixelSize', 0.4151);
 
-
-% TODO: discuss parallel processing
-
-%% Example- load some data and adjust it
-
-Alice1 = BioFormats();  % BioFormats plugin
-
-% Alice 2019.06.03 data
+% Create the RawImgDummy object without any interaction
+rid003 = RawImgDummy([], channels003, calibration, acq003);
+%%
+% View the RawImgDummy object
+rid003.plot()
 
 Alice1.plot();
 
