@@ -79,6 +79,35 @@ KD.field.12<-read.table("J:/Noushin Ahmadpour/2P Data/Results/FilesforR/12_KD_Lc
 KD.field.14<-read.table("J:/Noushin Ahmadpour/2P Data/Results/FilesforR/14_KD_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
 KD.field.15<-read.table("J:/Noushin Ahmadpour/2P Data/Results/FilesforR/15_KD_Lck_field_longtrials.csv",  header=TRUE, sep = ",")
 
+######
+# SOFIA's DATA
+# Jill's home files
+# peak data
+long.peaks.74<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/74_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.peaks.92<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/92_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.peaks.94<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/94_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.peaks.95<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/95_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.peaks.96<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/96_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.peaks.Alice<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/alice_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.peaks.Crazy8<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/crazy8_peaks_longtrials_clean.csv",  header=TRUE, sep = ",")
+
+# OT data
+long.OT.74<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/74_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.OT.92<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/92_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.OT.94<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/94_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.OT.95<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/95_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.OT.96<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/96_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.OT.Alice<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/alice_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.OT.Crazy8<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/crazy8_onset_time_longtrials_clean.csv",  header=TRUE, sep = ",")
+
+#field data
+long.field.74<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/74_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.field.92<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/92_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.field.94<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/94_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.field.95<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/95_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.field.96<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/96_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.field.Alice<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/alice_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
+long.field.Crazy8<-read.table("D:/Data/GCaMP_RCaMP/NR1_KD/Results/FilesforR/clean_data/crazy8_Lck_field_longtrials_clean.csv",  header=TRUE, sep = ",")
 
 ##########
 
@@ -112,47 +141,68 @@ evening.field.crazy8$animalname<-"Crazy8"
 KD.field.14$animalname<-"14"
 KD.field.15$animalname<-"15"
 
+
 #  merge data
-control.OT<-rbind(control.OT.12, control.OT.14, control.OT.15, control.OT.crazy8)
-evening.OT<-rbind(evening.OT.12, evening.OT.14, evening.OT.15, evening.OT.crazy8)
-KD.OT<-rbind(KD.OT.12, KD.OT.14, KD.OT.15)
+
+# no Alice and Crazy 8
+Noushin.OT.control<- rbind(control.OT.12, control.OT.14, control.OT.15)
+Noushin.OT.control$Spot<-paste(substr(Noushin.OT.control$Spot,2, 6),"control",sep= "_")
+Noushin.OT.KD<- rbind(KD.OT.12, KD.OT.14, KD.OT.15)
+Noushin.OT.KD$Spot<-paste(substr(Noushin.OT.KD$Spot,2, 6),"KD",sep= "_")
+
+control.OT<-rbind(long.OT.74,long.OT.92,Noushin.OT.control)
+KD.OT<-rbind(long.OT.94,long.OT.95,long.OT.96,Noushin.OT.KD)
 
 control.OT$Type<-"Control"
-evening.OT$Type<-"Evening"
 KD.OT$Type<-"KD"
 
+all.OT<-rbind(control.OT,KD.OT)
 
-all.OT<-rbind(control.OT, evening.OT, KD.OT)
+all.OT$Condition[all.OT$Condition=="stim"]<-"Stim"
+all.OT$Condition[all.OT$Condition=="nostim"]<-"Nostim"
 
 # peaks
-control.peaks<-rbind(control.peaks.12, control.peaks.14, control.peaks.15, control.peaks.crazy8)
-evening.peaks<-rbind(evening.peaks.12, evening.peaks.14, evening.peaks.15, evening.peaks.crazy8)
-KD.peaks<-rbind(KD.peaks.12, KD.peaks.14, KD.peaks.15)
+Noushin.peaks.control<- rbind(control.peaks.12, control.peaks.14, control.peaks.15)
+Noushin.peaks.control$Spot<-paste(substr(Noushin.peaks.control$Spot,2, 6),"control",sep= "_")
+Noushin.peaks.KD<- rbind(KD.peaks.12, KD.peaks.14, KD.peaks.15)
+Noushin.peaks.KD$Spot<-paste(substr(Noushin.peaks.KD$Spot,2, 6),"KD",sep= "_")
+
+control.peaks<-rbind(long.peaks.74,long.peaks.92, Noushin.peaks.control)
+KD.peaks<-rbind(long.peaks.94,long.peaks.95,long.peaks.96,Noushin.peaks.KD)
 
 control.peaks$Type<-"Control"
-evening.peaks$Type<-"Evening"
 KD.peaks$Type<-"KD"
 
-all.peaks<-rbind(control.peaks, evening.peaks, KD.peaks)
-
+all.peaks<-rbind(control.peaks,KD.peaks)
+all.peaks$Condition[all.peaks$Condition=="stim"]<-"Stim"
+all.peaks$Condition[all.peaks$Condition=="nostim"]<-"Nostim"
 
 # field
-control.field<-rbind(control.field.12, control.field.14, control.field.15, control.field.crazy8)
-evening.field<-rbind(evening.field.12, evening.field.14, evening.field.15, evening.field.crazy8)
-KD.field<-rbind(KD.field.12, KD.field.14, KD.field.15)
+long.field.74$nTotalPix<-NULL
+long.field.92$nTotalPix<-NULL
+long.field.94$nTotalPix<-NULL
+long.field.95$nTotalPix<-NULL
+long.field.96$nTotalPix<-NULL
+
+Noushin.field.control<- rbind(control.field.12, control.field.14, control.field.15)
+Noushin.field.control$Spot<-paste(substr(Noushin.field.control$Spot,2, 6),"control",sep= "_")
+Noushin.field.KD<- rbind(KD.field.12, KD.field.14, KD.field.15)
+Noushin.field.KD$Spot<-paste(substr(Noushin.field.KD$Spot,2, 6),"KD",sep= "_")
+
+control.field<-rbind(long.field.74,long.field.92, Noushin.field.control)
+KD.field<-rbind(long.field.94,long.field.95,long.field.96,Noushin.field.KD)
 
 control.field$Type<-"Control"
-evening.field$Type<-"Evening"
 KD.field$Type<-"KD"
 
-all.field<-rbind(control.field, evening.field, KD.field)
-
-
+all.field<-rbind(control.field, KD.field)
+all.field$Cond[all.field$Cond=="stim"]<-"Stim"
+all.field$Cond[all.field$Cond=="nostim"]<-"Nostim"
 
 all.peaks$Duration<- all.peaks$halfWidth*2
 
 #add baseline time to peaks table
-all.peaks$BL_time<-5
+all.peaks$BL_time<-5.032
 
 # adjust peak time and duration
 all.peaks$peakTime<- all.peaks$peakTime-all.peaks$BL_time  # now time= 0s is the start of stimulation
@@ -191,9 +241,9 @@ all.field$Type<-as.factor(all.field$Type)
 #all.field$Timepoint<-as.factor(all.field$Timepoint)
 
 # set the order of groups for plots
-all.OT$Type<-factor(all.OT$Type,levels=c("Control","KD", "Evening"))
-all.peaks$Type<-factor(all.peaks$Type,levels=c("Control","KD", "Evening"))
-all.field$Type<-factor(all.field$Type,levels=c("Control","KD", "Evening"))
+all.OT$Type<-factor(all.OT$Type,levels=c("Control","KD"))
+all.peaks$Type<-factor(all.peaks$Type,levels=c("Control","KD"))
+all.field$Type<-factor(all.field$Type,levels=c("Control","KD"))
 
 ####
 #unique ROI names
@@ -229,7 +279,7 @@ all.field$Spot_type<-paste(all.field$Type, all.field$Spot)
 ######
 # fraction of active pixels from all the astrocyte pixels
 # with peaks near stimulus
-#all.field$nFluoPix[all.field$nFluoPix==0]<-128*128  #adjust spots where no pixels were above the threshold
+all.field$nFluoPix[all.field$nFluoPix==0]<-128*128  #adjust spots where no pixels were above the threshold
 
 all.field$FracActive=all.field$nActivePix/all.field$nFluoPix
 #all.field$FracFluo=all.field$nFluoPix/all.field$nTotalPix
@@ -274,6 +324,23 @@ ggplot(data=df.nFluoPix.nostim1, aes(x=Type, y= meanFluoPix, fill=Type)) +
   ylab("# of fluorescent pixels") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
+
+## STATS
+
+cont_vs_kd_fracActive<-subset(all.field.spot, Type!="Evening")
+Cond_Type=interaction(cont_vs_kd_fracActive$Cond, cont_vs_kd_fracActive$Type)
+
+#FracActive
+fracAct.null = lmer(meanFracActive ~ (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+fracAct.model1 = lmer(meanFracActive ~ Cond + (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+fracAct.model2 = lmer(meanFracActive ~ Type + (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+fracAct.model3 = lmer(meanFracActive ~ Cond_Type + (1|animalname) + (1|Spot), cont_vs_kd_fracActive,REML=FALSE)
+
+fracAct.anova <- anova(fracAct.null, fracAct.model1, fracAct.model2, fracAct.model3)
+print(fracAct.anova)
+
+fracAct.Type<- glht(fracAct.model3, mcp(Cond_Type= "Tukey"))
+summary(fracAct.Type)
 
 #################################
 # PEAK DATA
@@ -724,6 +791,147 @@ dur.GC.S.Type<- glht(dur.GC.S.model1, mcp(Type= "Tukey"))
 summary(dur.GC.S.Type)
 
 
+#################
+# PEAK TIME
+
+#RCaMP
+ggplot(all.peaks.RC[all.peaks.RC$Condition=="Stim",],aes(x=peakTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.2, position="dodge") +
+  ggtitle("all RCaMP stim peak times")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+#
+all.peaks.RC.PT<-subset(all.peaks.RC, peakTime>0 & peakTime<4)
+df.PT1.RC<- summarySE(all.peaks.RC.PT, measurevar = "peakTime", groupvars = c("Condition","Type"))
+
+# RCdur spontaneous only
+df.PT1.RC.nostim<- summarySE(all.peaks.RC.PT[all.peaks.RC.PT$Condition=="Nostim",], measurevar = "peakTime", groupvars = c("Type"))
+
+# RCaMP stim only
+df.PT1.RC.stim<- summarySE(all.peaks.RC.PT[all.peaks.RC.PT$Condition=="Stim",], measurevar = "peakTime", groupvars = c("Type"))
+
+# RCaMP graphs
+ggplot(data=df.PT1.RC, aes(x=Type, y= peakTime, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakTime") +
+  ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+
+# no stim
+ggplot(data=df.PT1.RC.nostim, aes(x=Type, y= peakTime, fill=Type)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("no stim peakTime") +
+  ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+# stim
+ggplot(data=df.PT1.RC.stim, aes(x=Type, y= peakTime, fill=Type)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("stim peakTime") +
+  ggtitle("RCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(stim.peaks.RC, aes(x=Type,y=peakTime, fill= Type)) +
+  geom_boxplot()+
+  ylab("stim RCaMP peakTime") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+# GCaMP peakTime
+df.PT1.GC<- summarySE(all.peaks.GC, measurevar = "peakTime", groupvars = c("Condition","Type"))
+
+# GCaMP spontaneous only
+df.PT1.GC.nostim<- summarySE(nostim.peaks.GC, measurevar = "peakTime", groupvars = c("Type"))
+
+# GCaMP stim only
+df.PT1.GC.stim<- summarySE(stim.peaks.GC, measurevar = "peakTime", groupvars = c("Type"))
+
+
+ggplot(data=df.PT1.GC, aes(x=Type, y= peakTime, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakTime") +
+  ggtitle("GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+
+ggplot(nostim.peaks.GC, aes(x=Type,y=peakTime, fill= Type)) +
+  geom_boxplot()+
+  ylab("no stim GCaMP peakTime") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(data=df.PT1.GC.nostim, aes(x=Type, y= peakTime, fill=Type)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakTime") +
+  ggtitle("no stim GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+ggplot(data=df.PT1.GC.stim, aes(x=Type, y= peakTime, fill=Type)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=peakTime-se, ymax=peakTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("peakTime") +
+  ggtitle("stim GCaMP") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+
+ggplot(stim.peaks.GC, aes(x=Type,y=peakTime, fill= Type)) +
+  geom_boxplot()+
+  ylab("stim GCaMP peakTime") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+
+
+#####################
+## STATS
+
+#RCaMP stim
+PT.RC.S.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC.PT[all.peaks.RC.PT$Condition=="Stim",],REML=FALSE)
+PT.RC.S.model1 = lmer(peakTime ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), all.peaks.RC.PT[all.peaks.RC.PT$Condition=="Stim",],REML=FALSE)
+PT.RC.S.anova <- anova(PT.RC.S.null, PT.RC.S.model1)
+print(PT.RC.S.anova)
+
+PT.RC.S.Type<- glht(PT.RC.S.model1, mcp(Type= "Tukey"))
+summary(PT.RC.S.Type)
+
+
+
+#GCaMP nostim
+PT.GC.NS.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
+PT.GC.NS.model1 = lmer(peakTime ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), nostim.peaks.GC,REML=FALSE)
+PT.GC.NS.anova <- anova(PT.GC.NS.null, PT.GC.NS.model1)
+print(PT.GC.NS.anova)
+
+PT.GC.NS.Type<- glht(PT.GC.NS.model1, mcp(Type= "Tukey"))
+summary(PT.GC.NS.Type)
+
+#GCaMP stim
+PT.GC.S.null = lmer(peakTime ~ (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+PT.GC.S.model1 = lmer(peakTime ~ Type + (1|Animal) + (1|Spot) + (1|ROIs_trial), stim.peaks.GC,REML=FALSE)
+PT.GC.S.anova <- anova(PT.GC.S.null, PT.GC.S.model1)
+print(PT.GC.S.anova)
+
+PT.GC.S.Type<- glht(PT.GC.S.model1, mcp(Type= "Tukey"))
+summary(PT.GC.S.Type)
 
 
 
@@ -741,22 +949,40 @@ stim.OT.RC<-subset(all.OT, Channel=="RCaMP" & Condition =="Stim")
 NeuronalStim<-subset(all.OT, Channel=="RCaMP" & Condition=="Stim" & OnsetTime<8)
 
 # should have an onset time in 8 s stimulus
-ggplot(NeuronalStim,aes(x=OnsetTime,y=..density..,fill=Type)) +
+ggplot(NeuronalStim[NeuronalStim$Type!="Evening",],aes(x=OnsetTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.07, position="dodge") +
+  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
+
+ggplot(NeuronalStim[NeuronalStim$Type=="KD",],aes(x=OnsetTime,y=..density..,fill=Type)) +
   geom_histogram(binwidth=0.084, position="dodge") +
   ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-
+ggplot(NeuronalStim[NeuronalStim$Type=="Control",],aes(x=OnsetTime,y=..density..,fill=Type)) +
+  geom_histogram(binwidth=0.084, position="dodge") +
+  ggtitle("RCaMP onset times between 0 and 8 s from stim trials")+
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 # all responding neurons
 Neuron95Onset<-quantile(NeuronalStim$OnsetTime, prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
 NeuronPT50<-Neuron95Onset[[11]]
 print(NeuronPT50)
 
+Neuron95Onset.control<-quantile(NeuronalStim$OnsetTime[NeuronalStim$Type=="Control"], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+NeuronPT50.c<-Neuron95Onset.control[[11]]
+print(NeuronPT50.c)
+
+Neuron95Onset.KD<-quantile(NeuronalStim$OnsetTime[NeuronalStim$Type=="KD"], prob = seq(0, 1, length = 21), type = 5, na.rm=TRUE)
+NeuronPT50.KD<-Neuron95Onset.KD[[11]]
+print(NeuronPT50.KD)
 
 # time thresold to consider an astrocyte to be fast:
-fastTh<-NeuronPT50
+fastTh.c<-NeuronPT50.c
+fastTh.KD<-NeuronPT50.KD
 
 #######
 #plot more distributions
@@ -773,7 +999,7 @@ ggplot(stim.OT.GC,aes(x=OnsetTime,y=..density..,fill=Type)) +
 #####
 # onset time boxplots
 
-stim.OT.GC.window<-subset(stim.OT.GC, OnsetTime<8)
+stim.OT.GC.window<-subset(stim.OT.GC, OnsetTime<12)
 stim.OT.RC.window<-subset(stim.OT.RC, OnsetTime<8)
 
 ggplot(stim.OT.GC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
@@ -783,27 +1009,27 @@ ggplot(stim.OT.GC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(stim.OT.RC.window, aes(x=Type,y=OnsetTime, fill= Type)) +
+ggplot(stim.OT.RC.window[stim.OT.RC.window$Type!="Evening",], aes(x=Type,y=OnsetTime, fill= Type)) +
   geom_boxplot()+
   ylab("Onset Latency (s)") +
   ggtitle("RCaMP") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-
-# peak time
-ggplot(stim.peaks.GC, aes(x=Type,y=peakTime, fill= Type)) +
-  geom_boxplot()+
-  ylab("Latency to Peak Max (s)") +
-  ggtitle("GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
+wilcox.test(stim.OT.RC.window$OnsetTime[stim.OT.RC.window$Type=="Control"], 
+            stim.OT.RC.window$OnsetTime[stim.OT.RC.window$Type=="KD"])
 
 
-ggplot(stim.peaks.RC, aes(x=Type,y=peakTime, fill= Type)) +
-  geom_boxplot()+
-  ylab("Latency to Peak Max (s)") +
-  ggtitle("RCaMP") +
+df.RC.OT<-summarySE(stim.OT.RC.window[stim.OT.RC.window$Type!="Evening",], measurevar = "OnsetTime", groupvars = c("Type"))
+
+
+# plots
+
+ggplot(df.RC.OT, aes(x=Type,y=OnsetTime, fill= Type)) +
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=OnsetTime-se, ymax=OnsetTime+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("Onset Latency (s)") +
+  ggtitle("RCaMP ROIs")+
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
@@ -871,9 +1097,15 @@ summary(pT.GC.S.shRNA2)
 
 
 # identify "FAST" astrocytes
-stim.OT.GC$Group<-0
-stim.OT.GC$Group[stim.OT.GC$OnsetTime<fastTh]<-"fast"
-stim.OT.GC$Group[stim.OT.GC$OnsetTime>=fastTh]<-"delayed"
+stim.OT.GC.cont<-subset(stim.OT.GC, Type== "Control")
+stim.OT.GC.cont$Group<-0
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime<fastTh.c]<-"fast"
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime>=fastTh.c]<-"delayed"
+
+stim.OT.GC.cont<-subset(stim.OT.GC, Type== "Control")
+stim.OT.GC.cont$Group<-0
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime<fastTh.c]<-"fast"
+stim.OT.GC.cont$Group[stim.OT.GC.cont$OnsetTime>=fastTh.c]<-"delayed"
 
 
 # add onset time information to the peak data table
@@ -911,28 +1143,26 @@ ROInum.8strial$ROIsPerTrial<-ROInum.8strial$nROIs/ROInum.8strial$nTrials
 ROInum.8strial.group<-merge(ROInum.8strial.group, Spot.ntrials[, c("Ani_Spot_Cond", "nTrials")], by="Ani_Spot_Cond", all.x=TRUE)
 ROInum.8strial.group$ROIsPerTrial<-ROInum.8strial.group$nROIs/ROInum.8strial.group$nTrials
 
-ROInum.8strial.stim<-subset(ROInum.8strial, Condition=="stim")
-ROInum.8strial.nostim<-subset(ROInum.8strial, Condition=="nostim")
+ROInum.8strial.stim<-subset(ROInum.8strial, Condition=="Stim")
+ROInum.8strial.nostim<-subset(ROInum.8strial, Condition=="Nostim")
 
-#group together early and mid time points
-
-ROInum.8strial.stim$Timepoint[ROInum.8strial.stim$Timepoint=="mid"]<-"early"
-
+########
 # means
+df.ROInum.8strial.RC1<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","Type"))
+df.ROInum.8strial.RC2<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
+
 df.ROInum.8strial.NS.RC1<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
-df.ROInum.8strial.NS.RC2<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA2"))
-df.ROInum.8strial.RC.NS.TP<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type","Timepoint"))
 df.ROInum.8strial.S.RC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
-df.ROInum.8strial.S.RC2<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("shRNA2"))
-df.ROInum.8strial.RC.S.TP<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type","Timepoint"))
+
 
 df.ROInum.8strial.GC1<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","Type"))
-df.ROInum.8strial.GC2<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","shRNA2"))
-df.ROInum.8strial.GC.TP<-summarySE(ROInum.8strial[ROInum.8strial$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Condition","Type","Timepoint"))
+
 df.ROInum.8strial.NS.GC1<-summarySE(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
-df.ROInum.8strial.S.TP.GC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type","Timepoint"))
+df.ROInum.8strial.S.GC1<-summarySE(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], measurevar = "ROIsPerTrial", groupvars = c("Type"))
 
 # plots
+
+# individual plots
 # RCaMP
 
 ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
@@ -942,12 +1172,6 @@ ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], aes(x=Typ
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="RCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("RCaMP nostim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
 
 ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
   geom_boxplot()+
@@ -956,14 +1180,21 @@ ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], aes(x=Type,y=
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="RCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("RCaMP stim") +
+ggplot(data=df.ROInum.8strial.RC2[df.ROInum.8strial.RC2$Type!="Evening",], aes(x=Type, y= ROIsPerTrial, fill=Type)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("RCaMP- all ROIs together") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-
+ggplot(data=df.ROInum.8strial.RC1, aes(x=Type, y= ROIsPerTrial, fill=Condition)) + 
+  geom_bar(stat="identity", position=position_dodge(), colour="black") +
+  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
+  ylab("ROIsPerTrial") +
+  ggtitle("RCaMP- all ROIs together") +
+  scale_fill_manual(values=cbbPalette) + 
+  max.theme
 
 # GCaMP
 ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
@@ -973,21 +1204,7 @@ ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], aes(x=Typ
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(ROInum.8strial.nostim[ROInum.8strial.nostim$Channel=="GCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("GCaMP nostim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], aes(x=Type,y=ROIsPerTrial, fill= Type)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("GCaMP stim") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(ROInum.8strial.stim[ROInum.8strial.stim$Channel=="GCaMP",], aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
   geom_boxplot()+
   ylab("num ROIs/trial per field of view") +
   ggtitle("GCaMP stim") +
@@ -1002,7 +1219,7 @@ ggplot(data=df.ROInum.8strial.NS.GC1, aes(x=Type, y= ROIsPerTrial, fill=Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(data=df.ROInum.8strial.S.TP.GC1, aes(x=Timepoint, y= ROIsPerTrial, fill=Type)) + 
+ggplot(data=df.ROInum.8strial.S.GC1, aes(x=Type, y= ROIsPerTrial, fill=Type)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("ROIsPerTrial") +
@@ -1011,11 +1228,11 @@ ggplot(data=df.ROInum.8strial.S.TP.GC1, aes(x=Timepoint, y= ROIsPerTrial, fill=T
   max.theme
 
 
-ggplot(data=df.ROInum.8strial.S.RC1, aes(x=Type, y= ROIsPerTrial, fill=Type)) + 
+ggplot(data=df.ROInum.8strial.GC1, aes(x=Type, y= ROIsPerTrial, fill=Condition)) + 
   geom_bar(stat="identity", position=position_dodge(), colour="black") +
   geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
   ylab("ROIsPerTrial") +
-  ggtitle("stim RCaMP") +
+  ggtitle("all GCaMP") +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
@@ -1086,8 +1303,7 @@ summary(ROInum.GC.S.TP)
 # GCaMP fast vs delayed
 
 df.ROInum.8strial.group1<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Type","Group"))
-df.ROInum.8strial.group2<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("shRNA2","Group"))
-df.ROInum.8strial.group.TP<-summarySE(ROInum.8strial.group, measurevar = "ROIsPerTrial", groupvars = c("Type","Group","Timepoint"))
+
 
 # plots
 
@@ -1100,23 +1316,8 @@ ggplot(df.ROInum.8strial.group1, aes(x=Group,y=ROIsPerTrial, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(df.ROInum.8strial.group2, aes(x=Group,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view during 8s stim") +
-  ggtitle("GCaMP ROIs")+
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 #boxplots
 ggplot(ROInum.8strial.group, aes(x=Group,y=ROIsPerTrial, fill= Type)) +
-  geom_boxplot()+
-  ylab("num ROIs/trial per field of view") +
-  ggtitle("GCaMP") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(ROInum.8strial.group, aes(x=Group,y=ROIsPerTrial, fill= shRNA2)) +
   geom_boxplot()+
   ylab("num ROIs/trial per field of view") +
   ggtitle("GCaMP") +
@@ -1135,31 +1336,11 @@ ggplot(fastROInum, aes(x=Type,y=ROIsPerTrial, fill= Type)) +
   scale_fill_manual(values=cbbPalette) + 
   max.theme
 
-ggplot(fastROInum, aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
-  geom_boxplot()+
-  ylab("Lck- fast ROIs per FOV") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(df.ROInum.8strial.group1[df.ROInum.8strial.group1$Group=="fast",], aes(x=Type,y=ROIsPerTrial, fill=Type)) +
-  geom_bar(stat="identity", position=position_dodge(), colour="black") +
-  geom_errorbar(aes(ymin=ROIsPerTrial-se, ymax=ROIsPerTrial+se), colour="black", width=.1,  position=position_dodge(.9)) +
-  ylab("num ROIs/trial per field of view during 8s stim") +
-  ggtitle("fast GCaMP ROIs") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
 # only delayed GcaMP
 
 delayedROInum<- subset(ROInum.8strial.group, Group=="delayed")
 
 ggplot(delayedROInum, aes(x=Type,y=ROIsPerTrial, fill= Type)) +
-  geom_boxplot()+
-  ylab("Lck- delayed ROIs per FOV") +
-  scale_fill_manual(values=cbbPalette) + 
-  max.theme
-
-ggplot(delayedROInum, aes(x=shRNA2,y=ROIsPerTrial, fill= shRNA2)) +
   geom_boxplot()+
   ylab("Lck- delayed ROIs per FOV") +
   scale_fill_manual(values=cbbPalette) + 
@@ -1180,32 +1361,22 @@ ggplot(df.ROInum.8strial.group1[df.ROInum.8strial.group1$Group=="delayed",], aes
 
 nROI.fast.day.null = lmer(ROIsPerTrial ~ (1|Animal), fastROInum,REML=FALSE)
 nROI.fast.day.model1 = lmer(ROIsPerTrial ~ Type + (1|Animal), fastROInum,REML=FALSE)
-nROI.fast.day.model2 = lmer(ROIsPerTrial ~ shRNA2 + (1|Animal), fastROInum,REML=FALSE)
-nROI.fast.day.anova <- anova(nROI.fast.day.null, nROI.fast.day.model1,
-                             nROI.fast.day.model2)
+nROI.fast.day.anova <- anova(nROI.fast.day.null, nROI.fast.day.model1)
 print(nROI.fast.day.anova)
 
 nROI.GC.Type.fast<- glht(nROI.fast.day.model1, mcp(Type= "Tukey"))
 summary(nROI.GC.Type.fast)
-
-nROI.GC.shRNA2.fast<- glht(nROI.fast.day.model2, mcp(shRNA2= "Tukey"))
-summary(nROI.GC.shRNA2.fast)
 
 
 # delayed GCaMP only
 
 nROI.delayed.day.null = lmer(ROIsPerTrial ~ (1|Animal), delayedROInum,REML=FALSE)
 nROI.delayed.day.model1 = lmer(ROIsPerTrial ~ Type + (1|Animal), delayedROInum,REML=FALSE)
-nROI.delayed.day.model2 = lmer(ROIsPerTrial ~ shRNA2 + (1|Animal), delayedROInum,REML=FALSE)
-nROI.delayed.day.anova <- anova(nROI.delayed.day.null, nROI.delayed.day.model1,
-                             nROI.delayed.day.model2)
+nROI.delayed.day.anova <- anova(nROI.delayed.day.null, nROI.delayed.day.model1)
 print(nROI.delayed.day.anova)
 
 nROI.GC.Type.delayed<- glht(nROI.delayed.day.model1, mcp(Type= "Tukey"))
 summary(nROI.GC.Type.delayed)
-
-nROI.GC.shRNA2.delayed<- glht(nROI.delayed.day.model2, mcp(shRNA2= "Tukey"))
-summary(nROI.GC.shRNA2.delayed)
 
 
 
